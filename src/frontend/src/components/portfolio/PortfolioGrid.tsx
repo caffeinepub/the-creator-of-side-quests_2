@@ -16,6 +16,14 @@ export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps
     ? items.filter((item) => item.category === selectedCategory)
     : items;
 
+  const getCategoryLabel = (category: string | undefined) => {
+    if (!category) return category;
+    if (category === 'What I have created for the community') {
+      return 'Community Creations';
+    }
+    return category;
+  };
+
   return (
     <div>
       {categories.length > 0 && (
@@ -34,7 +42,7 @@ export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps
               className="cursor-pointer"
               onClick={() => setSelectedCategory(category || null)}
             >
-              {category}
+              {getCategoryLabel(category)}
             </Badge>
           ))}
         </div>
@@ -56,6 +64,11 @@ export default function PortfolioGrid({ items, onItemClick }: PortfolioGridProps
             </div>
             <div className="p-4">
               <h3 className="font-serif font-semibold">{item.title}</h3>
+              {item.category && (
+                <Badge variant="outline" className="mt-1 text-xs">
+                  {getCategoryLabel(item.category)}
+                </Badge>
+              )}
               <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{item.description}</p>
             </div>
           </div>

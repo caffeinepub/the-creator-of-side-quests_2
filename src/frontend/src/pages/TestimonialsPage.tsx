@@ -2,7 +2,8 @@ import PageHeaderBanner from '../components/PageHeaderBanner';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { useTestimonials } from '../hooks/content/useTestimonials';
 import { Card, CardContent, CardHeader } from '../components/ui/card';
-import { Star } from 'lucide-react';
+import MossyStarRating from '../components/testimonials/MossyStarRating';
+import CreateTestimonyDialog from '../components/testimonials/CreateTestimonyDialog';
 
 export default function TestimonialsPage() {
   usePageMeta('Testimonials', 'See what our clients have to say about working with us.');
@@ -17,10 +18,14 @@ export default function TestimonialsPage() {
 
       <section className="py-16">
         <div className="container">
+          <div className="mb-8 flex justify-center">
+            <CreateTestimonyDialog />
+          </div>
+
           {isLoading && <p className="text-center">Loading testimonials...</p>}
 
           {testimonials && testimonials.length === 0 && (
-            <p className="text-center text-muted-foreground">No testimonials yet.</p>
+            <p className="text-center text-muted-foreground">No testimonials yet. Be the first to share your experience!</p>
           )}
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -29,11 +34,7 @@ export default function TestimonialsPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif font-semibold">{testimonial.author}</h3>
-                    <div className="flex">
-                      {Array.from({ length: Number(testimonial.rating) }).map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                      ))}
-                    </div>
+                    <MossyStarRating rating={Number(testimonial.rating)} readonly size="sm" />
                   </div>
                 </CardHeader>
                 <CardContent>

@@ -1,214 +1,52 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T22:59:08.277Z",
-  "summary": "The diff adds a TanStack Router-based multi-page frontend with public routes and an /admin area guarded by Internet Identity + an isAdmin check, plus a backend Motoko actor that includes authorization and blob storage mixins and implements several admin-managed entities (social links, portfolio items, user profiles). However, multiple BuildRequest requirements cannot be confirmed from the provided diff summary (notably full marketing-page copy/SEO, Stripe checkout/order recording, complete admin CRUD scope, contact request persistence, coupons full lifecycle, loyalty rules/ledger, giveaway wheel/spin/winner persistence, and static generated assets being committed), largely due to truncation/omitted files and missing evidence in the shown snippets.",
-  "missing_requirements": [
-    {
-      "id": "REQ-1",
-      "requirement": "Implement the specified user-facing marketing page copy/content (headline/subheadline/CTAs/quotes; About vision/mission/emission; Services categories + KY guidance; Contact fields + response-time guidance; Hours & Policies sections including anti-discrimination and required quote).",
-      "reason": "Routes/pages are defined, but the diff summary does not show the actual page implementations/content for Home/About/Services/Contact/Hours & Policies, so required copy/sections/fields cannot be verified.",
-      "evidence": [
-        "frontend/src/App.tsx (routes present but page components truncated/not shown)"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "Apply cohesive medieval-fantasy theme site-wide (mossy greens/dark tones; serif+sans pairing; motion; reduced-motion; at least one immersive textured section on Home; flippable cards).",
-      "reason": "A FlipCard component and textured section utilities exist, and generated assets are referenced, but the diff summary does not show global styling, color palette enforcement (including avoiding blue/purple primary), typography setup, or reduced-motion handling, nor does it show HomePage using textured backgrounds/flip cards.",
-      "evidence": [
-        "frontend/src/components/FlipCard.tsx",
-        "frontend/src/components/TexturedSection.tsx",
-        "frontend/src/App.tsx (HomePage referenced but HomePage not shown)"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Per-route document titles and meta descriptions; one H1 per page; SEO/accessibility structure.",
-      "reason": "No evidence in the shown diff that routes/pages set document.title or meta description, and page-level heading structure is not shown.",
-      "evidence": [
-        "frontend/src/App.tsx (routing only; no title/meta handling shown)",
-        "frontend/src/components/PageHeaderBanner.tsx (renders an H1 but does not prove one-per-page or per-route meta)"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Restrict admin access to a single allowlisted Internet Identity principal stored in backend settings; backend-enforced admin-only mutations; mechanism to set admin principal.",
-      "reason": "Frontend has an AdminRouteGuard that checks isAdmin, and backend uses an authorization mixin, but the diff summary does not show a backend settings mechanism for storing/setting the single admin principal (or a one-time initialization method), nor explicit enforcement details for all required mutations beyond the few shown.",
-      "evidence": [
-        "frontend/src/components/auth/AdminRouteGuard.tsx",
-        "backend/main.mo (shows AccessControl/MixinAuthorization init but does not show admin principal setting/initialization in provided snippet)"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "requirement": "Admin panel to manage Portfolio (with photo upload), Testimonials CRUD, Products CRUD (pricing, stock toggle, fulfillment toggles), and policies/config (shipping disabled by default, Ashland/Westwood KY messaging).",
-      "reason": "Admin routes/pages are referenced, and backend shows portfolio CRUD shape with an image field, but the diff summary does not provide evidence of testimonials/product/policy CRUD implementations (backend methods or admin UI) or the required global policy/config screen behavior.",
-      "evidence": [
-        "frontend/src/App.tsx (admin pages referenced but truncated/not shown)",
-        "backend/main.mo (portfolio and social links shown; rest truncated)"
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "requirement": "Shop browsing + product detail + Stripe checkout for eligible products + quote-only routing; record orders/checkout attempts in backend.",
-      "reason": "Shop and product detail routes exist, and backend imports Stripe/http outcalls, but the diff summary does not show checkout initiation UI, quote-only behavior, or backend order/attempt recording fields/methods.",
-      "evidence": [
-        "frontend/src/App.tsx (ShopPage/ProductDetailPage present but not shown)",
-        "backend/main.mo (imports Stripe/http outcalls but order recording not shown in snippet)"
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "requirement": "Persist Contact/Quote requests with specified fields and optional product linkage; admin review list; validation and success state.",
-      "reason": "AdminContactRequestsPage is referenced in routing, but neither frontend Contact form implementation nor backend persistence methods/types for contact requests are shown in the provided diff summary.",
-      "evidence": [
-        "frontend/src/App.tsx (ContactPage/AdminContactRequestsPage referenced but not shown)",
-        "backend/main.mo (no contact request types/methods visible in snippet)"
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "requirement": "Admin coupon CRUD (create/update/disable/delete) and server-side validation with validity window/usage limits; apply coupon in checkout with discount reflected.",
-      "reason": "There is a frontend hook to call validateCoupon and a CouponBox UI, but no evidence of admin coupon CRUD UI or backend coupon schema/usage-limit/validity checks, nor integration into Stripe checkout to reflect discounts before payment.",
-      "evidence": [
-        "frontend/src/hooks/admin/useCoupons.ts",
-        "frontend/src/components/shop/CouponBox.tsx",
-        "frontend/src/App.tsx (AdminCouponsPage referenced but not shown)",
-        "backend/main.mo (coupon logic not shown in snippet)"
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "requirement": "Loyalty points system with awarding rules (sign-in, daily visit rate-limited, share, purchases), admin-configurable rules/threshold rewards, ledger, idempotent reward issuance.",
-      "reason": "UI shows a points badge and a ShareButton calling actor.addLoyaltyPoints, and the backend UserProfile has loyaltyPoints, but no evidence is shown for rule configuration, ledger/activity view, purchase-based awarding, daily visit rate-limiting, or idempotent reward issuance.",
-      "evidence": [
-        "frontend/src/components/loyalty/LoyaltyBadge.tsx",
-        "frontend/src/components/loyalty/ShareButton.tsx",
-        "backend/main.mo (UserProfile includes loyaltyPoints; no rules/ledger shown in snippet)"
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "requirement": "Giveaway system with events (draft/active/closed), entrant management with duplicate prevention policy, admin wheel UI + spin selecting winner, persisted winner history.",
-      "reason": "A user-facing EnterGiveawayCard exists and admin giveaway page is referenced, but the diff summary does not show backend giveaway data model/methods, admin wheel/spin implementation, or persistence of winners and timestamps.",
-      "evidence": [
-        "frontend/src/components/giveaway/EnterGiveawayCard.tsx",
-        "frontend/src/App.tsx (AdminGiveawaysPage referenced but not shown)",
-        "backend/main.mo (giveaway logic not shown in snippet)"
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "requirement": "Public Portfolio and Testimonials pages rendering admin-managed content with interactive UI (filters/cards/modal/lightbox).",
-      "reason": "Portfolio has clear interactive elements (category filter + lightbox components), but there is no evidence shown for the Testimonials page rendering and having at least one interactive element.",
-      "evidence": [
-        "frontend/src/components/portfolio/PortfolioGrid.tsx",
-        "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-        "frontend/src/App.tsx (TestimonialsPage referenced but not shown)"
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "requirement": "Media uploads for products/portfolio stored as blobs in backend and served via stable URLs/endpoints with limits and graceful UI errors.",
-      "reason": "Backend includes blob storage mixin and PortfolioItem.image is a blob type, and frontend uses getDirectURL(), but the diff summary does not show upload flows for portfolio/product images, stable asset URL endpoint behavior, or explicit size limits and UI error handling for oversized uploads.",
-      "evidence": [
-        "backend/main.mo (includes MixinStorage; PortfolioItem.image uses Storage.ExternalBlob)",
-        "frontend/src/components/portfolio/PortfolioGrid.tsx (uses item.image.getDirectURL())"
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "requirement": "Commit generated brand imagery under frontend/public/assets/generated and use them (logo in header, hero background, etc.) without backend endpoints.",
-      "reason": "Frontend references /assets/generated/... in SiteHeader and TexturedSection, but the diff summary does not show the actual image files being added under frontend/public/assets/generated (they may be among omitted files, but there is no evidence shown).",
-      "evidence": [
-        "frontend/src/components/SiteHeader.tsx",
-        "frontend/src/components/TexturedSection.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-06T23:28:48.697Z",
+  "summary": "Diff implements the requested admin UIs (products, testimonials, giveaways, portfolio) plus public testimonial creation with mossy-green glowing star rating. It also includes broader site-wide theme/system styling changes that were not part of this specific BuildRequest (beyond the star styling requirement).",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "User profile onboarding modal requiring a name before proceeding (ProfileSetupModal) and backend user profile storage APIs.",
-      "reason": "The BuildRequest does not explicitly require a user profile system or a mandatory profile setup modal; it is an additional feature beyond the stated requirements.",
+      "description": "Broader site theme/palette and design-system overhaul beyond adding mossy-green glowing star styling for rating controls (e.g., new OKLCH tokens, extended Tailwind theme, medieval-fantasy styling).",
+      "reason": "BuildRequest explicitly says not to change the overall site theme/palette beyond implementing mossy-green glowing star styling for rating controls.",
       "evidence": [
-        "frontend/src/components/auth/ProfileSetupModal.tsx",
-        "backend/main.mo (UserProfile type + get/save profile methods)"
+        "frontend/index.css",
+        "frontend/tailwind.config.js (mentioned in frontend-file-summaries.txt)",
+        "frontend-file-summaries.txt"
       ]
     },
     {
-      "description": "Footer attribution/link to caffeine.ai.",
-      "reason": "Not requested in the BuildRequest; adds external branding/attribution content.",
+      "description": "Admin/newsletter/birthday-driven functionality mentioned in project state summary.",
+      "reason": "BuildRequest non-goals explicitly exclude newsletters and birthday-triggered features; while not necessarily implemented in code here, it is presented as part of the build summary/state and risks implying added scope beyond requested items.",
       "evidence": [
-        "frontend/src/components/SiteFooter.tsx"
+        "project_state.json"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.66,
   "changed_files": [
-    "all_files_summary.json",
-    "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/index.css",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
-    "frontend/src/components/FlipCard.tsx",
-    "frontend/src/components/PageHeaderBanner.tsx",
-    "frontend/src/components/SiteFooter.tsx",
-    "frontend/src/components/SiteHeader.tsx",
-    "frontend/src/components/SiteLayout.tsx",
-    "frontend/src/components/SocialIconLinks.tsx",
-    "frontend/src/components/TexturedSection.tsx",
-    "frontend/src/components/auth/AdminRouteGuard.tsx",
-    "frontend/src/components/auth/LoginButton.tsx",
-    "frontend/src/components/auth/ProfileSetupModal.tsx",
-    "frontend/src/components/giveaway/EnterGiveawayCard.tsx",
-    "frontend/src/components/loyalty/LoyaltyBadge.tsx",
-    "frontend/src/components/loyalty/ShareButton.tsx",
+    "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
+    "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+    "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
     "frontend/src/components/portfolio/PortfolioGrid.tsx",
-    "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-    "frontend/src/components/shop/CouponBox.tsx",
-    "frontend/src/components/shop/FulfillmentNotice.tsx",
-    "frontend/src/hooks/admin/useCoupons.ts",
-    "frontend/src/hooks/contact/useContactRequests.ts",
-    "frontend/src/hooks/content/usePortfolio.ts",
+    "frontend/src/components/products/AdminProductFormDialog.tsx",
+    "frontend/src/components/products/AdminProductsTable.tsx",
+    "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
+    "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+    "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+    "frontend/src/components/testimonials/MossyStarRating.tsx",
+    "frontend/src/hooks/admin/useAdminGiveaways.ts",
+    "frontend/src/hooks/admin/useAdminPortfolio.ts",
+    "frontend/src/hooks/admin/useAdminProducts.ts",
+    "frontend/src/hooks/admin/useAdminTestimonials.ts",
     "frontend/src/hooks/content/useTestimonials.ts",
-    "frontend/src/hooks/giveaway/useGiveaways.ts",
-    "frontend/src/hooks/policies/usePolicies.ts",
-    "frontend/src/hooks/shop/useProducts.ts",
-    "frontend/src/hooks/shop/useStripeCheckout.ts",
-    "frontend/src/hooks/useActor.ts",
-    "frontend/src/hooks/useCurrentUser.ts",
-    "frontend/src/hooks/useInternetIdentity.ts",
-    "frontend/src/hooks/usePageMeta.ts",
-    "frontend/src/hooks/useSocialMediaLinks.ts",
-    "frontend/src/index.css",
-    "frontend/src/main.tsx",
-    "frontend/src/pages/AboutPage.tsx",
-    "frontend/src/pages/ContactPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/HoursPoliciesPage.tsx",
-    "frontend/src/pages/PaymentFailurePage.tsx",
-    "frontend/src/pages/PaymentSuccessPage.tsx",
-    "frontend/src/pages/PortfolioPage.tsx",
-    "frontend/src/pages/ProductDetailPage.tsx",
-    "frontend/src/pages/ServicesPage.tsx",
-    "frontend/src/pages/ShopPage.tsx",
     "frontend/src/pages/TestimonialsPage.tsx",
-    "frontend/src/pages/admin/AdminContactRequestsPage.tsx",
-    "frontend/src/pages/admin/AdminCouponsPage.tsx",
     "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-    "frontend/src/pages/admin/AdminHomePage.tsx",
-    "frontend/src/pages/admin/AdminLayout.tsx",
-    "frontend/src/pages/admin/AdminLoyaltyRewardsPage.tsx",
-    "frontend/src/pages/admin/AdminPoliciesFulfillmentPage.tsx",
     "frontend/src/pages/admin/AdminPortfolioPage.tsx",
     "frontend/src/pages/admin/AdminProductsPage.tsx",
-    "frontend/src/pages/admin/AdminSocialLinksPage.tsx",
-    "frontend/src/pages/admin/AdminStripeSetupPage.tsx",
     "frontend/src/pages/admin/AdminTestimonialsPage.tsx",
-    "frontend/src/utils/urlParams.ts",
-    "frontend/tailwind.config.js",
+    "frontend/src/utils/images.ts",
     "project_state.json"
   ]
 }

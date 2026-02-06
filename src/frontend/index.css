@@ -39,6 +39,8 @@
         --sidebar-accent-foreground: 0.25 0.03 145;
         --sidebar-border: 0.75 0.03 145;
         --sidebar-ring: 0.42 0.08 152;
+        --mossy-green: 0.45 0.12 152;
+        --mossy-glow: 0.52 0.15 152;
     }
 
     .dark {
@@ -74,6 +76,8 @@
         --sidebar-accent-foreground: 0.92 0.02 145;
         --sidebar-border: 0.32 0.04 145;
         --sidebar-ring: 0.52 0.10 152;
+        --mossy-green: 0.50 0.14 152;
+        --mossy-glow: 0.58 0.18 152;
     }
 
     * {
@@ -104,5 +108,26 @@
 @layer utilities {
     .text-balance {
         text-wrap: balance;
+    }
+}
+
+@layer components {
+    .mossy-star {
+        @apply transition-all duration-200;
+    }
+
+    .mossy-star-filled {
+        fill: oklch(var(--mossy-green));
+        stroke: oklch(var(--mossy-green));
+        filter: drop-shadow(0 0 4px oklch(var(--mossy-glow) / 0.6)) drop-shadow(0 0 8px oklch(var(--mossy-glow) / 0.4));
+    }
+
+    .mossy-star-empty {
+        fill: transparent;
+        stroke: oklch(var(--mossy-green) / 0.4);
+    }
+
+    .focus\:ring-mossy-glow:focus {
+        --tw-ring-color: oklch(var(--mossy-glow) / 0.5);
     }
 }

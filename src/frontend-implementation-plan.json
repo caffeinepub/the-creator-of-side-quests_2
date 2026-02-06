@@ -1,777 +1,180 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "The Creator of Side Quests — multi-page brand site with admin-managed shop, CMS, and engagement systems (frontend)",
+  "title": "Admin management UIs (Products, Testimonials, Giveaways, Portfolio) + Public testimonial creation with mossy-green glowing stars",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Implement responsive multi-page marketing site with required routes, page copy, CTAs, and contact form UI.",
+      "id": "REQ-16",
+      "summary": "Implement full Admin Products management UI (list/create/edit/delete) with image upload and robust loading/error states, using existing backend product APIs and existing AdminRouteGuard protection.",
       "acceptanceCriteria": [
-        "Navigation allows reaching Home, About, Services, Shop, Portfolio, Testimonials, Contact, Hours & Policies, and Admin pages.",
-        "Home page includes the specified headline “Side quests accepted. Main quests optional.”, subheadline, primary CTA “Start Your Side Quest”, secondary CTA “Explore Services & Creations”, and the listed quotes.",
-        "About page includes Joseph Fitchpatrick (aka Joe/Willow) intro and vision/mission/emission statements and the listed quotes.",
-        "Services page includes all listed service categories, customization messaging, quotes, and Kentucky-specific sales tax/occupational license guidance.",
-        "Contact page includes fields: Name, Email, Project Type, Timeline, Budget, Project Description, plus 24–72 hours response-time guidance.",
-        "Hours & Policies page contains all specified sections including anti-discrimination policy and the quote “Creative work is built on trust, clarity, and communication.”",
-        "All pages render correctly on mobile, tablet, and desktop without layout breakage."
+        "Visiting /admin/products as a non-admin shows the existing AdminRouteGuard access denied UI; visiting as admin shows the product management UI (no 'coming soon' placeholder).",
+        "Admin can view a table/grid of existing products loaded from the backend (name, price, in-stock, requires quote, category, thumbnail).",
+        "Admin can create a new product with fields: name, description, price, category (optional), inStock, requiresQuote, and an uploaded image; saving persists to the backend and the list updates without a page refresh.",
+        "Admin can edit an existing product (including replacing the image) and changes persist to the backend and refresh in the UI.",
+        "Admin can delete a product with a confirmation step; deleted products no longer appear in product list after success.",
+        "All create/edit/delete actions show loading and error states (toast/alert) and do not leave the UI in a broken state on failure."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/hooks/admin/useAdminProducts.ts",
           "operation": "create",
-          "description": "Create the application router and wire required public routes/pages (Home, About, Services, Shop, Portfolio, Testimonials, Contact, Hours & Policies) plus Admin route entry points to satisfy navigation coverage."
+          "description": "Create React Query hooks for admin product CRUD using the existing actor capabilities (getProducts/addProduct/updateProduct/deleteProduct) and query invalidation for ['products']. Use sonner toasts and surface backend errors clearly. For image upload, use the blob-storage ExternalBlob client class with upload progress. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/SiteLayout.tsx",
+          "path": "frontend/src/components/products/AdminProductFormDialog.tsx",
           "operation": "create",
-          "description": "Create a shared layout (header/nav/footer/main container) used by all pages, including CTA placements and consistent responsive structure."
+          "description": "Create a reusable create/edit product dialog form composed from existing shadcn/ui components (do not modify frontend/src/components/ui). Include fields: name, description, price (dollars -> cents BigInt), optional category, inStock toggle, requiresQuote toggle, and image file input with preview + upload progress and validation feedback. Use blob-storage ExternalBlob.fromBytes(...).withUploadProgress(...) for uploads. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/SiteHeader.tsx",
+          "path": "frontend/src/components/products/AdminProductsTable.tsx",
           "operation": "create",
-          "description": "Implement a responsive header with primary navigation links to all required public pages and an Admin link entry (visibility can be conditional on auth state/role)."
+          "description": "Create an admin products table/grid component that renders name, price, in-stock, requires quote, category, and thumbnail using product.image.getDirectURL(). Provide edit and delete actions with confirmation and disabled states while mutations are pending."
         },
         {
-          "path": "frontend/src/components/SiteFooter.tsx",
-          "operation": "create",
-          "description": "Implement footer with repeated navigation and CTA links to Contact and Shop/Services to reinforce site-wide CTAs."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "create",
-          "description": "Implement Home page hero section with required headline/subheadline/CTAs and quotes, and additional sections that link to Services/Shop/Contact as specified."
-        },
-        {
-          "path": "frontend/src/pages/AboutPage.tsx",
-          "operation": "create",
-          "description": "Implement About page with required bio (Joseph Fitchpatrick aka Joe/Willow), vision/mission/emission sections, and quotes."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "create",
-          "description": "Implement Services page with all required service categories and micro-services, “starting at” placeholders, KY guidance copy, and quotes."
-        },
-        {
-          "path": "frontend/src/pages/ShopPage.tsx",
-          "operation": "create",
-          "description": "Implement Shop listing UI shell (product grid, filters/sort placeholders, and CTA guidance) that will be populated from backend data in later requirements."
-        },
-        {
-          "path": "frontend/src/pages/PortfolioPage.tsx",
-          "operation": "create",
-          "description": "Implement public Portfolio page UI shell (themed card grid, detail view entry points) that will be populated from backend data in later requirements."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "create",
-          "description": "Implement public Testimonials page UI shell that will be populated from backend data in later requirements."
-        },
-        {
-          "path": "frontend/src/pages/ContactPage.tsx",
-          "operation": "create",
-          "description": "Implement Contact page UI with the specified form fields, response-time guidance (24–72 hours), and quotes; actual persistence wiring is handled in REQ-8."
-        },
-        {
-          "path": "frontend/src/pages/HoursPoliciesPage.tsx",
-          "operation": "create",
-          "description": "Implement Hours & Policies page with all required sections (hours, payments/quotes, scope/licensing, returns/adjustments, local service area, anti-discrimination) and required quote text."
+          "path": "frontend/src/pages/admin/AdminProductsPage.tsx",
+          "operation": "modify",
+          "description": "Replace the placeholder UI with the composed management experience: fetch products, show empty/loading states, render AdminProductsTable, and provide a 'New Product' action that opens AdminProductFormDialog. Ensure mutations invalidate/refetch products without full page refresh and errors show via toast/alert."
         }
       ]
     },
     {
-      "id": "REQ-2",
-      "summary": "Apply premium medieval-fantasy theme (deep moss greens/dark tones), typography pairing, textured backgrounds, and subtle motion with reduced-motion support; avoid blue/purple primary palette.",
+      "id": "REQ-17",
+      "summary": "Add public testimonial creation flow on Testimonials page for signed-in users, using mossy-green glowing stars for both input and display ratings, and prompting sign-in via existing auth flow when needed.",
       "acceptanceCriteria": [
-        "All pages share a cohesive color system dominated by deep mossy greens and dark neutrals, with consistent typography (one serif and one sans-serif).",
-        "Interactive elements (buttons/cards/nav items) have smooth hover/focus/active states and reduced-motion is respected when possible.",
-        "At least one section on the Home page uses an immersive textured background and at least one set of flippable cards is implemented."
+        "The public Testimonials page includes a clearly visible “Create Testimony” action.",
+        "If the user is not signed in, attempting to create a testimony prompts the user to sign in (using the existing auth flow) and does not submit data.",
+        "The creation UI allows selecting a rating from 1 to 5 using star icons styled as mossy-green and visibly “glowy” (e.g., glow/shadow effect); stars are not gold.",
+        "The creation UI includes inputs for author name (or display name) and the testimonial content, with basic validation (required fields, rating required).",
+        "On successful submission, the new testimonial appears in the testimonials list after query invalidation/refetch.",
+        "Displayed testimonial star ratings on the Testimonials page render as mossy-green glowing stars (not gold)."
       ],
       "file_operations": [
+        {
+          "path": "frontend/src/components/testimonials/MossyStarRating.tsx",
+          "operation": "create",
+          "description": "Create a reusable, accessible star rating component (1–5) supporting both read-only display and interactive input. Implement keyboard focus/selection and apply mossy-green + glow styling via shared CSS classes (not gold)."
+        },
         {
           "path": "frontend/index.css",
           "operation": "modify",
-          "description": "Update CSS variables and base styles to a deep mossy green + dark neutral palette (avoid blue/purple primaries), set typography defaults, and define motion tokens/transition utilities with reduced-motion friendly fallbacks."
-        },
-        {
-          "path": "frontend/tailwind.config.js",
-          "operation": "modify",
-          "description": "Extend Tailwind theme tokens (colors, background utilities, animations) to support the medieval-fantasy palette and subtle motion while keeping accessibility and readability."
-        },
-        {
-          "path": "frontend/src/components/TexturedSection.tsx",
-          "operation": "create",
-          "description": "Create a reusable section wrapper that applies textured backgrounds and vignette/overlay treatments using static generated assets (wired in REQ-15)."
-        },
-        {
-          "path": "frontend/src/components/FlipCard.tsx",
-          "operation": "create",
-          "description": "Create a reusable flippable card component with keyboard accessibility and reduced-motion handling for the Home page feature cards."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Apply the textured hero/section styling and include a set of flippable cards consistent with the theme (ensuring it remains readable and responsive)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add SEO-friendly structure: per-route titles/meta descriptions, semantic headings, accessible labels, and crawlable navigation.",
-      "acceptanceCriteria": [
-        "Each route sets a unique document title and meta description.",
-        "Each page uses semantic headings with a single H1.",
-        "Lighthouse SEO and Accessibility checks show no critical issues related to missing titles, missing labels, or heading order."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/usePageMeta.ts",
-          "operation": "create",
-          "description": "Implement a small hook to set document.title and ensure a meta description tag is created/updated per route from page content."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1) and call usePageMeta with route-specific title/meta description derived from the page copy."
-        },
-        {
-          "path": "frontend/src/pages/AboutPage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1) and call usePageMeta with route-specific title/meta description derived from the page copy."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1) and call usePageMeta with route-specific title/meta description derived from the page copy."
-        },
-        {
-          "path": "frontend/src/pages/ShopPage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1) and call usePageMeta with route-specific title/meta description derived from the page copy."
-        },
-        {
-          "path": "frontend/src/pages/PortfolioPage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1) and call usePageMeta with route-specific title/meta description derived from the page copy."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1) and call usePageMeta with route-specific title/meta description derived from the page copy."
-        },
-        {
-          "path": "frontend/src/pages/ContactPage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1), ensure all form fields have accessible labels, and call usePageMeta with route-specific title/meta description."
-        },
-        {
-          "path": "frontend/src/pages/HoursPoliciesPage.tsx",
-          "operation": "modify",
-          "description": "Add semantic heading structure (single H1) and call usePageMeta with route-specific title/meta description derived from the page copy."
-        },
-        {
-          "path": "frontend/src/components/SiteHeader.tsx",
-          "operation": "modify",
-          "description": "Ensure navigation links have accessible labels, active state indication, and remain crawlable (standard anchor/Link elements rather than click-only divs)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Display configurable social media icon links (Instagram, Facebook, TikTok, YouTube) sourced from backend-stored URLs.",
-      "acceptanceCriteria": [
-        "Frontend displays social icons/links in a consistent location (e.g., header/footer and/or Contact page).",
-        "Admin can set/update the social URLs without code changes (stored in backend).",
-        "All social links open in a new tab and are keyboard accessible."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useSocialMediaLinks.ts",
-          "operation": "create",
-          "description": "Create React Query hooks to fetch social media links from the backend actor and expose loading/error states. Use the selected authorization component’s general auth expectations for handling logged-out vs logged-in states. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/SocialIconLinks.tsx",
-          "operation": "create",
-          "description": "Create a social icon links component that renders Instagram/Facebook/TikTok/YouTube links from backend data, ensures keyboard accessibility, and opens links in a new tab."
-        },
-        {
-          "path": "frontend/src/components/SiteFooter.tsx",
-          "operation": "modify",
-          "description": "Add SocialIconLinks to the footer in a consistent location across all pages."
-        },
-        {
-          "path": "frontend/src/pages/ContactPage.tsx",
-          "operation": "modify",
-          "description": "Include SocialIconLinks (or a dedicated section) so users can click out to message/view content on supported platforms."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminSocialLinksPage.tsx",
-          "operation": "create",
-          "description": "Add an admin screen to create/update/delete social URLs using backend capabilities, so links are configurable without code changes."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
-          "operation": "create",
-          "description": "Create a shared Admin layout with navigation to admin sections, including Social Links management."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire the Admin social links page into the Admin route structure and ensure it is reachable from the Admin navigation."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Add Internet Identity login UI, user profile setup, and protected Admin area access (single-admin enforced by backend role checks).",
-      "acceptanceCriteria": [
-        "Unauthenticated users can browse public pages; signing in uses Internet Identity.",
-        "Admin routes are blocked unless the signed-in principal matches the configured admin principal.",
-        "Backend enforces admin-only mutations regardless of frontend checks.",
-        "A settings mechanism exists to set the admin principal (initially via a backend method callable once or via an admin-only action)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/auth/LoginButton.tsx",
-          "operation": "create",
-          "description": "Create a login/logout button using the existing immutable useInternetIdentity hook; clear React Query cache on logout per the selected authorization component guidance. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useCurrentUser.ts",
-          "operation": "create",
-          "description": "Create hooks to fetch getCallerUserRole and getCallerUserProfile, and to save caller profile when missing, following the selected authorization component’s UI guidance (avoid profile setup modal flash). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/auth/ProfileSetupModal.tsx",
-          "operation": "create",
-          "description": "Implement a first-login profile setup modal to collect a human-readable name (and optional email if desired) and persist via saveCallerUserProfile, per selected authorization component guidance. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
-          "operation": "create",
-          "description": "Implement a guard wrapper for admin routes that queries isCallerAdmin/getCallerUserRole and shows an Access Denied screen when unauthorized; keep public pages accessible."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminHomePage.tsx",
-          "operation": "create",
-          "description": "Create the Admin landing page/dashboard that is only accessible behind AdminRouteGuard."
-        },
-        {
-          "path": "frontend/src/components/SiteHeader.tsx",
-          "operation": "modify",
-          "description": "Add LoginButton to the header and optionally show Admin link when authenticated; ensure public navigation remains available when logged out."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire AdminRouteGuard to all /admin routes, and ensure profile setup modal is conditionally shown after login when no profile exists."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Build Admin panel UIs to manage portfolio, testimonials, products (pricing/stock/fulfillment), and global policies/defaults.",
-      "acceptanceCriteria": [
-        "Admin can create/update/delete Portfolio items and upload at least one image per item.",
-        "Admin can create/update/delete Testimonials (author/name, optional handle, content, optional rating).",
-        "Admin can create/update/delete Products with fields including: name, description, price, images, stock status, and fulfillment toggles (pickup/dropoff/delivery/shipping).",
-        "Shop page reflects admin changes immediately after refresh (or via query invalidation).",
-        "A global policy/config screen allows setting defaults (e.g., shipping disabled by default) and Ashland/Westwood KY coordination messaging."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/admin/AdminProductsPage.tsx",
-          "operation": "create",
-          "description": "Implement admin UI for creating/editing/deleting products, setting price, in-stock status, and requiresQuote flag; include image upload UI (wired to blob-storage in REQ-13)."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminPortfolioPage.tsx",
-          "operation": "create",
-          "description": "Implement admin UI for creating/editing/deleting portfolio items and uploading at least one image per item (wired to blob-storage in REQ-13)."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminTestimonialsPage.tsx",
-          "operation": "create",
-          "description": "Implement admin UI for creating/editing/deleting testimonials (author, content, optional rating/handle if supported by backend type)."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminPoliciesFulfillmentPage.tsx",
-          "operation": "create",
-          "description": "Implement admin UI to view/update Policies and FulfillmentOptions (including default no-shipping stance but configurable)."
-        },
-        {
-          "path": "frontend/src/hooks/admin/useAdminCatalog.ts",
-          "operation": "create",
-          "description": "Create React Query hooks/mutations for admin product/portfolio/testimonial/policies/fulfillment management, with query invalidation to reflect changes after refresh or mutation."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
-          "operation": "modify",
-          "description": "Add admin navigation entries for Products, Portfolio, Testimonials, and Policies/Fulfillment."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire new Admin management pages into the /admin route tree and ensure they are reachable (no orphan pages)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Implement Shop browsing, product detail views, Stripe checkout initiation for eligible products, and quote-only routing to Contact/social.",
-      "acceptanceCriteria": [
-        "Products can be flagged as “Stripe checkout” and/or “Request quote” (both supported as configured).",
-        "Stripe checkout flow can be initiated from the Shop UI for Stripe-enabled products.",
-        "Quote-only products clearly show a primary action to request a quote/contact (no checkout required).",
-        "Orders/checkout attempts are recorded (at minimum: product, buyer principal, amount, timestamp, status) in the backend.",
-        "No shipping is required to complete checkout; fulfillment guidance is shown for local pickup/dropoff coordination."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/shop/useProducts.ts",
-          "operation": "create",
-          "description": "Create hooks to fetch product lists/details via the backend actor and expose loading/error states for Shop and product detail views."
-        },
-        {
-          "path": "frontend/src/pages/ShopPage.tsx",
-          "operation": "modify",
-          "description": "Render product browsing UI from backend products, including clear labeling for in-stock, quote-only, and purchasable items."
-        },
-        {
-          "path": "frontend/src/pages/ProductDetailPage.tsx",
-          "operation": "create",
-          "description": "Implement product detail view with image, description, price, fulfillment messaging, and primary action that either initiates Stripe checkout or routes to Contact/quote flow depending on product flags."
-        },
-        {
-          "path": "frontend/src/hooks/shop/useStripeCheckout.ts",
-          "operation": "create",
-          "description": "Implement Stripe checkout session creation hook that calls createCheckoutSession and parses JSON to obtain a valid redirect URL; follow the selected stripe component guidance (validate session.url, use window.location.href). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/PaymentSuccessPage.tsx",
-          "operation": "create",
-          "description": "Create payment success page that reads Stripe session info from URL when applicable, calls getStripeSessionStatus, and records purchase via backend capability; follow selected stripe component guidance. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/PaymentFailurePage.tsx",
-          "operation": "create",
-          "description": "Create payment failure/cancel page that provides recovery guidance and returns to Shop/Contact, following selected stripe component guidance. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire routes for Shop product detail and required Stripe status pages (/payment-success and /payment-failure), ensuring they are reachable from the Shop flow."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Persist Contact/Quote requests from Contact page and quote-only product flows; add admin review listing and success state.",
-      "acceptanceCriteria": [
-        "Submitting the contact form creates a stored ContactRequest entry in the backend.",
-        "Admin panel lists contact/quote requests with timestamps and optional associated product.",
-        "Form validates required fields and shows a success state on completion."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/contact/useContactRequests.ts",
-          "operation": "create",
-          "description": "Create React Query mutation to submitContactRequest and queries for getContactRequests (admin) / getMyContactRequests (user), with basic error handling."
-        },
-        {
-          "path": "frontend/src/pages/ContactPage.tsx",
-          "operation": "modify",
-          "description": "Wire form submission to submitContactRequest with validation for required fields, display a clear success state, and support optional product linkage when arriving from quote-only product flow."
-        },
-        {
-          "path": "frontend/src/pages/ProductDetailPage.tsx",
-          "operation": "modify",
-          "description": "For quote-only (or quote-preferred) products, route users into the Contact page with the productId preselected/attached (no checkout required)."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminContactRequestsPage.tsx",
-          "operation": "create",
-          "description": "Implement admin listing UI for contact/quote requests with timestamps and optional associated product, including basic status updates via updateContactRequestStatus."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
-          "operation": "modify",
-          "description": "Add admin navigation entry for Contact/Quote Requests."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire AdminContactRequestsPage into the /admin route tree so it is reachable."
-        }
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "summary": "Implement coupon admin management and checkout-time coupon application UI with server-validated status feedback.",
-      "acceptanceCriteria": [
-        "Admin can create, update, disable, and delete coupons.",
-        "Users can apply a coupon code in the checkout flow (where applicable) and see the discount reflected before payment.",
-        "Coupon usage is validated server-side (active, not expired, within usage limits)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/admin/AdminCouponsPage.tsx",
-          "operation": "create",
-          "description": "Implement admin UI to create/update/disable/delete coupons and view current coupons list, using backend coupon capabilities."
-        },
-        {
-          "path": "frontend/src/hooks/admin/useCoupons.ts",
-          "operation": "create",
-          "description": "Create React Query hooks/mutations for coupon CRUD and validateCoupon/applyCoupon flows with clear error states for invalid/expired/disabled codes."
-        },
-        {
-          "path": "frontend/src/components/shop/CouponBox.tsx",
-          "operation": "create",
-          "description": "Create a coupon input component used during checkout initiation to validate and apply a coupon (server-side validation via backend capabilities)."
-        },
-        {
-          "path": "frontend/src/pages/ProductDetailPage.tsx",
-          "operation": "modify",
-          "description": "Integrate CouponBox into the Stripe checkout initiation UI so users can apply a coupon and see the expected discount before redirecting to Stripe (as supported by backend behavior)."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
-          "operation": "modify",
-          "description": "Add admin navigation entry for Coupons."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire AdminCouponsPage into the /admin route tree so it is reachable."
-        }
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "summary": "Implement loyalty points UI: earn points for actions (signup/login, visit, share, purchase), show balances, and allow admin configuration of rewards/thresholds.",
-      "acceptanceCriteria": [
-        "Each signed-in user has a points balance and a points activity/ledger view (at least in the admin panel; user view is preferred).",
-        "Points are awarded for: account sign-in/sign-up event, daily/visit event (rate-limited), explicit “share” button click events, and completed purchases.",
-        "Admin can configure point rules and reward thresholds (e.g., X points => award coupon Y).",
-        "Reward issuance is recorded and cannot be duplicated accidentally (idempotent)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/loyalty/useLoyalty.ts",
-          "operation": "create",
-          "description": "Create hooks for getLoyaltyPoints, addLoyaltyPoints, getLoyaltyRewards, redeemLoyaltyReward, and helper client-side rate-limiting for visit events (no WebSockets; use standard requests)."
-        },
-        {
-          "path": "frontend/src/components/loyalty/ShareButton.tsx",
-          "operation": "create",
-          "description": "Create a share CTA button that triggers the loyalty share action (addLoyaltyPoints with share) and provides user feedback; ensure accessibility labeling."
-        },
-        {
-          "path": "frontend/src/components/loyalty/LoyaltyBadge.tsx",
-          "operation": "create",
-          "description": "Create a small user-facing points balance display for signed-in users (e.g., in header or account area)."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Add a share CTA section using ShareButton to enable earning points through explicit sharing action."
-        },
-        {
-          "path": "frontend/src/components/SiteHeader.tsx",
-          "operation": "modify",
-          "description": "Display LoyaltyBadge for authenticated users and ensure it does not expose principal IDs (use user profile name per authorization guidance). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLoyaltyRewardsPage.tsx",
-          "operation": "create",
-          "description": "Implement admin UI to create/update/delete loyalty rewards (thresholds => reward definitions) using backend reward capabilities."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminUserLookupPage.tsx",
-          "operation": "create",
-          "description": "Provide an admin view to inspect a user profile/points balance as needed using getUserProfile and related backend capabilities (avoid showing principal by default; show display name)."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
-          "operation": "modify",
-          "description": "Add admin navigation entries for Loyalty Rewards and (if needed) User Lookup/Points inspection."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire loyalty admin pages into the /admin route tree and ensure visit/signup point awarding is triggered safely after authentication (e.g., on first session load) without spamming (client rate-limit + backend idempotency expectations)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "summary": "Implement giveaway entry and admin wheel selector UI for livestream-oriented giveaways, with entrant management and winner history display.",
-      "acceptanceCriteria": [
-        "Admin can create a giveaway event with a name and status (draft/active/closed).",
-        "When a giveaway is active, signed-in users can be added as entrants (automatically on login and/or via a clear user action; must be configurable).",
-        "Admin UI shows a wheel-style selector and a “Spin” action that randomly picks an entrant.",
-        "Winner is persisted (giveawayId, user, timestamp) and displayed in admin history.",
-        "Entrant list prevents duplicate entries for the same user within the same giveaway unless admin explicitly allows it."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/giveaway/useGiveaways.ts",
-          "operation": "create",
-          "description": "Create hooks for fetching active giveaways, fetching a giveaway by id, creating/updating giveaways (admin), adding entrants, and selecting winners via backend capabilities."
-        },
-        {
-          "path": "frontend/src/components/giveaway/EnterGiveawayCard.tsx",
-          "operation": "create",
-          "description": "Create a user-facing component for authenticated users to enter the currently active giveaway with a clear action and display-name handling (use user profile name per authorization guidance). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-          "operation": "create",
-          "description": "Implement admin UI to create/update/delete giveaways, toggle active status, manage entrants, and review winner history."
-        },
-        {
-          "path": "frontend/src/components/giveaway/WinnerWheel.tsx",
-          "operation": "create",
-          "description": "Implement a wheel-style UI selector that can animate a spin (respect reduced motion) and then trigger selectGiveawayWinner with the chosen index; display selected winner result."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Optionally surface EnterGiveawayCard on Home (only when a giveaway is active) without creating new top-level routes."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
-          "operation": "modify",
-          "description": "Add admin navigation entry for Giveaways."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire AdminGiveawaysPage into the /admin route tree and ensure user giveaway entry UI is accessible from an existing public page (e.g., Home)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "summary": "Render public Portfolio and Testimonials from admin-managed backend content with interactive themed UI (filters/cards/lightbox).",
-      "acceptanceCriteria": [
-        "Portfolio page lists items added in admin and supports viewing item details; images render correctly.",
-        "Testimonials page lists testimonials added in admin and renders well on mobile/desktop.",
-        "At least one interactive element exists on these pages (e.g., filter chips, card flip, or lightbox)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/content/usePortfolio.ts",
-          "operation": "create",
-          "description": "Create hooks to fetch portfolio items and item details via backend capabilities; expose loading/error states."
+          "description": "Add global CSS utility classes for mossy-green glowing star styling used by both testimonial display and rating controls (e.g., fill/stroke color + drop-shadow glow + focus ring), without changing the overall theme palette beyond this requirement."
         },
         {
           "path": "frontend/src/hooks/content/useTestimonials.ts",
-          "operation": "create",
-          "description": "Create hooks to fetch testimonials via backend capabilities; expose loading/error states."
-        },
-        {
-          "path": "frontend/src/components/portfolio/PortfolioGrid.tsx",
-          "operation": "create",
-          "description": "Create a themed portfolio grid with category filter chips (interactive element) and card UI."
-        },
-        {
-          "path": "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-          "operation": "create",
-          "description": "Implement a modal/lightbox viewer to inspect portfolio images using stable blob URLs provided by ExternalBlob.getDirectURL(). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/PortfolioPage.tsx",
           "operation": "modify",
-          "description": "Wire Portfolio page to backend data, render via PortfolioGrid, and enable lightbox/detail interactions."
+          "description": "Extend testimonial hooks to include a create testimonial mutation using existing actor.addTestimonial and invalidate/refetch ['testimonials'] on success. Ensure errors are surfaced cleanly to the caller for toast/alert handling."
+        },
+        {
+          "path": "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+          "operation": "create",
+          "description": "Create a public 'Create Testimony' dialog composed from existing shadcn/ui components (do not modify frontend/src/components/ui). Use useInternetIdentity to gate submission: if not authenticated, prompt user to sign in using the existing auth flow (call login / or show LoginButton). Include validation for required author/content and rating; submit via mutation and show loading/error toasts."
         },
         {
           "path": "frontend/src/pages/TestimonialsPage.tsx",
           "operation": "modify",
-          "description": "Wire Testimonials page to backend data and add at least one interactive UI element (e.g., filter by rating or expand/collapse cards) consistent with theme."
+          "description": "Wire the Create Testimony action into the public Testimonials page and replace the current rating star rendering with the shared MossyStarRating display to ensure mossy-green glowing stars are used consistently."
         }
       ]
     },
     {
-      "id": "REQ-13",
-      "summary": "Support admin media uploads for portfolio/product images using backend blob storage references and stable direct URLs, with size/type limits and graceful errors.",
+      "id": "REQ-18",
+      "summary": "Implement Admin Testimonials management UI (list/create/edit/delete) using existing backend testimonial APIs, reusing mossy-green glowing star controls with accessibility.",
       "acceptanceCriteria": [
-        "Admin can upload at least JPG/PNG images for products and portfolio items.",
-        "Uploaded images persist across refreshes and can be displayed in Shop/Portfolio without manual intervention.",
-        "If an upload exceeds configured limits, the UI shows a clear error message and does not corrupt state."
+        "Visiting /admin/testimonials as admin shows a working testimonials management UI (no 'coming soon' placeholder).",
+        "Admin can see a list of testimonials with author, rating, created date, and a content preview.",
+        "Admin can create a testimonial from the admin UI (author, content, rating) and it persists to the backend and appears in the list.",
+        "Admin can edit an existing testimonial (including rating) and changes persist to the backend and refresh in the UI.",
+        "Admin can delete a testimonial with confirmation; it is removed from the backend and no longer appears in the list.",
+        "Rating inputs in admin use the same mossy-green glowing star UI (not gold) and are accessible (keyboard focusable / labeled)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/images.ts",
+          "path": "frontend/src/hooks/admin/useAdminTestimonials.ts",
           "operation": "create",
-          "description": "Add client-side helpers for validating image type/size (JPG/PNG, configurable max bytes), converting File to bytes, and returning user-friendly error messages."
+          "description": "Create React Query hooks for admin testimonial CRUD using existing actor capabilities (getTestimonials/addTestimonial/updateTestimonial/deleteTestimonial) and invalidate/refetch ['testimonials'] after writes. Use sonner toasts in calling UI and propagate backend errors."
         },
         {
-          "path": "frontend/src/components/admin/ImageUploadField.tsx",
+          "path": "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
           "operation": "create",
-          "description": "Create a reusable admin image upload field that uses the selected blob-storage component’s ExternalBlob.fromBytes and withUploadProgress to create uploadable blobs and surface progress/errors. Verify the component's usage instructions before implementing."
+          "description": "Create an admin create/edit testimonial dialog composed from existing shadcn/ui components (do not modify frontend/src/components/ui), reusing MossyStarRating for rating input with proper labels and keyboard interaction."
         },
         {
-          "path": "frontend/src/pages/admin/AdminProductsPage.tsx",
+          "path": "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+          "operation": "create",
+          "description": "Create an admin testimonials list/table showing author, mossy-star rating display, created date, and a content preview. Provide edit and delete actions with confirmation and loading/disabled states."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminTestimonialsPage.tsx",
           "operation": "modify",
-          "description": "Integrate ImageUploadField into product create/edit flows and ensure images render using ExternalBlob.getDirectURL() (no backend routing of generated assets). Verify the component's usage instructions before implementing."
+          "description": "Replace placeholder content with the management UI using the new hooks/components. Ensure create/edit/delete show clear loading + error states and the list refreshes via query invalidation without a page reload."
+        }
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "summary": "Implement Admin Giveaways wheel UI: select active giveaway, view/add entrants, animate spin to pick a winner, and show winner history using existing backend giveaway APIs with graceful edge-case handling.",
+      "acceptanceCriteria": [
+        "Visiting /admin/giveaways as admin shows a working giveaway management UI (no 'coming soon' placeholder).",
+        "Admin can select an active giveaway and see its name/description, entrants list, and winners list/history.",
+        "Admin can add an entrant as admin by providing a principal (text input) and display name; the entrant appears in the list after success.",
+        "Admin can trigger a 'Spin' action that animates a wheel/selector UI over the current entrants and ends on a single selected entrant.",
+        "After the spin completes, the UI calls the backend to record/confirm the selected winner and the winner appears in the winners history with timestamp.",
+        "The UI handles edge cases gracefully: no active giveaways, no entrants (spin disabled with explanatory text), backend errors shown to the admin."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/admin/useAdminGiveaways.ts",
+          "operation": "create",
+          "description": "Create admin giveaway hooks for loading active giveaways and performing admin actions (addGiveawayEntrantByAdmin, selectGiveawayWinner) with React Query invalidation for ['activeGiveaways'] and per-giveaway refresh patterns. Surface errors for toast/alert handling."
+        },
+        {
+          "path": "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
+          "operation": "create",
+          "description": "Create a wheel/selector component that can animate a spin over the current entrants list and produce a deterministic selected index at the end of the animation (client-side). Provide reduced-motion handling and a clear selected winner display once the spin completes."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
+          "operation": "modify",
+          "description": "Replace placeholder with admin giveaway UI: select giveaway (or show 'no active giveaways'), display entrants and winners history, allow adding entrants by admin (principal text -> Principal parsing), disable spin when entrants are empty, run spin animation via AdminGiveawayWheel, then call backend to record/confirm winner and update winner history with timestamp. Show loading/error states via toasts/alerts."
+        }
+      ]
+    },
+    {
+      "id": "REQ-20",
+      "summary": "Implement Admin Portfolio uploader/manager UI with media upload progress, metadata editing, delete confirmation, and a category option for “What I have created for the community”, using existing backend portfolio + blob-storage APIs.",
+      "acceptanceCriteria": [
+        "Visiting /admin/portfolio as admin shows a working portfolio management UI (no 'coming soon' placeholder).",
+        "Admin can upload a new portfolio item with title, description, optional category, and a selected media file; on success it persists and appears in the portfolio list.",
+        "The UI provides a category option/value that can be used to represent “What I have created for the community” so items can be grouped/filtered accordingly on the public portfolio experience.",
+        "Admin can edit an existing portfolio item’s metadata (title/description/category) and save changes to the backend.",
+        "Admin can delete a portfolio item with confirmation; it is removed from the backend and no longer appears in the list.",
+        "The uploader shows clear file upload progress/loading and displays an explicit error message when the backend rejects a file due to size/type limits (no silent failure)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/admin/useAdminPortfolio.ts",
+          "operation": "create",
+          "description": "Create React Query hooks for admin portfolio CRUD using existing actor capabilities (getPortfolioItems/addPortfolioItem/updatePortfolioItem/deletePortfolioItem) with query invalidation for ['portfolioItems']. For uploads, use blob-storage ExternalBlob client with upload progress and propagate backend rejections for explicit UI errors. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
+          "operation": "create",
+          "description": "Create an admin portfolio uploader component composed from existing shadcn/ui components (do not modify frontend/src/components/ui): title/description/category (including a dedicated option value for “What I have created for the community”) + media file picker. Upload via ExternalBlob.fromBytes(...).withUploadProgress(...) and show progress/loading + explicit error messages for size/type rejections. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+          "operation": "create",
+          "description": "Create an admin portfolio list/table/grid showing existing items (thumbnail via item.image.getDirectURL(), title, category, short description) with edit metadata and delete (confirmation) actions, including loading/disabled states."
         },
         {
           "path": "frontend/src/pages/admin/AdminPortfolioPage.tsx",
           "operation": "modify",
-          "description": "Integrate ImageUploadField into portfolio item create/edit flows and ensure images render using ExternalBlob.getDirectURL(); add graceful error handling for limits and upload failures. Verify the component's usage instructions before implementing."
+          "description": "Replace placeholder with the full portfolio management UI: uploader + list, and edit/delete workflows. Ensure mutations invalidate/refetch ['portfolioItems'] so updates appear without page refresh and errors are clearly shown."
         },
         {
-          "path": "frontend/src/pages/ProductDetailPage.tsx",
+          "path": "frontend/src/components/portfolio/PortfolioGrid.tsx",
           "operation": "modify",
-          "description": "Render product images using ExternalBlob.getDirectURL() to ensure stable display and caching behavior. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-          "operation": "modify",
-          "description": "Ensure portfolio image viewing uses ExternalBlob.getDirectURL() and handles missing/failed image loads gracefully. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "summary": "Add location/service constraint messaging (Ashland/Westwood KY, coordination, no shipping by default) across Shop and relevant pages; reflect fulfillment toggles in UI.",
-      "acceptanceCriteria": [
-        "Shop product pages clearly communicate local coordination expectations when shipping is disabled.",
-        "Admin can toggle fulfillment modes; when shipping is disabled, UI does not present shipping as available.",
-        "Hours & Policies and/or Shop includes Ashland/Westwood KY local service area text."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/policies/usePolicies.ts",
-          "operation": "create",
-          "description": "Create hooks to fetch Policies and FulfillmentOptions and expose them to Shop/product views for conditional messaging."
-        },
-        {
-          "path": "frontend/src/components/shop/FulfillmentNotice.tsx",
-          "operation": "create",
-          "description": "Create a reusable notice component that displays local coordination messaging and hides shipping language when shippingEnabled is false."
-        },
-        {
-          "path": "frontend/src/pages/ShopPage.tsx",
-          "operation": "modify",
-          "description": "Add explicit Ashland/Westwood KY and no-shipping-by-default messaging to Shop browsing UI and conditionally render fulfillment notices based on backend fulfillment options."
-        },
-        {
-          "path": "frontend/src/pages/ProductDetailPage.tsx",
-          "operation": "modify",
-          "description": "Display fulfillment constraints and coordination guidance on product detail, ensuring shipping is not presented when disabled."
-        },
-        {
-          "path": "frontend/src/pages/HoursPoliciesPage.tsx",
-          "operation": "modify",
-          "description": "Ensure local service area text includes Ashland/Westwood KY coordination messaging and aligns with the configured policies where appropriate."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminPoliciesFulfillmentPage.tsx",
-          "operation": "modify",
-          "description": "Make fulfillment toggles and no-shipping default visible and editable, and clarify how frontend will reflect shipping disabled state."
-        }
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "summary": "Wire generated brand imagery as static frontend assets under frontend/public/assets/generated and use them across the site (header/favicon/hero/backgrounds).",
-      "acceptanceCriteria": [
-        "All generated images are committed under frontend/public/assets/generated and referenced directly by the frontend.",
-        "Site header uses the generated logo; Home hero uses the generated hero background texture/image.",
-        "No backend endpoint is required to serve these static assets."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/hero-bg.dim_2400x1350.png",
-          "operation": "create",
-          "description": "Add the generated image asset as a committed static file at frontend/public/assets/generated/hero-bg.dim_2400x1350.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/texture-tile.dim_1024x1024.png",
-          "operation": "create",
-          "description": "Add the generated image asset as a committed static file at frontend/public/assets/generated/texture-tile.dim_1024x1024.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/logo-crest.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the generated image asset as a committed static file at frontend/public/assets/generated/logo-crest.dim_512x512.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/icons-set.dim_256x256.png",
-          "operation": "create",
-          "description": "Add the generated image asset as a committed static file at frontend/public/assets/generated/icons-set.dim_256x256.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/page-banner.dim_2400x600.png",
-          "operation": "create",
-          "description": "Add the generated image asset as a committed static file at frontend/public/assets/generated/page-banner.dim_2400x600.png."
-        },
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Reference the generated crest logo as the site favicon and ensure baseline meta tags remain present."
-        },
-        {
-          "path": "frontend/src/components/SiteHeader.tsx",
-          "operation": "modify",
-          "description": "Use the generated logo asset at frontend/public/assets/generated/logo-crest.dim_512x512.png in the header branding area."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Apply the generated hero background at frontend/public/assets/generated/hero-bg.dim_2400x1350.png in the hero section."
-        },
-        {
-          "path": "frontend/src/components/TexturedSection.tsx",
-          "operation": "modify",
-          "description": "Use the generated seamless texture tile at frontend/public/assets/generated/texture-tile.dim_1024x1024.png for immersive textured section backgrounds."
-        },
-        {
-          "path": "frontend/src/components/PageHeaderBanner.tsx",
-          "operation": "create",
-          "description": "Create a page header/banner component that uses frontend/public/assets/generated/page-banner.dim_2400x600.png and can be reused across inner pages."
-        },
-        {
-          "path": "frontend/src/pages/AboutPage.tsx",
-          "operation": "modify",
-          "description": "Adopt the PageHeaderBanner component for consistent branding across internal pages."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Adopt the PageHeaderBanner component for consistent branding across internal pages."
-        },
-        {
-          "path": "frontend/src/pages/ShopPage.tsx",
-          "operation": "modify",
-          "description": "Adopt the PageHeaderBanner component for consistent branding across internal pages."
-        },
-        {
-          "path": "frontend/src/pages/PortfolioPage.tsx",
-          "operation": "modify",
-          "description": "Adopt the PageHeaderBanner component for consistent branding across internal pages."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "modify",
-          "description": "Adopt the PageHeaderBanner component for consistent branding across internal pages."
-        },
-        {
-          "path": "frontend/src/pages/ContactPage.tsx",
-          "operation": "modify",
-          "description": "Adopt the PageHeaderBanner component for consistent branding across internal pages."
-        },
-        {
-          "path": "frontend/src/pages/HoursPoliciesPage.tsx",
-          "operation": "modify",
-          "description": "Adopt the PageHeaderBanner component for consistent branding across internal pages."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "create",
-          "description": "Add a src-local index.css that imports/forwards the root frontend/index.css so the existing immutable frontend/src/main.tsx import resolves without editing frontend/src/main.tsx."
+          "description": "Ensure the public portfolio filtering/grouping UX can recognize and present the dedicated “What I have created for the community” category value consistently (e.g., friendly label), without adding new routes/pages."
         }
       ]
     }

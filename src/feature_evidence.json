@@ -2,349 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-a-responsive-multi-page-marketing-website-for-the-creator-of-side-quests-with-the-following-routes-pages-and-user-facing-copy-in-english-based-on-the-provided-prompt-home-hero-with-headline-subheadline-ctas-quotes-about-bio-vision-mission-emission-quotes-services-categories-micro-services-starting-at-placeholders-ky-guidance-quotes-shop-portfolio-testimonials-contact-form-with-specified-fields-response-time-guidance-quotes-hours-policies-hours-payments-quotes-scope-licensing-returns-adjustments-local-service-area-anti-discrimination-quote-include-ctas-throughout-linking-to-contact-booking-and-shop-services-as-specified",
-      "featureTitle": "Create a responsive multi-page marketing website for “The Creator of Side Quests” with the following routes/pages and user-facing copy (in English) based on the provided prompt: Home (hero with headline/subheadline/CTAs/quotes), About (bio + vision/mission/emission + quotes), Services (categories + micro-services + “starting at” placeholders + KY guidance + quotes), Shop, Portfolio, Testimonials, Contact (form with specified fields + response-time guidance + quotes), Hours & Policies (hours, payments/quotes, scope/licensing, returns/adjustments, local service area, anti-discrimination + quote). Include CTAs throughout linking to Contact/booking and Shop/Services as specified.",
+      "featureId": "feature-replace-the-placeholder-admin-products-page-with-a-full-product-management-ui-that-lets-the-admin-list-create-edit-and-delete-products-including-image-upload-price-description-category-in-stock-toggle-and-requires-quote-toggle-using-the-existing-backend-product-apis-and-existing-admin-route-protection",
+      "featureTitle": "Replace the placeholder Admin Products page with a full product management UI that lets the admin list, create, edit, and delete products, including image upload, price, description, category, in-stock toggle, and requires-quote toggle, using the existing backend product APIs and existing admin route protection.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/SiteFooter.tsx",
-        "frontend/src/components/SiteHeader.tsx",
-        "frontend/src/components/SiteLayout.tsx",
-        "frontend/src/pages/AboutPage.tsx",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/HoursPoliciesPage.tsx",
-        "frontend/src/pages/PortfolioPage.tsx",
-        "frontend/src/pages/ServicesPage.tsx",
-        "frontend/src/pages/ShopPage.tsx",
-        "frontend/src/pages/TestimonialsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-apply-a-consistent-premium-medieval-fantasy-visual-theme-across-the-entire-frontend-using-deep-mossy-greens-and-dark-tones-elegant-serif-sans-serif-typography-pairing-subtle-textured-backgrounds-and-tasteful-motion-hover-effects-smooth-transitions-subtle-animations-while-keeping-content-energetic-readable-human-centered-and-approachable-neurodivergent-chaotic-but-professional-tone-do-not-use-a-blue-purple-primary-palette",
-      "featureTitle": "Apply a consistent premium medieval-fantasy visual theme across the entire frontend using deep mossy greens and dark tones, elegant serif + sans-serif typography pairing, subtle textured backgrounds, and tasteful motion (hover effects, smooth transitions, subtle animations) while keeping content energetic, readable, human-centered, and approachable (neurodivergent-chaotic but professional tone). Do not use a blue/purple primary palette.",
-      "files": [
-        "frontend/index.css",
-        "frontend/src/components/FlipCard.tsx",
-        "frontend/src/components/TexturedSection.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/tailwind.config.js"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-seo-friendly-structure-for-the-react-app-per-route-document-titles-and-meta-descriptions-derived-from-the-page-content-semantic-headings-one-h1-per-page-accessible-link-button-labeling-and-a-crawlable-internal-navigation-structure",
-      "featureTitle": "Implement SEO-friendly structure for the React app: per-route document titles and meta descriptions derived from the page content, semantic headings (one H1 per page), accessible link/button labeling, and a crawlable internal navigation structure.",
-      "files": [
-        "frontend/src/components/SiteHeader.tsx",
-        "frontend/src/hooks/usePageMeta.ts",
-        "frontend/src/pages/AboutPage.tsx",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/HoursPoliciesPage.tsx",
-        "frontend/src/pages/PortfolioPage.tsx",
-        "frontend/src/pages/ServicesPage.tsx",
-        "frontend/src/pages/ShopPage.tsx",
-        "frontend/src/pages/TestimonialsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-clickable-social-media-integration-as-icon-links-and-or-a-dedicated-section-that-can-be-configured-with-the-creator-s-profile-urls-enabling-users-to-click-out-to-message-or-view-content-on-platforms-instagram-facebook-tiktok-youtube",
-      "featureTitle": "Add clickable social media integration as icon links (and/or a dedicated section) that can be configured with the creator’s profile URLs, enabling users to click out to message or view content on platforms (Instagram, Facebook, TikTok, YouTube).",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/SiteFooter.tsx",
-        "frontend/src/components/SocialIconLinks.tsx",
-        "frontend/src/hooks/useSocialMediaLinks.ts",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/admin/AdminLayout.tsx",
-        "frontend/src/pages/admin/AdminSocialLinksPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-internet-identity-authentication-for-users-customers-and-a-protected-admin-area-restrict-admin-access-to-a-single-admin-account-the-creator-using-an-allowlisted-internet-identity-principal-stored-in-backend-settings",
-      "featureTitle": "Implement Internet Identity authentication for users (customers) and a protected Admin area. Restrict Admin access to a single admin account (the creator) using an allowlisted Internet Identity principal stored in backend settings.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/SiteHeader.tsx",
-        "frontend/src/components/auth/AdminRouteGuard.tsx",
-        "frontend/src/components/auth/LoginButton.tsx",
-        "frontend/src/components/auth/ProfileSetupModal.tsx",
-        "frontend/src/hooks/useCurrentUser.ts",
-        "frontend/src/pages/admin/AdminHomePage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-an-admin-panel-that-allows-the-admin-to-manage-portfolio-items-including-photo-upload-testimonials-create-edit-delete-shop-products-create-edit-delete-pricing-in-stock-out-of-stock-toggles-fulfillment-options-pickup-dropoff-delivery-toggles-and-policies-including-default-no-shipping-stance-but-configurable",
-      "featureTitle": "Create an Admin panel that allows the admin to manage: Portfolio items (including photo upload), Testimonials (create/edit/delete), Shop products (create/edit/delete), pricing, in-stock/out-of-stock toggles, fulfillment options (pickup/dropoff/delivery toggles), and policies (including default “no shipping” stance but configurable).",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/admin/AdminLayout.tsx",
-        "frontend/src/pages/admin/AdminPoliciesFulfillmentPage.tsx",
-        "frontend/src/pages/admin/AdminPortfolioPage.tsx",
-        "frontend/src/pages/admin/AdminProductsPage.tsx",
-        "frontend/src/pages/admin/AdminTestimonialsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-a-shop-experience-with-a-product-browsing-and-detail-views-b-stripe-checkout-for-eligible-products-supporting-debit-credit-digital-cards-and-c-a-per-product-request-quote-contact-to-purchase-option-that-routes-users-to-contact-and-or-social-links-instead-of-checkout-when-enabled",
-      "featureTitle": "Build a Shop experience with (a) product browsing and detail views, (b) Stripe checkout for eligible products supporting debit/credit/digital cards, and (c) a per-product “Request quote / Contact to purchase” option that routes users to Contact and/or social links instead of checkout when enabled.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/hooks/shop/useProducts.ts",
-        "frontend/src/hooks/shop/useStripeCheckout.ts",
-        "frontend/src/pages/PaymentFailurePage.tsx",
-        "frontend/src/pages/PaymentSuccessPage.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx",
-        "frontend/src/pages/ShopPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-7"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-a-contact-quote-request-system-that-persists-submissions-from-the-contact-page-and-from-quote-only-product-flows-for-admin-review-including-the-specified-fields-name-email-project-type-timeline-budget-project-description-and-optional-linkage-to-a-product",
-      "featureTitle": "Implement a Contact/Quote request system that persists submissions (from the Contact page and from quote-only product flows) for admin review, including the specified fields (Name, Email, Project Type, Timeline, Budget, Project Description) and optional linkage to a product.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/hooks/contact/useContactRequests.ts",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx",
-        "frontend/src/pages/admin/AdminContactRequestsPage.tsx",
-        "frontend/src/pages/admin/AdminLayout.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-8"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-coupon-creation-and-redemption-admin-can-create-digital-coupons-code-discount-type-value-validity-window-usage-limits-and-users-can-apply-a-coupon-at-checkout-stripe-enabled-products-and-or-have-coupons-awarded-as-loyalty-rewards",
-      "featureTitle": "Implement coupon creation and redemption: admin can create digital coupons (code, discount type/value, validity window, usage limits), and users can apply a coupon at checkout (Stripe-enabled products) and/or have coupons awarded as loyalty rewards.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/shop/CouponBox.tsx",
-        "frontend/src/hooks/admin/useCoupons.ts",
-        "frontend/src/pages/ProductDetailPage.tsx",
-        "frontend/src/pages/admin/AdminCouponsPage.tsx",
-        "frontend/src/pages/admin/AdminLayout.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-9"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-a-loyalty-points-system-users-earn-points-from-purchases-and-other-actions-signing-up-visiting-sharing-points-are-tracked-per-user-and-points-can-be-converted-into-rewards-such-as-coupons-discounts-free-gifts-free-items-after-thresholds-configured-by-admin",
-      "featureTitle": "Implement a loyalty points system: users earn points from purchases and other actions (signing up, visiting, sharing), points are tracked per user, and points can be converted into rewards such as coupons/discounts/free gifts/free items after thresholds configured by admin.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/SiteHeader.tsx",
-        "frontend/src/components/loyalty/LoyaltyBadge.tsx",
-        "frontend/src/components/loyalty/ShareButton.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/admin/AdminLayout.tsx",
-        "frontend/src/pages/admin/AdminLoyaltyRewardsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-10"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-a-giveaway-system-oriented-around-livestreams-any-signed-in-user-can-be-added-as-an-entrant-by-username-identity-display-entrants-appear-on-an-admin-random-wheel-and-the-admin-can-trigger-a-random-spin-to-select-a-winner-the-system-records-winners-and-timestamps",
-      "featureTitle": "Implement a giveaway system oriented around livestreams: any signed-in user can be added as an entrant (by username/identity display), entrants appear on an admin “random wheel”, and the admin can trigger a random spin to select a winner; the system records winners and timestamps.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/giveaway/EnterGiveawayCard.tsx",
-        "frontend/src/hooks/giveaway/useGiveaways.ts",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-        "frontend/src/pages/admin/AdminLayout.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-11"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-public-portfolio-and-testimonials-pages-that-display-the-admin-managed-content-with-media-portfolio-images-including-interactive-ui-elements-e-g-filters-cards-modal-lightbox-viewing-for-portfolio-items-consistent-with-the-site-theme",
-      "featureTitle": "Implement public Portfolio and Testimonials pages that display the admin-managed content with media (portfolio images), including interactive UI elements (e.g., filters, cards, modal/lightbox viewing for portfolio items) consistent with the site theme.",
-      "files": [
-        "frontend/src/components/portfolio/PortfolioGrid.tsx",
-        "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-        "frontend/src/hooks/content/usePortfolio.ts",
-        "frontend/src/hooks/content/useTestimonials.ts",
-        "frontend/src/pages/PortfolioPage.tsx",
-        "frontend/src/pages/TestimonialsPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-12"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-support-media-uploads-for-admin-managed-entities-portfolio-images-product-images-by-storing-image-blobs-in-the-backend-and-serving-them-to-the-frontend-via-stable-urls-asset-endpoints-with-basic-limits-and-graceful-error-handling",
-      "featureTitle": "Support media uploads for admin-managed entities (portfolio images, product images) by storing image blobs in the backend and serving them to the frontend via stable URLs/asset endpoints, with basic limits and graceful error handling.",
-      "files": [
-        "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx",
-        "frontend/src/pages/admin/AdminPortfolioPage.tsx",
+        "frontend/src/components/products/AdminProductFormDialog.tsx",
+        "frontend/src/components/products/AdminProductsTable.tsx",
+        "frontend/src/hooks/admin/useAdminProducts.ts",
         "frontend/src/pages/admin/AdminProductsPage.tsx"
       ],
       "components": [
@@ -359,53 +22,18 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-13"
+        "REQ-16"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-explicit-location-service-constraints-messaging-across-shop-and-relevant-pages-highlight-ashland-westwood-area-of-kentucky-coordination-for-drop-off-pickup-for-physical-custom-in-person-jobs-and-no-shipping-by-default-ensure-fulfillment-settings-and-product-messaging-reflect-these-constraints",
-      "featureTitle": "Add explicit location/service constraints messaging across Shop and relevant pages: highlight Ashland/Westwood area of Kentucky, coordination for drop-off/pickup for physical/custom/in-person jobs, and “no shipping” by default; ensure fulfillment settings and product messaging reflect these constraints.",
+      "featureId": "feature-implement-a-user-facing-testimonial-creation-flow-on-the-public-testimonials-page-that-allows-a-signed-in-user-to-click-a-create-testimony-button-and-submit-a-1-5-star-review-using-mossy-green-glowing-stars-not-gold-and-ensure-testimonials-display-uses-the-same-mossy-green-star-styling",
+      "featureTitle": "Implement a user-facing testimonial creation flow on the public Testimonials page that allows a signed-in user to click a “Create Testimony” button and submit a 1–5 star review using mossy-green glowing stars (not gold), and ensure testimonials display uses the same mossy-green star styling.",
       "files": [
-        "frontend/src/components/shop/FulfillmentNotice.tsx",
-        "frontend/src/hooks/policies/usePolicies.ts",
-        "frontend/src/pages/HoursPoliciesPage.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx",
-        "frontend/src/pages/ShopPage.tsx",
-        "frontend/src/pages/admin/AdminPoliciesFulfillmentPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-14"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-frontend-static-asset-pipeline-for-generated-brand-imagery-logo-hero-background-textures-icons-stored-under-frontend-public-assets-generated-and-used-across-the-site-header-favicon-hero-sections-without-routing-images-through-the-backend",
-      "featureTitle": "Add a frontend static asset pipeline for generated brand imagery (logo/hero/background textures/icons) stored under frontend/public/assets/generated and used across the site (header/favicon/hero sections) without routing images through the backend.",
-      "files": [
-        "frontend/index.html",
-        "frontend/src/components/PageHeaderBanner.tsx",
-        "frontend/src/components/SiteHeader.tsx",
-        "frontend/src/components/TexturedSection.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/AboutPage.tsx",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/HoursPoliciesPage.tsx",
-        "frontend/src/pages/PortfolioPage.tsx",
-        "frontend/src/pages/ServicesPage.tsx",
-        "frontend/src/pages/ShopPage.tsx",
+        "frontend/index.css",
+        "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+        "frontend/src/components/testimonials/MossyStarRating.tsx",
+        "frontend/src/hooks/content/useTestimonials.ts",
         "frontend/src/pages/TestimonialsPage.tsx"
       ],
       "components": [
@@ -420,7 +48,82 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-15"
+        "REQ-17"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-replace-the-placeholder-admin-testimonials-page-with-an-admin-testimonials-management-ui-that-lets-the-admin-view-create-edit-and-delete-testimonials-including-rating-using-existing-backend-testimonial-apis-and-maintaining-consistent-mossy-green-glowing-star-styling-for-rating-controls",
+      "featureTitle": "Replace the placeholder Admin Testimonials page with an admin testimonials management UI that lets the admin view, create, edit, and delete testimonials (including rating), using existing backend testimonial APIs and maintaining consistent mossy-green glowing star styling for rating controls.",
+      "files": [
+        "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
+        "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+        "frontend/src/hooks/admin/useAdminTestimonials.ts",
+        "frontend/src/pages/admin/AdminTestimonialsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-18"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-replace-the-placeholder-admin-giveaways-page-with-a-giveaway-wheel-ui-for-admins-that-allows-selecting-an-active-giveaway-viewing-entrants-adding-entrants-as-admin-triggering-a-random-wheel-spin-animation-selecting-a-winner-and-displaying-winner-history-using-the-existing-backend-giveaway-apis",
+      "featureTitle": "Replace the placeholder Admin Giveaways page with a giveaway wheel UI for admins that allows selecting an active giveaway, viewing entrants, adding entrants as admin, triggering a random wheel spin animation, selecting a winner, and displaying winner history using the existing backend giveaway APIs.",
+      "files": [
+        "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
+        "frontend/src/hooks/admin/useAdminGiveaways.ts",
+        "frontend/src/pages/admin/AdminGiveawaysPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-19"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-replace-the-placeholder-admin-portfolio-page-with-a-portfolio-uploader-manager-ui-for-admins-that-supports-uploading-portfolio-media-setting-title-description-category-listing-existing-portfolio-items-and-editing-deleting-items-using-the-existing-backend-portfolio-and-blob-storage-apis-include-a-category-workflow-that-supports-a-dedicated-what-i-have-created-for-the-community-grouping",
+      "featureTitle": "Replace the placeholder Admin Portfolio page with a portfolio uploader/manager UI for admins that supports uploading portfolio media, setting title/description/category, listing existing portfolio items, and editing/deleting items using the existing backend portfolio and blob-storage APIs; include a category workflow that supports a dedicated “What I have created for the community” grouping.",
+      "files": [
+        "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+        "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
+        "frontend/src/components/portfolio/PortfolioGrid.tsx",
+        "frontend/src/hooks/admin/useAdminPortfolio.ts",
+        "frontend/src/pages/admin/AdminPortfolioPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-20"
       ],
       "confidence": "high"
     }

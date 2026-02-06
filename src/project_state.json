@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Build a full multi-page website for “The Creator of Side Quests” with a medieval-fantasy premium brand style, responsive/SEO-friendly UI, interactive elements, social link integration, and a full admin-managed platform including e-commerce (Stripe checkout + request-quote flow), portfolio/testimonials management, coupons, loyalty points/rewards, and a livestream-driven giveaway wheel system.",
+  "architectural_notes": [
+    "Admin panel is restricted to a single admin account (site owner).",
+    "Shop supports both Stripe checkout and an alternative request-quote/contact flow on selected products.",
+    "Customer login/accounts are needed to track loyalty points and to uniquely identify giveaway entrants by username.",
+    "Giveaway winner selection is performed via an admin-controlled random wheel populated from logged-in users.",
+    "Fulfillment/shipping options are configurable in admin; current operating mode is local coordination (no shipping) centered on Ashland/Westwood, KY."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Medieval-fantasy hero background with deep mossy greens, dark tones, subtle texture (hero-bg.dim_2400x1350.png)\n- Seamless parchment/stone textured background pattern in dark moss/charcoal palette (texture-tile.dim_1024x1024.png)\n- Elegant crest-style logo mark for “The Creator of Side Quests” (logo-crest.dim_512x512.png)\n- Small icon set in matching style: sword, quill, potion, compass (icons-set.dim_256x256.png)\n- Wide banner texture for page headers with subtle ornament and vignette (page-banner.dim_2400x600.png)",
+  "existing_features": [
+    {
+      "id": "feature-create-a-responsive-multi-page-marketing-website-for-the-creator-of-side-quests-with-the-following-routes-pages-and-user-facing-copy-in-english-based-on-the-provided-prompt-home-hero-with-headline-subheadline-ctas-quotes-about-bio-vision-mission-emission-quotes-services-categories-micro-services-starting-at-placeholders-ky-guidance-quotes-shop-portfolio-testimonials-contact-form-with-specified-fields-response-time-guidance-quotes-hours-policies-hours-payments-quotes-scope-licensing-returns-adjustments-local-service-area-anti-discrimination-quote-include-ctas-throughout-linking-to-contact-booking-and-shop-services-as-specified",
+      "title": "Create a responsive multi-page marketing website for “The Creator of Side Quests” with the following routes/pages and user-facing copy (in English) based on the provided prompt: Home (hero with headline/subheadline/CTAs/quotes), About (bio + vision/mission/emission + quotes), Services (categories + micro-services + “starting at” placeholders + KY guidance + quotes), Shop, Portfolio, Testimonials, Contact (form with specified fields + response-time guidance + quotes), Hours & Policies (hours, payments/quotes, scope/licensing, returns/adjustments, local service area, anti-discrimination + quote). Include CTAs throughout linking to Contact/booking and Shop/Services as specified.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-consistent-premium-medieval-fantasy-visual-theme-across-the-entire-frontend-using-deep-mossy-greens-and-dark-tones-elegant-serif-sans-serif-typography-pairing-subtle-textured-backgrounds-and-tasteful-motion-hover-effects-smooth-transitions-subtle-animations-while-keeping-content-energetic-readable-human-centered-and-approachable-neurodivergent-chaotic-but-professional-tone-do-not-use-a-blue-purple-primary-palette",
+      "title": "Apply a consistent premium medieval-fantasy visual theme across the entire frontend using deep mossy greens and dark tones, elegant serif + sans-serif typography pairing, subtle textured backgrounds, and tasteful motion (hover effects, smooth transitions, subtle animations) while keeping content energetic, readable, human-centered, and approachable (neurodivergent-chaotic but professional tone). Do not use a blue/purple primary palette.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-seo-friendly-structure-for-the-react-app-per-route-document-titles-and-meta-descriptions-derived-from-the-page-content-semantic-headings-one-h1-per-page-accessible-link-button-labeling-and-a-crawlable-internal-navigation-structure",
+      "title": "Implement SEO-friendly structure for the React app: per-route document titles and meta descriptions derived from the page content, semantic headings (one H1 per page), accessible link/button labeling, and a crawlable internal navigation structure.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-clickable-social-media-integration-as-icon-links-and-or-a-dedicated-section-that-can-be-configured-with-the-creator-s-profile-urls-enabling-users-to-click-out-to-message-or-view-content-on-platforms-instagram-facebook-tiktok-youtube",
+      "title": "Add clickable social media integration as icon links (and/or a dedicated section) that can be configured with the creator’s profile URLs, enabling users to click out to message or view content on platforms (Instagram, Facebook, TikTok, YouTube).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-internet-identity-authentication-for-users-customers-and-a-protected-admin-area-restrict-admin-access-to-a-single-admin-account-the-creator-using-an-allowlisted-internet-identity-principal-stored-in-backend-settings",
+      "title": "Implement Internet Identity authentication for users (customers) and a protected Admin area. Restrict Admin access to a single admin account (the creator) using an allowlisted Internet Identity principal stored in backend settings.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-panel-that-allows-the-admin-to-manage-portfolio-items-including-photo-upload-testimonials-create-edit-delete-shop-products-create-edit-delete-pricing-in-stock-out-of-stock-toggles-fulfillment-options-pickup-dropoff-delivery-toggles-and-policies-including-default-no-shipping-stance-but-configurable",
+      "title": "Create an Admin panel that allows the admin to manage: Portfolio items (including photo upload), Testimonials (create/edit/delete), Shop products (create/edit/delete), pricing, in-stock/out-of-stock toggles, fulfillment options (pickup/dropoff/delivery toggles), and policies (including default “no shipping” stance but configurable).",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-shop-experience-with-a-product-browsing-and-detail-views-b-stripe-checkout-for-eligible-products-supporting-debit-credit-digital-cards-and-c-a-per-product-request-quote-contact-to-purchase-option-that-routes-users-to-contact-and-or-social-links-instead-of-checkout-when-enabled",
+      "title": "Build a Shop experience with (a) product browsing and detail views, (b) Stripe checkout for eligible products supporting debit/credit/digital cards, and (c) a per-product “Request quote / Contact to purchase” option that routes users to Contact and/or social links instead of checkout when enabled.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-contact-quote-request-system-that-persists-submissions-from-the-contact-page-and-from-quote-only-product-flows-for-admin-review-including-the-specified-fields-name-email-project-type-timeline-budget-project-description-and-optional-linkage-to-a-product",
+      "title": "Implement a Contact/Quote request system that persists submissions (from the Contact page and from quote-only product flows) for admin review, including the specified fields (Name, Email, Project Type, Timeline, Budget, Project Description) and optional linkage to a product.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-coupon-creation-and-redemption-admin-can-create-digital-coupons-code-discount-type-value-validity-window-usage-limits-and-users-can-apply-a-coupon-at-checkout-stripe-enabled-products-and-or-have-coupons-awarded-as-loyalty-rewards",
+      "title": "Implement coupon creation and redemption: admin can create digital coupons (code, discount type/value, validity window, usage limits), and users can apply a coupon at checkout (Stripe-enabled products) and/or have coupons awarded as loyalty rewards.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-loyalty-points-system-users-earn-points-from-purchases-and-other-actions-signing-up-visiting-sharing-points-are-tracked-per-user-and-points-can-be-converted-into-rewards-such-as-coupons-discounts-free-gifts-free-items-after-thresholds-configured-by-admin",
+      "title": "Implement a loyalty points system: users earn points from purchases and other actions (signing up, visiting, sharing), points are tracked per user, and points can be converted into rewards such as coupons/discounts/free gifts/free items after thresholds configured by admin.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-giveaway-system-oriented-around-livestreams-any-signed-in-user-can-be-added-as-an-entrant-by-username-identity-display-entrants-appear-on-an-admin-random-wheel-and-the-admin-can-trigger-a-random-spin-to-select-a-winner-the-system-records-winners-and-timestamps",
+      "title": "Implement a giveaway system oriented around livestreams: any signed-in user can be added as an entrant (by username/identity display), entrants appear on an admin “random wheel”, and the admin can trigger a random spin to select a winner; the system records winners and timestamps.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-public-portfolio-and-testimonials-pages-that-display-the-admin-managed-content-with-media-portfolio-images-including-interactive-ui-elements-e-g-filters-cards-modal-lightbox-viewing-for-portfolio-items-consistent-with-the-site-theme",
+      "title": "Implement public Portfolio and Testimonials pages that display the admin-managed content with media (portfolio images), including interactive UI elements (e.g., filters, cards, modal/lightbox viewing for portfolio items) consistent with the site theme.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-support-media-uploads-for-admin-managed-entities-portfolio-images-product-images-by-storing-image-blobs-in-the-backend-and-serving-them-to-the-frontend-via-stable-urls-asset-endpoints-with-basic-limits-and-graceful-error-handling",
+      "title": "Support media uploads for admin-managed entities (portfolio images, product images) by storing image blobs in the backend and serving them to the frontend via stable URLs/asset endpoints, with basic limits and graceful error handling.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-explicit-location-service-constraints-messaging-across-shop-and-relevant-pages-highlight-ashland-westwood-area-of-kentucky-coordination-for-drop-off-pickup-for-physical-custom-in-person-jobs-and-no-shipping-by-default-ensure-fulfillment-settings-and-product-messaging-reflect-these-constraints",
+      "title": "Add explicit location/service constraints messaging across Shop and relevant pages: highlight Ashland/Westwood area of Kentucky, coordination for drop-off/pickup for physical/custom/in-person jobs, and “no shipping” by default; ensure fulfillment settings and product messaging reflect these constraints.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-frontend-static-asset-pipeline-for-generated-brand-imagery-logo-hero-background-textures-icons-stored-under-frontend-public-assets-generated-and-used-across-the-site-header-favicon-hero-sections-without-routing-images-through-the-backend",
+      "title": "Add a frontend static asset pipeline for generated brand imagery (logo/hero/background textures/icons) stored under frontend/public/assets/generated and used across the site (header/favicon/hero sections) without routing images through the backend.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Multi-page website (Home, About, Services, Shop, Portfolio, Testimonials, Contact, Hours & Policies) with provided copy, CTAs, quotes, and side-quest messaging",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Medieval-fantasy premium UI theme (deep mossy greens/dark tones, textured backgrounds, serif/sans typography) with subtle animations, flippable cards, hover effects, smooth transitions, immersive layouts",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Fully responsive (desktop/tablet/mobile) and SEO-friendly layout/copy",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Clickable social media integration (icons/links to user-provided profiles for messaging/content)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Shop with product listings and Stripe checkout (debit/credit/digital cards), plus per-product option for “request quote/contact to purchase” instead of checkout",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Admin panel (single admin account) to manage portfolio items (photo uploads) and testimonials content",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Admin panel inventory & product management: prices, photos, in-stock/out-of-stock toggles, fulfillment options (pickup/dropoff/delivery toggles), and configurable policies (no shipping currently)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Coupon system: admin-created digital coupons usable as rewards/discounts",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "User accounts/login for customers to support loyalty points tracking and giveaway entry identity (username-based)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Loyalty points system: earn points via purchases and other actions (signup/visiting/sharing) with conversion to rewards (coupons/discounts/free gifts/free items after thresholds)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Giveaway system: logged-in usernames added to a random wheel in admin panel; admin triggers wheel spin to randomly select winner; designed for livestream giveaways",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Location/service constraints content + logic: Ashland/Westwood, Kentucky focus; coordinate drop-off/pickup for physical/custom/3D-print/Cricut and in-person jobs; no shipping by default but adjustable in admin",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "The Creator of Side Quests",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

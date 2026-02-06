@@ -1,0 +1,333 @@
+{
+  "kind": "build_request",
+  "title": "Creator of Side Quests: multi-page brand site with admin-managed shop (Stripe + quote), portfolio/testimonials CMS, coupons, loyalty points, and giveaway wheel",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Create a responsive multi-page marketing website for “The Creator of Side Quests” with the following routes/pages and user-facing copy (in English) based on the provided prompt: Home (hero with headline/subheadline/CTAs/quotes), About (bio + vision/mission/emission + quotes), Services (categories + micro-services + “starting at” placeholders + KY guidance + quotes), Shop, Portfolio, Testimonials, Contact (form with specified fields + response-time guidance + quotes), Hours & Policies (hours, payments/quotes, scope/licensing, returns/adjustments, local service area, anti-discrimination + quote). Include CTAs throughout linking to Contact/booking and Shop/Services as specified.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-4"
+        ],
+        "quotes": [
+          "Create a fully functional, free website for The Creator of Side Quests...",
+          "Multi-page structure: Homepage, About, Services, Shop, Contact, Hours & Policies, Portfolio, Testimonials."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Navigation allows reaching Home, About, Services, Shop, Portfolio, Testimonials, Contact, Hours & Policies, and Admin pages.",
+        "Home page includes the specified headline “Side quests accepted. Main quests optional.”, subheadline, primary CTA “Start Your Side Quest”, secondary CTA “Explore Services & Creations”, and the listed quotes.",
+        "About page includes Joseph Fitchpatrick (aka Joe/Willow) intro and vision/mission/emission statements and the listed quotes.",
+        "Services page includes all listed service categories, customization messaging, quotes, and Kentucky-specific sales tax/occupational license guidance.",
+        "Contact page includes fields: Name, Email, Project Type, Timeline, Budget, Project Description, plus 24–72 hours response-time guidance.",
+        "Hours & Policies page contains all specified sections including anti-discrimination policy and the quote “Creative work is built on trust, clarity, and communication.”",
+        "All pages render correctly on mobile, tablet, and desktop without layout breakage."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Apply a consistent premium medieval-fantasy visual theme across the entire frontend using deep mossy greens and dark tones, elegant serif + sans-serif typography pairing, subtle textured backgrounds, and tasteful motion (hover effects, smooth transitions, subtle animations) while keeping content energetic, readable, human-centered, and approachable (neurodivergent-chaotic but professional tone). Do not use a blue/purple primary palette.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "...sleek, chic, medieval-fantasy, premium feel, using deep mossy greens, dark tones, elegant serif/sans-serif typography, textured backgrounds, subtle animations..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All pages share a cohesive color system dominated by deep mossy greens and dark neutrals, with consistent typography (one serif and one sans-serif).",
+        "Interactive elements (buttons/cards/nav items) have smooth hover/focus/active states and reduced-motion is respected when possible.",
+        "At least one section on the Home page uses an immersive textured background and at least one set of flippable cards is implemented."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement SEO-friendly structure for the React app: per-route document titles and meta descriptions derived from the page content, semantic headings (one H1 per page), accessible link/button labeling, and a crawlable internal navigation structure.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "SEO-friendly layout and copy."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each route sets a unique document title and meta description.",
+        "Each page uses semantic headings with a single H1.",
+        "Lighthouse SEO and Accessibility checks show no critical issues related to missing titles, missing labels, or heading order."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Add clickable social media integration as icon links (and/or a dedicated section) that can be configured with the creator’s profile URLs, enabling users to click out to message or view content on platforms (Instagram, Facebook, TikTok, YouTube).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-3",
+          "msg-4"
+        ],
+        "quotes": [
+          "Social media integration (Instagram, Facebook, TikTok, YouTube).",
+          "I will provide you with my social media links so they are clickable so people can go to them and message me there or watch my content there!"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Frontend displays social icons/links in a consistent location (e.g., header/footer and/or Contact page).",
+        "Admin can set/update the social URLs without code changes (stored in backend).",
+        "All social links open in a new tab and are keyboard accessible."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement Internet Identity authentication for users (customers) and a protected Admin area. Restrict Admin access to a single admin account (the creator) using an allowlisted Internet Identity principal stored in backend settings.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "One admin account should exist which is mine"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Unauthenticated users can browse public pages; signing in uses Internet Identity.",
+        "Admin routes are blocked unless the signed-in principal matches the configured admin principal.",
+        "Backend enforces admin-only mutations regardless of frontend checks.",
+        "A settings mechanism exists to set the admin principal (initially via a backend method callable once or via an admin-only action)."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Create an Admin panel that allows the admin to manage: Portfolio items (including photo upload), Testimonials (create/edit/delete), Shop products (create/edit/delete), pricing, in-stock/out-of-stock toggles, fulfillment options (pickup/dropoff/delivery toggles), and policies (including default “no shipping” stance but configurable).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "...create a portfolio's page and an admin page... add photos directly to the portfolio page / testimonies page...",
+          "...upload photos prices and products in stock out of stock buttons drop off pick up delivery etc etc within the admin panel..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can create/update/delete Portfolio items and upload at least one image per item.",
+        "Admin can create/update/delete Testimonials (author/name, optional handle, content, optional rating).",
+        "Admin can create/update/delete Products with fields including: name, description, price, images, stock status, and fulfillment toggles (pickup/dropoff/delivery/shipping).",
+        "Shop page reflects admin changes immediately after refresh (or via query invalidation).",
+        "A global policy/config screen allows setting defaults (e.g., shipping disabled by default) and Ashland/Westwood KY coordination messaging."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Build a Shop experience with (a) product browsing and detail views, (b) Stripe checkout for eligible products supporting debit/credit/digital cards, and (c) a per-product “Request quote / Contact to purchase” option that routes users to Contact and/or social links instead of checkout when enabled.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...use stripe for payments all debit credit and digital cards are valid... along with a purchase/request quotes on certain products instead of going through the checkout system..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Products can be flagged as “Stripe checkout” and/or “Request quote” (both supported as configured).",
+        "Stripe checkout flow can be initiated from the Shop UI for Stripe-enabled products.",
+        "Quote-only products clearly show a primary action to request a quote/contact (no checkout required).",
+        "Orders/checkout attempts are recorded (at minimum: product, buyer principal, amount, timestamp, status) in the backend.",
+        "No shipping is required to complete checkout; fulfillment guidance is shown for local pickup/dropoff coordination."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Implement a Contact/Quote request system that persists submissions (from the Contact page and from quote-only product flows) for admin review, including the specified fields (Name, Email, Project Type, Timeline, Budget, Project Description) and optional linkage to a product.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-2",
+          "msg-6"
+        ],
+        "quotes": [
+          "Fields: Name, Email, Project Type, Timeline, Budget, Project Description.",
+          "...they can contact me directly... but they can also request them on the website..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Submitting the contact form creates a stored ContactRequest entry in the backend.",
+        "Admin panel lists contact/quote requests with timestamps and optional associated product.",
+        "Form validates required fields and shows a success state on completion."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Implement coupon creation and redemption: admin can create digital coupons (code, discount type/value, validity window, usage limits), and users can apply a coupon at checkout (Stripe-enabled products) and/or have coupons awarded as loyalty rewards.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "...admin panel I can also create coupons digital coupons..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can create, update, disable, and delete coupons.",
+        "Users can apply a coupon code in the checkout flow (where applicable) and see the discount reflected before payment.",
+        "Coupon usage is validated server-side (active, not expired, within usage limits)."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Implement a loyalty points system: users earn points from purchases and other actions (signing up, visiting, sharing), points are tracked per user, and points can be converted into rewards such as coupons/discounts/free gifts/free items after thresholds configured by admin.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...points should convert into rewards coupons free gifts free items after so many items purchased etc etc!",
+          "...points be earned... signing up, visiting, sharing..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each signed-in user has a points balance and a points activity/ledger view (at least in the admin panel; user view is preferred).",
+        "Points are awarded for: account sign-in/sign-up event, daily/visit event (rate-limited), explicit “share” button click events, and completed purchases.",
+        "Admin can configure point rules and reward thresholds (e.g., X points => award coupon Y).",
+        "Reward issuance is recorded and cannot be duplicated accidentally (idempotent)."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Implement a giveaway system oriented around livestreams: any signed-in user can be added as an entrant (by username/identity display), entrants appear on an admin “random wheel”, and the admin can trigger a random spin to select a winner; the system records winners and timestamps.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...any person that logs in their username will get added to a random wheel in the admin panel and when I click that wheel it will randomly select a username and that person will win the giveaway...",
+          "...through YouTube live streams tiktok live streams Facebook live streams Instagram live streams..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can create a giveaway event with a name and status (draft/active/closed).",
+        "When a giveaway is active, signed-in users can be added as entrants (automatically on login and/or via a clear user action; must be configurable).",
+        "Admin UI shows a wheel-style selector and a “Spin” action that randomly picks an entrant.",
+        "Winner is persisted (giveawayId, user, timestamp) and displayed in admin history.",
+        "Entrant list prevents duplicate entries for the same user within the same giveaway unless admin explicitly allows it."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Implement public Portfolio and Testimonials pages that display the admin-managed content with media (portfolio images), including interactive UI elements (e.g., filters, cards, modal/lightbox viewing for portfolio items) consistent with the site theme.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "...create a portfolio's page... testimonies page... add photos directly to the portfolio page / testimonies page..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Portfolio page lists items added in admin and supports viewing item details; images render correctly.",
+        "Testimonials page lists testimonials added in admin and renders well on mobile/desktop.",
+        "At least one interactive element exists on these pages (e.g., filter chips, card flip, or lightbox)."
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Support media uploads for admin-managed entities (portfolio images, product images) by storing image blobs in the backend and serving them to the frontend via stable URLs/asset endpoints, with basic limits and graceful error handling.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "...admin page I can add photos directly to the portfolio page... upload photos..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Admin can upload at least JPG/PNG images for products and portfolio items.",
+        "Uploaded images persist across refreshes and can be displayed in Shop/Portfolio without manual intervention.",
+        "If an upload exceeds configured limits, the UI shows a clear error message and does not corrupt state."
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "text": "Add explicit location/service constraints messaging across Shop and relevant pages: highlight Ashland/Westwood area of Kentucky, coordination for drop-off/pickup for physical/custom/in-person jobs, and “no shipping” by default; ensure fulfillment settings and product messaging reflect these constraints.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "...coordinate a time and a place for me within the Ashland Westwood area of kentucky!",
+          "So no shipping or delivery but those should still be implemented and can be tweaked in the admin panel!"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Shop product pages clearly communicate local coordination expectations when shipping is disabled.",
+        "Admin can toggle fulfillment modes; when shipping is disabled, UI does not present shipping as available.",
+        "Hours & Policies and/or Shop includes Ashland/Westwood KY local service area text."
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "text": "Add a frontend static asset pipeline for generated brand imagery (logo/hero/background textures/icons) stored under frontend/public/assets/generated and used across the site (header/favicon/hero sections) without routing images through the backend.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-2"
+        ],
+        "quotes": [
+          "Hero visuals: immersive medieval-fantasy inspired background... textured backgrounds..."
+        ]
+      },
+      "acceptanceCriteria": [
+        "All generated images are committed under frontend/public/assets/generated and referenced directly by the frontend.",
+        "Site header uses the generated logo; Home hero uses the generated hero background texture/image.",
+        "No backend endpoint is required to serve these static assets."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor (all logic in backend main actor file).",
+    "Do not edit files under frontend/src/components/ui (compose them only).",
+    "Do not edit immutable frontend hook paths (frontend/src/hooks/useInternetIdentity.ts, .tsx, and frontend/src/hooks/useActor.ts, frontend/src/main.tsx); integrate by composition/wrapping only.",
+    "No external databases or third-party auth providers; authentication must use Internet Identity.",
+    "No WebSockets/real-time chat; giveaway and points updates are driven by standard requests and polling/invalidation where needed."
+  ],
+  "nonGoals": [
+    "Embedded social media feeds via platform APIs (Instagram/TikTok/Facebook API integrations).",
+    "Shipping label purchasing, carrier integrations, or real-world logistics automation.",
+    "Multi-admin roles/permissions (single admin account only).",
+    "Advanced CMS features like versioning, approvals, or scheduled publishing.",
+    "Internationalization (non-English UI)."
+  ],
+  "imageRequirements": {
+    "required": [
+      "Medieval-fantasy hero background with deep mossy greens, dark tones, subtle texture (hero-bg.dim_2400x1350.png)",
+      "Seamless parchment/stone textured background pattern in dark moss/charcoal palette (texture-tile.dim_1024x1024.png)",
+      "Elegant crest-style logo mark for “The Creator of Side Quests” (logo-crest.dim_512x512.png)",
+      "Small icon set in matching style: sword, quill, potion, compass (icons-set.dim_256x256.png)",
+      "Wide banner texture for page headers with subtle ornament and vignette (page-banner.dim_2400x600.png)"
+    ],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

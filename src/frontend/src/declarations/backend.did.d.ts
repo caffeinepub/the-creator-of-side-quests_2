@@ -240,6 +240,7 @@ export interface _SERVICE {
   'verifyAdminCodeStep1' : ActorMethod<[string], boolean>,
   'verifyAdminCodeStep2' : ActorMethod<[string], boolean>,
   'verifyAdminCodeStep3' : ActorMethod<[string], boolean>,
+  'verifyAdminMasterOverride' : ActorMethod<[string], boolean>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

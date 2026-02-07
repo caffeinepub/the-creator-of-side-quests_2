@@ -287,6 +287,7 @@ export const idlService = IDL.Service({
   'verifyAdminCodeStep1' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'verifyAdminCodeStep2' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'verifyAdminCodeStep3' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'verifyAdminMasterOverride' : IDL.Func([IDL.Text], [IDL.Bool], []),
 });
 
 export const idlInitArgs = [];
@@ -565,6 +566,7 @@ export const idlFactory = ({ IDL }) => {
     'verifyAdminCodeStep1' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'verifyAdminCodeStep2' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'verifyAdminCodeStep3' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'verifyAdminMasterOverride' : IDL.Func([IDL.Text], [IDL.Bool], []),
   });
 };
 

@@ -327,6 +327,7 @@ export interface backendInterface {
     verifyAdminCodeStep1(code: string): Promise<boolean>;
     verifyAdminCodeStep2(code: string): Promise<boolean>;
     verifyAdminCodeStep3(code: string): Promise<boolean>;
+    verifyAdminMasterOverride(code: string): Promise<boolean>;
 }
 import type { ContactRequest as _ContactRequest, Coupon as _Coupon, CouponType as _CouponType, ExternalBlob as _ExternalBlob, Giveaway as _Giveaway, GiveawayWinner as _GiveawayWinner, LoyaltyAction as _LoyaltyAction, PortfolioItem as _PortfolioItem, Product as _Product, StripeSessionStatus as _StripeSessionStatus, Testimonial as _Testimonial, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -1214,6 +1215,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.verifyAdminCodeStep3(arg0);
+            return result;
+        }
+    }
+    async verifyAdminMasterOverride(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyAdminMasterOverride(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyAdminMasterOverride(arg0);
             return result;
         }
     }

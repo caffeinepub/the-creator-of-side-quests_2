@@ -55,7 +55,7 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Authentication Required</AlertTitle>
           <AlertDescription>
-            You must be logged in to access the admin panel. However, logging in alone does not grant admin access. Admin access requires completing a separate three-step verification process.
+            You must be logged in to access the admin panel. Admin access requires completing a three-step verification process after login.
           </AlertDescription>
         </Alert>
         <div className="mt-4">
@@ -85,7 +85,7 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
           <XCircle className="h-4 w-4" />
           <AlertTitle>Unable to Verify Access Status</AlertTitle>
           <AlertDescription>
-            Could not verify your admin access status. Please try again later or contact support if the issue persists.
+            Could not verify your admin access status. Please try again later.
           </AlertDescription>
         </Alert>
         <div className="mt-4">
@@ -105,7 +105,7 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
             <XCircle className="h-4 w-4" />
             <AlertTitle>Admin Access Permanently Locked</AlertTitle>
             <AlertDescription>
-              Your account has been permanently locked out of admin access due to too many failed verification attempts. This action cannot be reversed. You still have full access to all non-admin website features.
+              Your account has been permanently locked out of admin access due to too many failed verification attempts. You still have full access to all non-admin website features.
             </AlertDescription>
           </Alert>
           <div className="mt-4">
@@ -139,7 +139,7 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
           <XCircle className="h-4 w-4" />
           <AlertTitle>Unable to Verify Admin Session</AlertTitle>
           <AlertDescription>
-            Could not verify your admin session. Please try again later or contact support if the issue persists.
+            Could not verify your admin session. Please try again later.
           </AlertDescription>
         </Alert>
         <div className="mt-4">

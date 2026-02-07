@@ -1,78 +1,71 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T04:08:32.975Z",
-  "summary": "Diff implements QA checklist + smoke tests (REQ-58) and several responsive/layout fixes (parts of REQ-57). LoginButton gained user-facing error toasts and error-message mapping (partial REQ-55). However, there is no clear implementation of a timeout/recovery path for a potentially stuck “Logging in...” state, async login errors may not be caught by the new try/catch, and multiple new console.error logs may violate the “no secrets/tokens logged” requirement. Actor initialization hardening (REQ-56) is only partially evidenced (AdminRouteGuard error states + url param helpers), but no direct evidence shows actor init hooks were hardened.",
+  "generatedAt": "2026-02-07T06:02:17.961Z",
+  "summary": "Diff implements a three-step admin verification gate in the frontend and introduces backend state/session checks and lockout handling, but the diff summary does not show the required backend credential replacement/secret handling (hashed storage, master override replacement, upgrade-safe migration/rotation). It also appears to include many unrelated frontend/marketing/theme/SEO changes not requested by the BuildRequest.",
   "missing_requirements": [
     {
-      "id": "REQ-55",
-      "requirement": "The login flow must not leave the Login button indefinitely stuck in “Logging in...” and must recover to an actionable state via failure/timeout handling.",
-      "reason": "LoginButton only disables based on `loginStatus === 'logging-in'` and shows toasts if `loginError` appears, but no explicit timeout/recovery logic is shown in the diff to guarantee it cannot remain stuck indefinitely.",
+      "id": "REQ-62",
+      "requirement": "Backend must require Code #1 then Code #2 then Code #3 (in order) using newly provided code values, and accept only the new Master Override Code (reject prior codes).",
+      "reason": "The diff summary shows frontend calling backend methods like verifyAdminCodeStep1/2/3 and verifyAdminMasterOverride, but the backend diff excerpt does not include any implementation of the new codes themselves, any validation logic tied to the newly provided code values, nor any evidence that the previous master override credential is rejected in favor of a new one.",
       "evidence": [
-        "frontend/src/components/auth/LoginButton.tsx"
+        "backend/main.mo",
+        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts"
       ]
     },
     {
-      "id": "REQ-55",
-      "requirement": "No secrets or sensitive tokens are logged to the browser console as part of any new error handling.",
-      "reason": "The diff includes new/remaining `console.error(...)` statements that log the raw error object, which may contain sensitive information depending on the thrown error contents.",
+      "id": "REQ-63",
+      "requirement": "Treat Code #1/#2/#3 and Master Override Code as secrets: do not embed plaintext in frontend, do not log them, and store/validate server-side in a rotation-suitable way (e.g., hashes), not persisted in plaintext stable state.",
+      "reason": "No evidence in the backend excerpt that codes are stored/validated as hashed/derived representations or that plaintext is never persisted in stable state. The frontend changes do not show plaintext constants (good), but backend secret-storage requirements are not evidenced in the shown diff.",
       "evidence": [
-        "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx"
+        "backend/main.mo",
+        "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
+        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx"
       ]
     },
     {
-      "id": "REQ-55",
-      "requirement": "Provide clear user-facing error handling when the auth popup cannot be opened or the auth session fails (no silent failure).",
-      "reason": "LoginButton adds toast-based user messaging, but in CreateTestimonyDialog the login failure path only logs to console and does not show a user-facing English error, which can still result in a silent failure from the user perspective.",
+      "id": "REQ-65",
+      "requirement": "Upgrade-safe initialization/migration to update existing deployments to the newly provided Code #1/#2/#3 and Master Override Code without needing old codes, preserving permanent lockout state and invalidating in-progress sessions.",
+      "reason": "No backend upgrade/migration logic is shown (no backend/migration.mo added; no preupgrade/postupgrade logic evidenced). While a stable map for adminVerificationStates is shown, the requirements also include forced credential replacement to the new codes and invalidation of existing sessions on upgrade, which are not evidenced in the diff excerpt.",
       "evidence": [
-        "frontend/src/components/testimonials/CreateTestimonyDialog.tsx"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-55",
-      "requirement": "Login button click initiates Internet Identity login successfully across major browsers with resilient error handling.",
-      "reason": "LoginButton wraps `login()` in try/catch but does not `await` it; if `login()` is async and rejects, the catch will not capture the failure. The error toast relies on `loginError` being set elsewhere, but the diff does not show a resilience mechanism for async rejection at the call site.",
+      "id": "REQ-66",
+      "requirement": "Verification Code Management page must continue to require the Master Override Code before allowing code rotation.",
+      "reason": "The management page marks the user as verified (enabling rotation UI) after only a non-empty input check (“Actual verification happens when saving”). This does not strictly ‘require’ master override verification before enabling rotation; it only requires entering something. Backend verification may still occur on save, but the AC is about UX behavior gating rotation behind master override verification.",
       "evidence": [
-        "frontend/src/components/auth/LoginButton.tsx"
-      ]
-    },
-    {
-      "id": "REQ-56",
-      "requirement": "Harden actor initialization so that cross-browser differences or URL-parameter/session behaviors cannot break authenticated or anonymous app usage, and ensure actor access-control init failures do not crash the app.",
-      "reason": "While url parameter utilities and AdminRouteGuard graceful error states were modified, the diff summary provides no direct evidence of changes to the actor initialization hooks/logic themselves (e.g., the actor setup that uses admin token URL params) to ensure it cannot crash the app or break navigation.",
-      "evidence": [
-        "frontend/src/utils/urlParams.ts",
-        "frontend/src/components/auth/AdminRouteGuard.tsx"
+        "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/introduced a new admin route for managing verification codes (/admin/verification-codes).",
-      "reason": "This is a new app feature unrelated to the requested cross-browser login stability, actor init hardening, responsive layout, or QA coverage.",
+      "description": "Large set of unrelated frontend/marketing/SEO/theme changes (site layout/header/footer, social icons, textured sections, flip cards, SEO meta hooks, global styles, Tailwind theme changes, homepage/about/services/shop content edits).",
+      "reason": "Non-goals explicitly say not to change unrelated marketing-site content beyond what is necessary for admin authentication replacement. The diff summary (frontend-file-summaries.txt) lists many non-auth changes across public pages and styling.",
       "evidence": [
-        "frontend-file-summaries.txt (mentions: \"frontend/src/App.tsx\" includes new /admin/verification-codes route)"
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Addition of extensive medieval-fantasy styling/theme updates and SEO meta handling unrelated to admin authentication replacement.",
+      "reason": "Not requested in REQ-62..REQ-66, and conflicts with the constraint to avoid unrelated marketing-site changes.",
+      "evidence": [
+        "frontend-file-summaries.txt"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/QA-CHECKLIST.md",
-    "frontend/index.css",
-    "frontend/src/App.smoke.test.tsx",
-    "frontend/src/components/SiteHeader.tsx",
     "frontend/src/components/auth/AdminRouteGuard.tsx",
-    "frontend/src/components/auth/LoginButton.smoke.test.tsx",
-    "frontend/src/components/auth/LoginButton.tsx",
-    "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-    "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-    "frontend/src/pages/ContactPage.tsx",
-    "frontend/src/pages/ProductDetailPage.tsx",
-    "frontend/src/utils/authErrorMessages.ts",
-    "frontend/src/utils/urlParams.ts",
+    "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+    "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+    "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
+    "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx",
+    "frontend/src/utils/adminSharedCodeSession.ts",
     "project_state.json"
   ]
 }

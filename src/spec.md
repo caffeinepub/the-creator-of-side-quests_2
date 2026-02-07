@@ -1,15 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Make the Internet Identity login flow reliable across major browsers and ensure the site remains responsive and usable across common device sizes, with clear error handling and lightweight regression coverage.
+**Goal:** Replace the current admin authentication with a server-side three-step verification (Code #1 → Code #2 → Code #3) and a new Master Override Code for admin code rotation, while keeping all admin routes and admin-only actions fully protected.
 
 **Planned changes:**
-- Improve the Login button’s Internet Identity popup/session handling to work reliably on Chrome, Firefox, Safari, and Opera/Opera GX, including clear user-facing error messages when popup/session establishment fails.
-- Ensure the login UI never stays stuck in a “Logging in...” state by adding recovery/timeout paths that return the UI to an actionable state (e.g., retry).
-- Harden actor/access-control initialization so missing/blocked/cleared URL parameters or session differences do not crash the app; handle failures gracefully and keep public pages usable.
-- Ensure logout reliably clears session state without breaking subsequent usage across target browsers.
-- Audit and adjust responsive UI behavior across key pages and flows (header navigation + mobile hamburger menu, forms, dialogs/modals, Shop/Contact/Testimonials/Admin guard screens) to prevent overflow and improve usability on phones/tablets/desktops.
-- Add an in-repo cross-browser QA checklist (manual steps) for Chrome, Firefox, Safari, and Opera/Opera GX covering login and critical navigation.
-- Add at least one automated smoke check (supported by existing project tooling) to verify basic render/navigation and that invoking Login does not hard-crash the UI.
+- Update backend admin verification to require completing Code #1, then Code #2, then Code #3 in exact order to obtain an admin session, and accept only the newly provided Master Override Code for master-override verification and code rotation.
+- Treat all codes as secrets end-to-end: ensure no plaintext codes are embedded in the frontend bundle, returned in responses, or logged; store/validate server-side in a rotation-suitable way (non-plaintext stable representation).
+- Preserve protection of all `/admin` routes and admin-only backend mutations behind the admin verification session; keep non-admin/public features unchanged.
+- Add upgrade-safe migration/initialization so existing deployments switch to the new codes without needing old codes, invalidate in-progress admin verification sessions, and preserve any permanent lockout state.
+- Update frontend admin verification UX copy to reflect 3 ordered steps (Step 1/3, 2/3, 3/3) and Master Override Code usage for code rotation, without referencing any retired authentication mechanism.
 
-**User-visible outcome:** Users can click “Login” and complete Internet Identity authentication across major browsers; if login can’t start or fails, they see a clear English error and can retry. The site remains usable (including on mobile/tablet), navigation and dialogs work without layout breakage, and there’s basic QA/smoke coverage to reduce regressions.
+**User-visible outcome:** Admin users see an ordered 3-step verification gate before accessing any admin pages, and the verification code management flow requires the Master Override Code to rotate codes; admin content remains inaccessible without a valid verified admin session.

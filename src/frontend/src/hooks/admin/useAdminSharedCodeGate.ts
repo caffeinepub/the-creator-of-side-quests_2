@@ -24,7 +24,7 @@ export function useVerifyAdminCodeStep1() {
       if (!actor) throw new Error('Actor not available');
       const result = await actor.verifyAdminCodeStep1(code);
       if (!result) {
-        throw new Error('Incorrect code. Please try again.');
+        throw new Error('Verification failed');
       }
       return result;
     },
@@ -51,7 +51,7 @@ export function useVerifyAdminCodeStep2() {
       if (!actor) throw new Error('Actor not available');
       const result = await actor.verifyAdminCodeStep2(code);
       if (!result) {
-        throw new Error('Incorrect code. Please try again.');
+        throw new Error('Verification failed');
       }
       return result;
     },
@@ -78,7 +78,34 @@ export function useVerifyAdminCodeStep3() {
       if (!actor) throw new Error('Actor not available');
       const result = await actor.verifyAdminCodeStep3(code);
       if (!result) {
-        throw new Error('Incorrect code. Please try again.');
+        throw new Error('Verification failed');
+      }
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
+    },
+    onError: () => {
+      // Invalidate lockout-related queries on error to immediately reflect lockout state
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
+      queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
+    },
+  });
+}
+
+export function useVerifyAdminMasterOverride() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (code: string) => {
+      if (!actor) throw new Error('Actor not available');
+      const result = await actor.verifyAdminMasterOverride(code);
+      if (!result) {
+        throw new Error('Verification failed');
       }
       return result;
     },

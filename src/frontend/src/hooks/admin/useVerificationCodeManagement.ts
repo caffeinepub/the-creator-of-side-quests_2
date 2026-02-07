@@ -20,14 +20,14 @@ export function useRotateVerificationCodes() {
       await actor.updateWithMasterOverride(masterOverride, newCode1, newCode2, newCode3);
     },
     onSuccess: () => {
-      toast.success('Verification codes updated successfully');
+      toast.success('Verification codes updated successfully. All admin sessions have been cleared.');
       // Clear all admin session-related queries since backend clears all sessions
       queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
       queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
     },
-    onError: (error: any) => {
+    onError: () => {
       // Generic error message without exposing sensitive details
-      toast.error('Verification failed');
+      toast.error('Unable to update codes. Please verify your Master Override Code is correct.');
     },
   });
 }
@@ -43,14 +43,14 @@ export function useUpdateMasterOverride() {
       await actor.updateMasterOverride(currentMasterOverride, newMasterOverride);
     },
     onSuccess: () => {
-      toast.success('Master Override Code updated successfully');
+      toast.success('Master Override Code updated successfully. All admin sessions have been cleared.');
       // Clear all admin session-related queries since backend clears all sessions
       queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
       queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
     },
-    onError: (error: any) => {
+    onError: () => {
       // Generic error message without exposing sensitive details
-      toast.error('Verification failed');
+      toast.error('Unable to update Master Override Code. Please verify your current code is correct.');
     },
   });
 }

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ShieldCheck, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle2, AlertCircle, Key } from 'lucide-react';
 import { useRotateVerificationCodes } from '@/hooks/admin/useVerificationCodeManagement';
 
 export default function AdminVerificationCodeManagementPage() {
@@ -26,7 +26,8 @@ export default function AdminVerificationCodeManagementPage() {
       return;
     }
 
-    // Verify by attempting to use it (we'll validate on save)
+    // Mark as verified to enable code input fields
+    // Actual verification happens when saving
     setIsVerified(true);
   };
 
@@ -62,7 +63,7 @@ export default function AdminVerificationCodeManagementPage() {
       <div>
         <h1 className="font-serif text-3xl font-bold">Verification Code Management</h1>
         <p className="mt-2 text-muted-foreground">
-          Manage the three-step admin verification codes used to access the admin panel.
+          Manage the three-step admin verification codes. The Master Override Code is required to rotate Codes #1, #2, and #3.
         </p>
       </div>
 
@@ -71,22 +72,88 @@ export default function AdminVerificationCodeManagementPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5" />
-            Master Override Code
+            Master Override Verification
           </CardTitle>
           <CardDescription>
-            Enter the Master Override Code to unlock code management
+            Enter the Master Override Code to unlock code rotation. This code bypasses all three verification steps and is required to change Codes #1, #2, and #3.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="masterOverride">Master Override Code</Label>
+            <Label htmlFor="master-override">Master Override Code</Label>
             <Input
-              id="masterOverride"
+              id="master-override"
               type="password"
               value={masterOverrideCode}
               onChange={(e) => setMasterOverrideCode(e.target.value)}
-              disabled={isVerified}
               placeholder="Enter Master Override Code"
+              disabled={isVerified}
+            />
+          </div>
+
+          {!isVerified && (
+            <Button onClick={handleVerifyMasterCode} className="w-full">
+              <Key className="mr-2 h-4 w-4" />
+              Verify Master Override Code
+            </Button>
+          )}
+
+          {isVerified && (
+            <Alert>
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertDescription>
+                Master Override Code accepted. You can now update the verification codes below.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Code Rotation */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            Rotate Verification Codes
+          </CardTitle>
+          <CardDescription>
+            Update the three verification codes used for admin access. After saving, all existing admin sessions will be cleared and users must re-verify with the new codes.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="new-code-1">New Code #1</Label>
+            <Input
+              id="new-code-1"
+              type="password"
+              value={newCode1}
+              onChange={(e) => setNewCode1(e.target.value)}
+              placeholder="Enter new Code #1"
+              disabled={!isVerified}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="new-code-2">New Code #2</Label>
+            <Input
+              id="new-code-2"
+              type="password"
+              value={newCode2}
+              onChange={(e) => setNewCode2(e.target.value)}
+              placeholder="Enter new Code #2"
+              disabled={!isVerified}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="new-code-3">New Code #3</Label>
+            <Input
+              id="new-code-3"
+              type="password"
+              value={newCode3}
+              onChange={(e) => setNewCode3(e.target.value)}
+              placeholder="Enter new Code #3"
+              disabled={!isVerified}
             />
           </div>
 
@@ -97,68 +164,13 @@ export default function AdminVerificationCodeManagementPage() {
             </Alert>
           )}
 
-          {isVerified && (
-            <Alert>
-              <CheckCircle2 className="h-4 w-4" />
-              <AlertDescription>
-                Master Override Code verified. You can now update the verification codes below.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {!isVerified && (
-            <Button onClick={handleVerifyMasterCode} className="w-full">
-              <Lock className="mr-2 h-4 w-4" />
-              Verify Master Override Code
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Verification Codes Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Update Verification Codes</CardTitle>
-          <CardDescription>
-            Set new values for Admin Verification Codes #1, #2, and #3
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="code1">New Code #1</Label>
-            <Input
-              id="code1"
-              type="password"
-              value={newCode1}
-              onChange={(e) => setNewCode1(e.target.value)}
-              disabled={!isVerified}
-              placeholder="Enter new Code #1"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="code2">New Code #2</Label>
-            <Input
-              id="code2"
-              type="password"
-              value={newCode2}
-              onChange={(e) => setNewCode2(e.target.value)}
-              disabled={!isVerified}
-              placeholder="Enter new Code #2"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="code3">New Code #3</Label>
-            <Input
-              id="code3"
-              type="password"
-              value={newCode3}
-              onChange={(e) => setNewCode3(e.target.value)}
-              disabled={!isVerified}
-              placeholder="Enter new Code #3"
-            />
-          </div>
+          <Button 
+            onClick={handleSaveCodes} 
+            className="w-full" 
+            disabled={!isVerified || rotateCodesMutation.isPending}
+          >
+            {rotateCodesMutation.isPending ? 'Saving...' : 'Save New Codes'}
+          </Button>
 
           {rotateCodesMutation.isSuccess && (
             <Alert>
@@ -168,29 +180,8 @@ export default function AdminVerificationCodeManagementPage() {
               </AlertDescription>
             </Alert>
           )}
-
-          <Button
-            onClick={handleSaveCodes}
-            disabled={!isVerified || rotateCodesMutation.isPending}
-            className="w-full"
-          >
-            {rotateCodesMutation.isPending ? 'Saving...' : 'Save New Codes'}
-          </Button>
-
-          {!isVerified && (
-            <p className="text-center text-sm text-muted-foreground">
-              Verify the Master Override Code above to enable code updates
-            </p>
-          )}
         </CardContent>
       </Card>
-
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Important:</strong> After updating verification codes, all existing admin sessions will be cleared and administrators will need to re-verify using the new codes.
-        </AlertDescription>
-      </Alert>
     </div>
   );
 }

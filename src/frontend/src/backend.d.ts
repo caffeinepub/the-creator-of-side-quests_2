@@ -234,4 +234,5 @@ export interface backendInterface {
     verifyAdminCodeStep1(code: string): Promise<boolean>;
     verifyAdminCodeStep2(code: string): Promise<boolean>;
     verifyAdminCodeStep3(code: string): Promise<boolean>;
+    verifyAdminMasterOverride(code: string): Promise<boolean>;
 }

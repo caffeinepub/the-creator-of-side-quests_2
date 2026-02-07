@@ -4,16 +4,18 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Alert, AlertDescription } from '../ui/alert';
-import { ShieldCheck, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { ShieldCheck, AlertCircle, CheckCircle2, XCircle, Key } from 'lucide-react';
 import {
   useVerifyAdminCodeStep1,
   useVerifyAdminCodeStep2,
   useVerifyAdminCodeStep3,
+  useVerifyAdminMasterOverride,
 } from '../../hooks/admin/useAdminSharedCodeGate';
 import {
   setAdminVerificationProgress,
   getAdminVerificationProgress,
   clearAdminVerificationProgress,
+  setFullyVerified,
   type AdminVerificationProgress,
 } from '../../utils/adminSharedCodeSession';
 import { useAdminVerificationStatus } from '../../hooks/admin/useAdminVerificationStatus';
@@ -30,13 +32,15 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [showLockoutModal, setShowLockoutModal] = useState(false);
+  const [useMasterOverride, setUseMasterOverride] = useState(false);
 
   const { data: verificationStatus, refetch: refetchStatus } = useAdminVerificationStatus();
   const verifyStep1 = useVerifyAdminCodeStep1();
   const verifyStep2 = useVerifyAdminCodeStep2();
   const verifyStep3 = useVerifyAdminCodeStep3();
+  const verifyMasterOverride = useVerifyAdminMasterOverride();
 
-  const isVerifying = verifyStep1.isPending || verifyStep2.isPending || verifyStep3.isPending;
+  const isVerifying = verifyStep1.isPending || verifyStep2.isPending || verifyStep3.isPending || verifyMasterOverride.isPending;
   const isLocked = verificationStatus?.permanently_locked ?? false;
 
   // Show lockout modal immediately when locked status is detected
@@ -54,7 +58,7 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
     setError(null);
 
     if (isLocked) {
-      setError('Your account is permanently locked out of admin access.');
+      setError('Access denied. Maximum verification attempts exceeded.');
       return;
     }
 
@@ -64,7 +68,13 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
     }
 
     try {
-      if (currentStep === 0) {
+      if (currentStep === 0 && useMasterOverride) {
+        // Master Override mode
+        await verifyMasterOverride.mutateAsync(code);
+        setFullyVerified();
+        setCurrentStep(3);
+        onSuccess();
+      } else if (currentStep === 0) {
         await verifyStep1.mutateAsync(code);
         setAdminVerificationProgress(1);
         setCurrentStep(1);
@@ -83,7 +93,8 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
     } catch (err: any) {
       // Refresh lockout status after any failed attempt
       await refetchStatus();
-      setError(err.message || 'Verification failed. Please try again.');
+      // Show generic error message without exposing sensitive details
+      setError('Verification failed. Please check your code and try again.');
     }
   };
 
@@ -96,16 +107,19 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
 
   const getStepDescription = () => {
     if (isLocked) {
-      return 'Your account has been permanently locked out of admin access due to too many failed attempts.';
+      return 'Access denied. Your account has been permanently locked due to too many failed verification attempts.';
+    }
+    if (currentStep === 0 && useMasterOverride) {
+      return 'Enter the Master Override Code to bypass all verification steps and gain immediate admin access.';
     }
     if (currentStep === 0) {
-      return 'Being logged in does not grant admin access. Admin access requires completing a separate three-step verification process. Enter the first verification code to begin.';
+      return 'Admin access requires completing a three-step verification process. Enter Code #1 to begin.';
     }
     if (currentStep === 1) {
-      return 'Step 1 complete. Enter the second verification code to continue.';
+      return 'Step 1 complete. Enter Code #2 to continue.';
     }
     if (currentStep === 2) {
-      return 'Step 2 complete. Enter the third and final verification code to gain admin access.';
+      return 'Step 2 complete. Enter Code #3 to complete verification and gain admin access.';
     }
     return 'All verification steps completed successfully.';
   };
@@ -124,6 +138,8 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
             }`}>
               {isLocked ? (
                 <XCircle className="h-6 w-6 text-destructive" />
+              ) : useMasterOverride && currentStep === 0 ? (
+                <Key className="h-6 w-6 text-primary" />
               ) : (
                 <ShieldCheck className="h-6 w-6 text-primary" />
               )}
@@ -166,10 +182,43 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
                   </div>
                 </div>
 
+                {currentStep === 0 && (
+                  <div className="mb-4 flex items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      variant={!useMasterOverride ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setUseMasterOverride(false);
+                        setCode('');
+                        setError(null);
+                      }}
+                      disabled={isVerifying}
+                    >
+                      Code #1
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={useMasterOverride ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setUseMasterOverride(true);
+                        setCode('');
+                        setError(null);
+                      }}
+                      disabled={isVerifying}
+                    >
+                      <Key className="mr-2 h-4 w-4" />
+                      Master Override
+                    </Button>
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="admin-code">
-                      {currentStep === 0 && 'Code #1'}
+                      {currentStep === 0 && useMasterOverride && 'Master Override Code'}
+                      {currentStep === 0 && !useMasterOverride && 'Code #1'}
                       {currentStep === 1 && 'Code #2'}
                       {currentStep === 2 && 'Code #3'}
                     </Label>
@@ -178,7 +227,11 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
                       type="password"
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
-                      placeholder="Enter verification code"
+                      placeholder={
+                        currentStep === 0 && useMasterOverride
+                          ? 'Enter Master Override Code'
+                          : 'Enter verification code'
+                      }
                       disabled={isVerifying}
                       autoFocus
                     />
@@ -192,7 +245,13 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
                   )}
 
                   <Button type="submit" className="w-full" disabled={isVerifying}>
-                    {isVerifying ? 'Verifying...' : currentStep === 2 ? 'Complete Verification' : 'Continue'}
+                    {isVerifying 
+                      ? 'Verifying...' 
+                      : currentStep === 0 && useMasterOverride
+                      ? 'Verify Master Override'
+                      : currentStep === 2 
+                      ? 'Complete Verification' 
+                      : 'Continue'}
                   </Button>
                 </form>
               </>
@@ -202,7 +261,7 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Your account is permanently locked out of admin access. You have exceeded the maximum number of failed verification attempts.
+                  Access denied. Your account has been permanently locked due to exceeding the maximum number of failed verification attempts.
                 </AlertDescription>
               </Alert>
             )}

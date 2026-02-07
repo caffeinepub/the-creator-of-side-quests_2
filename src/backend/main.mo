@@ -14,9 +14,6 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Stripe "stripe/stripe";
 
-
-// Enable migration on upgrade
-
 actor {
   include MixinStorage();
 
@@ -36,11 +33,11 @@ actor {
     failed_attempts : Nat;
     permanently_locked : Bool;
     last_failed_attempt : ?Time.Time;
-    persistent_lockout : Bool; // Explicit persistent lockout flag
-    lockout_time : ?Time.Time; // Timestamp when the persistent lockout occurred
+    persistent_lockout : Bool;
+    lockout_time : ?Time.Time;
   };
 
-  // CRITICAL: Make adminVerificationStates stable to persist across upgrades
+  // Make adminVerificationStates stable to persist across upgrades
   stable let adminVerificationStates = Map.empty<Principal, AdminVerificationState>();
 
   func removeExpiredSessions() {
@@ -202,7 +199,6 @@ actor {
     };
   };
 
-  // Verification codes and Master Override Code - persisted as stable variables
   type VerificationCodes = {
     code1 : Text;
     code2 : Text;
@@ -216,6 +212,42 @@ actor {
     code2 = "CHANGE-ME-CODE2-INITIAL";
     code3 = "CHANGE-ME-CODE3-INITIAL";
     masterCode = "CHANGE-ME-MASTER-INITIAL";
+  };
+
+  // New function to verify master override code in one step
+  public shared ({ caller }) func verifyAdminMasterOverride(code : Text) : async Bool {
+    // ALWAYS check persistent lockout FIRST
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        if (state.persistent_lockout) {
+          return false;
+        };
+        if (not checkAntiFishingDelay(caller)) {
+          return false;
+        };
+      };
+      case (null) {};
+    };
+
+    if (code != verificationCodes.masterCode) {
+      recordFailedAttempt(caller);
+      return false;
+    };
+
+    let now = Time.now();
+    let newState : AdminVerificationState = {
+      step1_verified = true;
+      step2_verified = true;
+      step3_verified = true;
+      session_expiry = ?(now + SESSION_DURATION_NS);
+      failed_attempts = 0;
+      permanently_locked = false;
+      persistent_lockout = false;
+      last_failed_attempt = null;
+      lockout_time = null;
+    };
+    adminVerificationStates.add(caller, newState);
+    true;
   };
 
   public shared ({ caller }) func verifyAdminCodeStep1(code : Text) : async Bool {

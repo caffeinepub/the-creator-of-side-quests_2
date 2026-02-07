@@ -2,11 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-reported-connection-closed-service-connection-could-not-be-established-issue-triggered-by-clicking-the-website-login-button-by-making-the-internet-identity-login-flow-resilient-across-major-browsers-chrome-firefox-safari-opera-opera-gx-and-by-providing-clear-user-facing-error-handling-when-the-auth-popup-cannot-be-opened-or-the-auth-session-fails",
-      "featureTitle": "Fix the reported “Connection closed / service connection could not be established” issue triggered by clicking the website Login button by making the Internet Identity login flow resilient across major browsers (Chrome, Firefox, Safari, Opera/Opera GX) and by providing clear user-facing error handling when the auth popup cannot be opened or the auth session fails.",
+      "featureId": "feature-ensure-the-new-code-1-2-3-and-the-new-master-override-code-are-treated-as-secrets-do-not-embed-their-plaintext-values-anywhere-in-the-frontend-bundle-and-do-not-log-them-to-browser-console-backend-logs-or-error-messages-store-validate-them-server-side-in-a-way-suitable-for-rotation-e-g-hashed-derived-representation-rather-than-plaintext",
+      "featureTitle": "Ensure the new Code #1/#2/#3 and the new Master Override Code are treated as secrets: do not embed their plaintext values anywhere in the frontend bundle, and do not log them to browser console, backend logs, or error messages; store/validate them server-side in a way suitable for rotation (e.g., hashed/derived representation rather than plaintext).",
       "files": [
-        "frontend/src/components/auth/LoginButton.tsx",
-        "frontend/src/utils/authErrorMessages.ts"
+        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+        "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
+        "frontend/src/utils/adminSharedCodeSession.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -20,17 +22,15 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-55"
+        "REQ-63"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-harden-actor-initialization-so-that-cross-browser-differences-or-url-parameter-session-behaviors-cannot-break-authenticated-or-anonymous-app-usage-including-login-logout-and-ensure-failures-in-access-control-initialization-do-not-crash-the-app",
-      "featureTitle": "Harden actor initialization so that cross-browser differences or URL-parameter/session behaviors cannot break authenticated or anonymous app usage (including login/logout), and ensure failures in access-control initialization do not crash the app.",
+      "featureId": "feature-keep-the-admin-dashboard-closed-off-all-admin-routes-and-all-admin-only-backend-mutations-must-remain-protected-by-the-admin-verification-session-three-step-verification-and-must-not-become-publicly-accessible",
+      "featureTitle": "Keep the Admin Dashboard closed off: all /admin routes and all admin-only backend mutations must remain protected by the admin verification session (three-step verification), and must not become publicly accessible.",
       "files": [
-        "frontend/src/components/auth/AdminRouteGuard.tsx",
-        "frontend/src/components/auth/LoginButton.tsx",
-        "frontend/src/utils/urlParams.ts"
+        "frontend/src/components/auth/AdminRouteGuard.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -44,20 +44,17 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-56"
+        "REQ-64"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-full-website-ui-is-fully-responsive-and-functional-across-a-comprehensive-set-of-screen-sizes-small-android-phones-iphones-ipads-tablets-and-desktop-sizes-including-header-navigation-mobile-hamburger-menu-behavior-forms-dialogs-modals-and-key-flows-shop-contact-testimonials-admin-entry-guard-screens",
-      "featureTitle": "Ensure the full website UI is fully responsive and functional across a comprehensive set of screen sizes (small Android phones, iPhones, iPads/tablets, and desktop sizes), including header navigation, mobile hamburger menu behavior, forms, dialogs/modals, and key flows (Shop, Contact, Testimonials, Admin entry guard screens).",
+      "featureId": "feature-update-the-frontend-admin-verification-ux-copy-gate-screen-and-verification-code-management-page-as-needed-so-it-accurately-reflects-the-system-behavior-three-steps-in-order-step-1-3-2-3-3-3-and-master-override-code-for-code-rotation-without-referencing-any-retired-previous-admin-authentication-system",
+      "featureTitle": "Update the frontend Admin verification UX copy (gate screen and verification-code management page) as needed so it accurately reflects the system behavior: three steps in order (Step 1/3, 2/3, 3/3) and Master Override Code for code rotation, without referencing any retired/previous admin authentication system.",
       "files": [
-        "frontend/index.css",
-        "frontend/src/components/SiteHeader.tsx",
-        "frontend/src/components/portfolio/PortfolioLightbox.tsx",
-        "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx"
+        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+        "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
+        "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -71,31 +68,7 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-57"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-lightweight-cross-browser-qa-checklist-and-automated-smoke-coverage-where-feasible-within-the-existing-react-app-tooling-focused-on-the-login-button-auth-flow-and-critical-navigation-to-prevent-regressions-of-the-reported-connection-login-issue",
-      "featureTitle": "Add a lightweight cross-browser QA checklist and automated smoke coverage (where feasible within the existing React app tooling) focused on the login button/auth flow and critical navigation, to prevent regressions of the reported connection/login issue.",
-      "files": [
-        "frontend/QA-CHECKLIST.md",
-        "frontend/src/App.smoke.test.tsx",
-        "frontend/src/components/auth/LoginButton.smoke.test.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-58"
+        "REQ-66"
       ],
       "confidence": "high"
     }

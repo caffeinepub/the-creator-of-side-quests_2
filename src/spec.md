@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the Admin Dashboard experience on small Android phones (Motorola G5 / G5 Ace) by eliminating layout breakage and enabling reliable vertical scrolling in both the main content area and the left sidebar navigation.
+**Goal:** Finalize Phase 1 public Portfolio flip-card interactions for photos/videos, ensure hover behavior works reliably across browsers, and prevent memory leaks from unreleased media object URLs.
 
 **Planned changes:**
-- Adjust admin page layout styles for narrow mobile viewports (~360–412px) to prevent cut-off content, horizontal overflow, and overlapping UI across all existing `/admin` and `/admin/*` routes while keeping current theme styling.
-- Ensure the main Admin Dashboard content area is vertically scrollable on mobile (no fixed containers or overflow settings that block scrolling).
-- Make the left admin sidebar/navigation independently vertically scrollable so all nav items (including bottom entries like “Verification Codes”) remain reachable on short screens.
-- Update `frontend/QA-CHECKLIST.md` with a dedicated Admin Dashboard mobile section that includes explicit Motorola G5 / G5 Ace (or equivalent viewport) verification steps for: main content scrolling, sidebar independent scrolling, and reaching the bottom-most nav item.
+- Fix flip-card event handling to prevent double-toggles from overlapping click/keyboard handlers between the flip-card and the Portfolio grid.
+- Implement precise interaction rules for photos vs videos (click/Enter/Space flip exactly once; video click pauses then flips to description; second click flips back; “View Full” opens lightbox without changing flip state).
+- Make video hover autoplay/pause behavior resilient to autoplay policy differences and ensure hover never starts playback while a card is flipped to the back.
+- Revoke object URLs created for Portfolio thumbnails and lightbox media when no longer in use to avoid memory growth during repeated navigation.
 
-**User-visible outcome:** On Motorola G5/G5 Ace-sized screens, admins can use every admin page without clipped/overlapping UI or horizontal scrolling, can scroll through page content top-to-bottom, and can scroll the sidebar to reach all navigation items.
+**User-visible outcome:** On the public Portfolio page, photo and video cards flip predictably (once per interaction), video hover behavior is stable even when autoplay is blocked, “View Full” opens the lightbox without unintended flipping, and repeated browsing does not cause accumulating memory usage.

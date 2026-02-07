@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAddProduct, useUpdateProduct } from '../../hooks/admin/useAdminProducts';
 import type { Product } from '../../backend';
-import { ExternalBlob } from '../../backend';
 import {
   Dialog,
   DialogContent,
@@ -54,7 +53,9 @@ export default function AdminProductFormDialog({
       setCategory(product.category || '');
       setInStock(product.inStock);
       setRequiresQuote(product.requiresQuote);
-      setImagePreview(product.image.getDirectURL());
+      // Convert Uint8Array to blob URL for preview
+      const blob = new Blob([product.image as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' });
+      setImagePreview(URL.createObjectURL(blob));
       setImageFile(null);
     } else {
       setName('');
@@ -108,18 +109,21 @@ export default function AdminProductFormDialog({
 
     try {
       setIsUploading(true);
-      let imageBlob: ExternalBlob;
+      setUploadProgress(25);
+
+      let imageBytes: Uint8Array<ArrayBuffer>;
 
       if (imageFile) {
-        const bytes = await fileToBytes(imageFile);
-        imageBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((percentage) => {
-          setUploadProgress(percentage);
-        });
+        imageBytes = await fileToBytes(imageFile);
+        setUploadProgress(50);
       } else if (product) {
-        imageBlob = product.image;
+        imageBytes = product.image as Uint8Array<ArrayBuffer>;
+        setUploadProgress(50);
       } else {
         throw new Error('No image available');
       }
+
+      setUploadProgress(75);
 
       const productData: Product = {
         id: product?.id || `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -129,7 +133,7 @@ export default function AdminProductFormDialog({
         category: category.trim() || undefined,
         inStock,
         requiresQuote,
-        image: imageBlob,
+        image: imageBytes,
       };
 
       if (isEditing) {
@@ -138,6 +142,7 @@ export default function AdminProductFormDialog({
         await addProduct.mutateAsync(productData);
       }
 
+      setUploadProgress(100);
       onOpenChange(false);
     } catch (error: any) {
       toast.error(`Failed to save product: ${error.message}`);

@@ -12,6 +12,11 @@ export default function ShopPage() {
 
   const { data: products, isLoading } = useProducts();
 
+  const getImageUrl = (imageBytes: Uint8Array): string => {
+    const blob = new Blob([imageBytes as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' });
+    return URL.createObjectURL(blob);
+  };
+
   return (
     <div>
       <PageHeaderBanner
@@ -39,11 +44,11 @@ export default function ShopPage() {
             {products?.map((product) => (
               <Card key={product.id} className="flex flex-col">
                 <CardHeader>
-                  <div className="mb-4 aspect-square overflow-hidden rounded-md bg-muted">
+                  <div className="mb-4 aspect-square overflow-hidden rounded-lg bg-muted">
                     <img
-                      src={product.image.getDirectURL()}
+                      src={getImageUrl(product.image)}
                       alt={product.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition-transform hover:scale-105"
                     />
                   </div>
                   <CardTitle className="font-serif">{product.name}</CardTitle>
@@ -54,9 +59,9 @@ export default function ShopPage() {
                     <span className="text-2xl font-bold">
                       ${(Number(product.price) / 100).toFixed(2)}
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-1">
                       {!product.inStock && <Badge variant="destructive">Out of Stock</Badge>}
-                      {product.requiresQuote && <Badge variant="secondary">Quote Required</Badge>}
+                      {product.requiresQuote && <Badge variant="secondary">Quote</Badge>}
                     </div>
                   </div>
                 </CardContent>

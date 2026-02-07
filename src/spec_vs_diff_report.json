@@ -1,40 +1,44 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T06:44:58.005Z",
-  "summary": "AdminLayout and multiple admin tables were adjusted for mobile usability (overflow handling and scrollable regions), and QA checklist gained an Admin Dashboard mobile section. However, the diff also includes significant unrelated UI/theme/public-site changes and appears to add a new admin route/page for verification code management, which is explicitly out of scope (non-goal).",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-07T08:03:00.539Z",
+  "summary": "Implemented managed object URL cleanup utilities and integrated them into PortfolioGrid (for thumbnails) and PortfolioLightbox (per-item URL cleanup). Added/adjusted video hover playback logic with autoplay-block resilience and pausing on flip-to-back. FlipCard was changed to a controlled/uncontrolled model with keyboard flipping, but the diff does not show mouse-click flip handling inside FlipCard, and PortfolioGrid’s click/flip wiring is truncated so full REQ-81 behavior cannot be confirmed.",
+  "missing_requirements": [
     {
-      "description": "Added/introduced a new admin page/route for verification code management (/admin/verification-codes).",
-      "reason": "BuildRequest non-goal explicitly states not to add new admin features, pages, or routes; this diff summary indicates a new /admin/verification-codes route and a dedicated management page file.",
+      "id": "REQ-81",
+      "requirement": "On the public Portfolio page, clicking a photo flips the card exactly once per click (no immediate flip-back or double flip).",
+      "reason": "FlipCard in the diff has keyboard flip handling but no onClick handler. The PortfolioGrid portion that would potentially attach click handlers to trigger flip is truncated, so the required mouse click flip behavior cannot be verified from the provided diff summary.",
       "evidence": [
-        "frontend-file-summaries.txt (\"frontend/src/App.tsx\": \"... including new /admin/verification-codes route ...\")",
-        "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
+        "frontend/src/components/FlipCard.tsx",
+        "frontend/src/components/portfolio/PortfolioGrid.tsx (truncated)"
       ]
     },
     {
-      "description": "Public site header/navigation and other broad site UI/theme changes unrelated to admin mobile layout/scrolling.",
-      "reason": "BuildRequest scope is admin dashboard layout/scroll behavior only and explicitly says not to redesign the public site header/navigation as part of this task; the diff summary indicates changes to SiteHeader/SiteLayout/SiteFooter and theme-wide CSS/Tailwind changes.",
+      "id": "REQ-81",
+      "requirement": "On the public Portfolio page, clicking a video pauses it and flips to the back showing the description; clicking again flips back to the front; the state changes exactly once per click.",
+      "reason": "PortfolioGrid includes pause-on-flip-to-back logic, but the click handler that performs the flip (and ensures single-toggle per click) is not visible due to truncation, and FlipCard itself does not show mouse click flipping in the diff.",
       "evidence": [
-        "frontend-file-summaries.txt (\"frontend/src/components/SiteHeader.tsx\": \"Responsive navigation header with improved mobile menu behavior...\")",
-        "frontend-file-summaries.txt (\"frontend/src/components/SiteLayout.tsx\", \"frontend/src/components/SiteFooter.tsx\")",
-        "frontend/index.css",
-        "frontend/tailwind.config.js"
+        "frontend/src/components/portfolio/PortfolioGrid.tsx (truncated)",
+        "frontend/src/components/FlipCard.tsx"
+      ]
+    },
+    {
+      "id": "REQ-81",
+      "requirement": "Clicking the “View Full” button on the flip-card back opens the lightbox and does not change the flip state.",
+      "reason": "There is a stopPropagation handler shown for “View Full” clicks, but the actual wiring of that handler to the button and any remaining flip-trigger handlers is in the truncated portion of PortfolioGrid, so the complete behavior cannot be verified end-to-end from the provided diff.",
+      "evidence": [
+        "frontend/src/components/portfolio/PortfolioGrid.tsx (truncated)"
       ]
     }
   ],
-  "confidence": 0.72,
+  "hallucinated_features": [],
+  "confidence": 0.63,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/QA-CHECKLIST.md",
-    "frontend/index.css",
-    "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-    "frontend/src/components/products/AdminProductsTable.tsx",
-    "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-    "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-    "frontend/src/pages/admin/AdminLayout.tsx",
-    "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx",
+    "frontend/src/components/FlipCard.tsx",
+    "frontend/src/components/portfolio/PortfolioGrid.tsx",
+    "frontend/src/components/portfolio/PortfolioLightbox.tsx",
+    "frontend/src/utils/objectUrls.ts",
     "project_state.json"
   ]
 }

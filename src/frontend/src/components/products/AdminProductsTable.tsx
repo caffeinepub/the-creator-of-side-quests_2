@@ -21,6 +21,11 @@ export default function AdminProductsTable({ products, onEdit }: AdminProductsTa
     return `$${(Number(price) / 100).toFixed(2)}`;
   };
 
+  const getImageUrl = (imageBytes: Uint8Array): string => {
+    const blob = new Blob([imageBytes as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' });
+    return URL.createObjectURL(blob);
+  };
+
   return (
     <div className="overflow-x-auto rounded-md border">
       <Table>
@@ -46,7 +51,7 @@ export default function AdminProductsTable({ products, onEdit }: AdminProductsTa
               <TableRow key={product.id}>
                 <TableCell>
                   <img
-                    src={product.image.getDirectURL()}
+                    src={getImageUrl(product.image)}
                     alt={product.name}
                     className="h-12 w-12 rounded-md border object-cover"
                   />

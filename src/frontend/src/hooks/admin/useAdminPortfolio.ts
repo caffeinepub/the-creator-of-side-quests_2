@@ -30,7 +30,8 @@ export function useAddPortfolioItem() {
       toast.success('Portfolio item added successfully');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to add portfolio item: ${error.message}`);
+      const message = error.message || 'Failed to add portfolio item';
+      toast.error(message);
     },
   });
 }
@@ -50,7 +51,28 @@ export function useUpdatePortfolioItem() {
       toast.success('Portfolio item updated successfully');
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update portfolio item: ${error.message}`);
+      const message = error.message || 'Failed to update portfolio item';
+      toast.error(message);
+    },
+  });
+}
+
+export function useDeletePortfolioItem() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.deletePortfolioItem(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolioItems'] });
+      toast.success('Portfolio item deleted successfully');
+    },
+    onError: (error: Error) => {
+      const message = error.message || 'Failed to delete portfolio item';
+      toast.error(message);
     },
   });
 }

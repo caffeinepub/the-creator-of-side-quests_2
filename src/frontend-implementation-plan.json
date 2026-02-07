@@ -1,102 +1,79 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin Dashboard mobile layout fixes + independent scrolling (Motorola G5/G5 Ace)",
+  "title": "Phase 1 Portfolio flip-card interaction correctness + hover resilience + object URL cleanup",
   "requirements": [
     {
-      "id": "REQ-70",
-      "summary": "Make the admin layout responsive on small Android phones to avoid cut-off, overlap, and horizontal overflow across all admin routes.",
+      "id": "REQ-81",
+      "summary": "Eliminate overlapping flip triggers so Portfolio flip-cards toggle exactly once per user action (mouse + keyboard) and lightbox actions do not affect flip state.",
       "acceptanceCriteria": [
-        "On Motorola G5 and Motorola G5 Ace sized viewports, visiting /admin and each existing /admin/* route shows a usable layout with no clipped content and no required horizontal scrolling.",
-        "Admin pages keep readable spacing and tap targets on narrow screens (e.g., ~360–412px width) while preserving the existing theme styles.",
-        "No regressions on tablet and desktop: sidebar + content layout still works at md/lg breakpoints."
+        "On the public Portfolio page, clicking a photo flips the card exactly once per click (no immediate flip-back or double flip).",
+        "On the public Portfolio page, clicking a video pauses it and flips to the back showing the description; clicking again flips back to the front; the state changes exactly once per click.",
+        "Clicking the “View Full” button on the flip-card back opens the lightbox and does not change the flip state.",
+        "Keyboard interaction (Enter/Space) flips exactly once and follows the same rules as mouse click."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
+          "path": "frontend/src/components/FlipCard.tsx",
           "operation": "modify",
-          "description": "Refactor the admin shell to be mobile-first (e.g., stack sidebar above content on small screens, restore side-by-side at md+), add min-w-0/overflow-x-hidden safeguards on flex children, and adjust paddings/gaps for narrow tap targets while preserving existing theme classes."
+          "description": "Adjust FlipCard interaction plumbing so there is a single, predictable flip trigger per user action (click + Enter/Space), avoiding double-toggles when nested children also handle clicks; keep it compatible with controlled flipping via isFlipped/onFlippedChange."
         },
         {
-          "path": "frontend/src/components/products/AdminProductsTable.tsx",
+          "path": "frontend/src/components/portfolio/PortfolioGrid.tsx",
           "operation": "modify",
-          "description": "Make the Products table mobile-friendly to avoid horizontal overflow (e.g., hide/deprioritize non-essential columns on small screens and ensure long text wraps) so /admin/products remains usable at ~360–412px widths."
-        },
-        {
-          "path": "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-          "operation": "modify",
-          "description": "Make the Portfolio table mobile-friendly to avoid horizontal overflow (e.g., responsive column visibility and wrapping) so /admin/portfolio remains usable on narrow screens."
-        },
-        {
-          "path": "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-          "operation": "modify",
-          "description": "Make the Testimonials table mobile-friendly to avoid horizontal overflow (e.g., responsive column visibility and wrapping) so /admin/testimonials remains usable on narrow screens."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-          "operation": "modify",
-          "description": "Adjust giveaway admin page responsive layout to prevent horizontal overflow from long principal strings (e.g., responsive column behavior and wrapping) and ensure cards/grids stack cleanly on small Android phones."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx",
-          "operation": "modify",
-          "description": "Tighten the verification code management page container for mobile (e.g., add mobile padding and ensure inputs/buttons fit without overflow) while keeping existing UI/verification behavior unchanged."
+          "description": "Refactor PortfolioGrid flip logic to remove overlapping click handlers between inner front/back content and the FlipCard container; ensure the 'View Full' button prevents flip state changes (stopPropagation + trigger detection) and that video-specific pause-on-flip behavior is applied exactly once per interaction."
         }
       ]
     },
     {
-      "id": "REQ-71",
-      "summary": "Ensure the main admin content area reliably scrolls vertically on mobile across all admin pages.",
+      "id": "REQ-82",
+      "summary": "Make video hover autoplay/pause behavior match the specified rules and remain stable when autoplay is blocked by the browser.",
       "acceptanceCriteria": [
-        "On mobile viewports, admin page content (e.g., /admin/products with table, /admin/giveaways, /admin/portfolio) can be scrolled vertically from top to bottom.",
-        "No element (e.g., fixed containers) prevents page scrolling; no ‘stuck’ scroll behavior occurs in mobile browsers."
+        "When hovering a video flip-card front, the video attempts to autoplay; when unhovering, it pauses.",
+        "When a video card is flipped to the back, hover does not start playback until the card is flipped back to the front.",
+        "If the browser blocks autoplay, the UI remains functional (no crashes, no infinite error toasts); the video remains paused and can still be flipped via click."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
+          "path": "frontend/src/components/portfolio/PortfolioGrid.tsx",
           "operation": "modify",
-          "description": "Change the admin shell height/overflow model for mobile to support reliable vertical scrolling (e.g., use a dvh-based shell height and set the <main> content region to overflow-y-auto), ensuring scroll is not blocked by fixed-height containers."
+          "description": "Harden video hover behavior: only attempt playback when the card is currently on the front; pause reliably on unhover and on flip-to-back; guard play() calls to tolerate autoplay promise rejections without surfacing noisy UI errors and without breaking flip interactions."
         },
         {
-          "path": "frontend/index.css",
+          "path": "frontend/src/components/FlipCard.tsx",
           "operation": "modify",
-          "description": "Add a small, targeted CSS helper for smoother mobile scrolling behavior in the admin content area (e.g., iOS/Android momentum scrolling where applicable) without altering the overall theme or touching shadcn/ui files."
+          "description": "Ensure keyboard/click flipping behavior remains consistent while allowing PortfolioGrid to prevent unintended hover-driven playback when the card is flipped (e.g., by enabling the parent to conditionally disable pointer interactions on the front side while flipped)."
         }
       ]
     },
     {
-      "id": "REQ-72",
-      "summary": "Make the left admin navigation independently scrollable so all nav items are reachable on short mobile screens.",
+      "id": "REQ-83",
+      "summary": "Revoke object URLs for Portfolio media previews (grid + lightbox) to prevent memory leaks during repeated browsing.",
       "acceptanceCriteria": [
-        "When the admin navigation list is taller than the available viewport height, the navigation area can be scrolled independently (overflow-y) to reach the last item.",
-        "The nav title/header area (e.g., “Admin Panel”) does not prevent scrolling to the bottom nav items on small heights.",
-        "Keyboard/touch scrolling works in the sidebar nav on mobile without also forcing horizontal scrolling."
+        "Navigating into and out of the Portfolio page repeatedly does not continuously increase memory usage due to unreleased object URLs.",
+        "Object URLs created for grid thumbnails and the lightbox media are revoked when no longer needed (e.g., component unmount or item change).",
+        "No broken images/videos appear due to premature revocation (revocation only occurs after the media is no longer displayed)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
-          "operation": "modify",
-          "description": "Restructure the sidebar as a flex column with a fixed header section and a scrollable nav section (overflow-y-auto) so the nav list can scroll independently and reach bottom items like “Verification Codes” on short screens."
+          "path": "frontend/src/utils/objectUrls.ts",
+          "operation": "create",
+          "description": "Add a small utility (and/or hook helpers) for creating object URLs from bytes and revoking them safely during React lifecycle transitions (unmount, item change), ensuring revocation happens only after the consuming element no longer needs the URL."
         },
         {
-          "path": "frontend/index.css",
+          "path": "frontend/src/components/portfolio/PortfolioGrid.tsx",
           "operation": "modify",
-          "description": "Add a targeted CSS utility/class for the admin sidebar scroll container (e.g., enabling momentum scrolling and preventing accidental horizontal scroll) to improve touch scrolling on mobile browsers."
-        }
-      ]
-    },
-    {
-      "id": "REQ-73",
-      "summary": "Update the QA checklist with explicit Motorola G5/G5 Ace admin layout and scrolling verification steps.",
-      "acceptanceCriteria": [
-        "frontend/QA-CHECKLIST.md includes a dedicated Admin Dashboard mobile section that mentions Motorola G5 and Motorola G5 Ace (or their viewport sizes) and includes checkboxes for: (1) main admin content vertical scroll, (2) left admin navigation independent scroll, and (3) ability to reach the bottom-most nav item.",
-        "Checklist steps are written in clear English and are specific enough to reproduce/verify the fix."
-      ],
-      "file_operations": [
+          "description": "Replace per-render URL.createObjectURL calls with memoized/object-url-managed URLs per item (keyed by item id + media kind/bytes identity), and revoke URLs when items change or the grid unmounts to prevent leaks while avoiding premature revocation."
+        },
         {
-          "path": "frontend/QA-CHECKLIST.md",
+          "path": "frontend/src/components/portfolio/PortfolioLightbox.tsx",
           "operation": "modify",
-          "description": "Add a dedicated Admin Dashboard mobile QA section referencing Motorola G5 and Motorola G5 Ace (or equivalent viewport sizes) with clear checkboxes for verifying: (1) main content vertical scrolling, (2) independent sidebar nav scrolling, and (3) reaching the bottom-most nav item (e.g., “Verification Codes”) on short screens."
+          "description": "Stop creating a new object URL every render; instead create a managed URL for the currently viewed item and revoke it when the lightbox closes or the item changes, ensuring no broken media during viewing."
+        },
+        {
+          "path": "frontend/src/pages/PortfolioPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the lightbox mounts/unmounts (or item changes) in a way that triggers object URL cleanup paths in the lightbox component during close and navigation, preventing retained URLs across repeated Portfolio visits."
         }
       ]
     }

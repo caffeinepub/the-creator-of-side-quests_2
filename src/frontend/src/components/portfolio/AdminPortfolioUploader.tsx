@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAddPortfolioItem } from '../../hooks/admin/useAdminPortfolio';
-import { ExternalBlob } from '../../backend';
+import type { PortfolioItem, PortfolioMedia } from '../../backend';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -30,6 +30,7 @@ export default function AdminPortfolioUploader() {
     const validation = validateMediaFile(file);
     if (!validation.valid) {
       toast.error(validation.error);
+      e.target.value = '';
       return;
     }
 
@@ -37,6 +38,11 @@ export default function AdminPortfolioUploader() {
     const reader = new FileReader();
     reader.onload = () => {
       setMediaPreview(reader.result as string);
+    };
+    reader.onerror = () => {
+      toast.error('Failed to read file preview');
+      setMediaFile(null);
+      setMediaPreview(null);
     };
     reader.readAsDataURL(file);
   };
@@ -51,20 +57,28 @@ export default function AdminPortfolioUploader() {
 
     try {
       setIsUploading(true);
-      const bytes = await fileToBytes(mediaFile);
-      const mediaBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((percentage) => {
-        setUploadProgress(percentage);
-      });
+      setUploadProgress(10);
 
-      const portfolioItem = {
+      const bytes = await fileToBytes(mediaFile);
+      setUploadProgress(50);
+
+      const isVideo = mediaFile.type.startsWith('video/');
+      const media: PortfolioMedia = isVideo
+        ? { __kind__: 'video', video: bytes }
+        : { __kind__: 'image', image: bytes };
+
+      setUploadProgress(75);
+
+      const portfolioItem: PortfolioItem = {
         id: `portfolio-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: title.trim(),
         description: description.trim(),
         category: category || undefined,
-        image: mediaBlob,
+        media,
       };
 
       await addPortfolioItem.mutateAsync(portfolioItem);
+      setUploadProgress(100);
 
       // Reset form
       setTitle('');
@@ -74,7 +88,9 @@ export default function AdminPortfolioUploader() {
       setMediaPreview(null);
       setUploadProgress(0);
     } catch (error: any) {
-      toast.error(`Upload failed: ${error.message}`);
+      const message = error.message || 'Upload failed';
+      toast.error(message);
+      setUploadProgress(0);
     } finally {
       setIsUploading(false);
     }
@@ -86,7 +102,7 @@ export default function AdminPortfolioUploader() {
     <Card>
       <CardHeader>
         <CardTitle>Upload Portfolio Item</CardTitle>
-        <CardDescription>Add a new image or video to your portfolio</CardDescription>
+        <CardDescription>Add a new image or video to your portfolio (up to 800MB)</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,7 +125,7 @@ export default function AdminPortfolioUploader() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter description..."
-              rows={3}
+              rows={4}
               required
               disabled={isPending}
             />

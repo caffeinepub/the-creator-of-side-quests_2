@@ -7,13 +7,6 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export class ExternalBlob {
-    getBytes(): Promise<Uint8Array<ArrayBuffer>>;
-    getDirectURL(): string;
-    static fromURL(url: string): ExternalBlob;
-    static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
-    withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
-}
 export interface Testimonial {
     id: string;
     content: string;
@@ -140,11 +133,18 @@ export interface ShoppingItem {
 }
 export interface PortfolioItem {
     id: string;
+    media: PortfolioMedia;
     title: string;
     description: string;
     category?: string;
-    image: ExternalBlob;
 }
+export type PortfolioMedia = {
+    __kind__: "video";
+    video: Uint8Array;
+} | {
+    __kind__: "image";
+    image: Uint8Array;
+};
 export interface LoyaltyReward {
     id: string;
     active: boolean;
@@ -165,7 +165,7 @@ export interface Product {
     name: string;
     description: string;
     category?: string;
-    image: ExternalBlob;
+    image: Uint8Array;
     price: bigint;
 }
 export enum UserRole {
@@ -187,6 +187,7 @@ export interface backendInterface {
     createCoupon(coupon: Coupon): Promise<void>;
     createGiveaway(giveaway: Giveaway): Promise<void>;
     createLoyaltyReward(reward: LoyaltyReward): Promise<void>;
+    deletePortfolioItem(id: string): Promise<void>;
     getActiveGiveaways(): Promise<Array<Giveaway>>;
     getAdminVerificationStatus(): Promise<{
         failed_attempts: bigint;
@@ -218,6 +219,7 @@ export interface backendInterface {
     isPermanentlyLocked(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
     listAdminUsers(): Promise<Array<Principal>>;
+    migrateLegacyPortfolioItems(): Promise<void>;
     redeemLoyaltyReward(rewardId: string): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     selectGiveawayWinner(giveawayId: string, winnerIndex: bigint): Promise<GiveawayWinner | null>;

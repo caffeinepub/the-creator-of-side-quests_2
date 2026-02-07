@@ -1,100 +1,77 @@
 {
   "kind": "build_request",
-  "title": "Fix Admin Dashboard mobile layout + enable sidebar scrolling (Motorola G5 / G5 Ace)",
-  "priority": "high",
+  "title": "Finalize Phase 1 Portfolio media management + precise flip-card video/photo interactions",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-70",
-      "text": "Fix the Admin Dashboard layout on small Android phones (specifically Motorola G5 and Motorola G5 Ace) so the admin interface renders without cut-off content, horizontal overflow, or overlapping UI across all admin pages.",
+      "id": "REQ-81",
+      "text": "Fix flip-card click handling so Portfolio flip interactions are implemented precisely and do not double-toggle due to overlapping click handlers between FlipCard and PortfolioGrid.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "recent-messages-5"
         ],
         "quotes": [
-          "As far as I know we're only having issues with the Motorola 5 and the Motorola 5G Ace the admin panel is not displaying correctly on those phones!"
+          "admin uploads and manages media and descriptions, public flip‑cards for photos and videos with your exact interaction rules, and the hover/click logic for videos vs photos implemented precisely."
         ]
       },
       "acceptanceCriteria": [
-        "On Motorola G5 and Motorola G5 Ace sized viewports, visiting /admin and each existing /admin/* route shows a usable layout with no clipped content and no required horizontal scrolling.",
-        "Admin pages keep readable spacing and tap targets on narrow screens (e.g., ~360–412px width) while preserving the existing theme styles.",
-        "No regressions on tablet and desktop: sidebar + content layout still works at md/lg breakpoints."
+        "On the public Portfolio page, clicking a photo flips the card exactly once per click (no immediate flip-back or double flip).",
+        "On the public Portfolio page, clicking a video pauses it and flips to the back showing the description; clicking again flips back to the front; the state changes exactly once per click.",
+        "Clicking the “View Full” button on the flip-card back opens the lightbox and does not change the flip state.",
+        "Keyboard interaction (Enter/Space) flips exactly once and follows the same rules as mouse click."
       ]
     },
     {
-      "id": "REQ-71",
-      "text": "Make the main Admin Dashboard content area vertically scrollable on mobile so admins can scroll up/down through page content reliably.",
+      "id": "REQ-82",
+      "text": "Ensure video hover behavior on public Portfolio flip-cards matches the specified rules exactly and is resilient across browsers (autoplay policy differences must not break the UI).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "recent-messages-5"
         ],
         "quotes": [
-          "I should be able to scroll through the dashboard up and down"
+          "public flip‑cards for photos and videos with your exact interaction rules, and the hover/click logic for videos vs photos implemented precisely."
         ]
       },
       "acceptanceCriteria": [
-        "On mobile viewports, admin page content (e.g., /admin/products with table, /admin/giveaways, /admin/portfolio) can be scrolled vertically from top to bottom.",
-        "No element (e.g., fixed containers) prevents page scrolling; no ‘stuck’ scroll behavior occurs in mobile browsers."
+        "When hovering a video flip-card front, the video attempts to autoplay; when unhovering, it pauses.",
+        "When a video card is flipped to the back, hover does not start playback until the card is flipped back to the front.",
+        "If the browser blocks autoplay, the UI remains functional (no crashes, no infinite error toasts); the video remains paused and can still be flipped via click."
       ]
     },
     {
-      "id": "REQ-72",
-      "text": "Make the Admin left-side feature/tab navigation independently scrollable so all nav items (including the bottom-most entries like “Verification Codes”) are reachable on short mobile screens without being cut off.",
+      "id": "REQ-83",
+      "text": "Prevent memory leaks from repeated Portfolio browsing by cleaning up object URLs created for portfolio image/video previews in the public grid and lightbox.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "recent-messages-5"
         ],
         "quotes": [
-          "on the left hand side with all of the different feature tabs I should be able to scroll through those because I can't get to the very bottom ones because they're getting cut off because I can't scroll!"
+          "Finish the update with the rest of these features! Build it!"
         ]
       },
       "acceptanceCriteria": [
-        "When the admin navigation list is taller than the available viewport height, the navigation area can be scrolled independently (overflow-y) to reach the last item.",
-        "The nav title/header area (e.g., “Admin Panel”) does not prevent scrolling to the bottom nav items on small heights.",
-        "Keyboard/touch scrolling works in the sidebar nav on mobile without also forcing horizontal scrolling."
-      ]
-    },
-    {
-      "id": "REQ-73",
-      "text": "Update the project QA checklist to include explicit verification steps for the Admin Dashboard layout and sidebar scrolling behavior on Motorola G5 and Motorola G5 Ace (or equivalent viewport presets), covering both the main content scrolling and the left navigation scrolling.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "As far as I know we're only having issues with the Motorola 5 and the Motorola 5G Ace the admin panel is not displaying correctly on those phones! Build it!"
-        ]
-      },
-      "acceptanceCriteria": [
-        "frontend/QA-CHECKLIST.md includes a dedicated Admin Dashboard mobile section that mentions Motorola G5 and Motorola G5 Ace (or their viewport sizes) and includes checkboxes for: (1) main admin content vertical scroll, (2) left admin navigation independent scroll, and (3) ability to reach the bottom-most nav item.",
-        "Checklist steps are written in clear English and are specific enough to reproduce/verify the fix."
+        "Navigating into and out of the Portfolio page repeatedly does not continuously increase memory usage due to unreleased object URLs.",
+        "Object URLs created for grid thumbnails and the lightbox media are revoked when no longer needed (e.g., component unmount or item change).",
+        "No broken images/videos appear due to premature revocation (revocation only occurs after the media is no longer displayed)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (shadcn components are read-only in this environment).",
-    "Do not change Internet Identity/auth/admin verification logic; this request is UI layout/scroll behavior only."
+    "Do not modify files under frontend/immutablePaths (compose read-only components instead of editing them).",
+    "Keep the Internet Computer backend as a single Motoko actor (all logic in backend/main.mo); only add backend/migration.mo changes if state migration is required.",
+    "Use English for any user-facing text.",
+    "Do not log or expose any secrets (including admin verification codes) in browser console output, backend logs, error messages, or frontend bundles."
   ],
   "nonGoals": [
-    "Do not add new admin features, pages, or routes.",
-    "Do not change admin verification codes, lockout behavior, or backend authorization.",
-    "Do not redesign the public site header/navigation as part of this task."
+    "Adding new Portfolio product features beyond Phase 1 (e.g., comments, likes, tagging).",
+    "Changing the overall site theme, copy, or navigation beyond what is necessary to complete the Phase 1 Portfolio interaction behavior.",
+    "Refactoring unrelated admin/auth flows not required to complete the portfolio flip-card behavior. "
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

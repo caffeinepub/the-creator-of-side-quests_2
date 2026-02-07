@@ -8,7 +8,6 @@ import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Runtime "mo:core/Runtime";
 import OutCall "http-outcalls/outcall";
-import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
@@ -497,19 +496,55 @@ actor {
     socialMediaLinks.values().toArray();
   };
 
+  // Updated PortfolioItem type
+  public type PortfolioMedia = {
+    #image : Blob;
+    #video : Blob;
+  };
+
   public type PortfolioItem = {
     id : Text;
     title : Text;
-    image : Storage.ExternalBlob;
     description : Text;
     category : ?Text;
+    media : PortfolioMedia;
   };
 
   let portfolioItems = Map.empty<Text, PortfolioItem>();
 
+  // Max file size 800 MB (in bytes)
+  let MAX_FILE_SIZE_BYTES = 800 * 1024 * 1024;
+
+  func validateFileSize(blob : Blob) {
+    let fileSizeBytes = blob.size();
+    if (fileSizeBytes > MAX_FILE_SIZE_BYTES) {
+      Runtime.trap("File size exceeds backend limit of 800MB. File is " # fileSizeBytes.toText() # " bytes.");
+    };
+  };
+
   public shared ({ caller }) func addPortfolioItem(item : PortfolioItem) : async () {
     requireAdminVerification(caller);
+
+    switch (item.media) {
+      case (#image(blob)) {
+        validateFileSize(blob);
+      };
+      case (#video(blob)) {
+        validateFileSize(blob);
+      };
+    };
+
     portfolioItems.add(item.id, item);
+  };
+
+  public shared ({ caller }) func deletePortfolioItem(id : Text) : async () {
+    requireAdminVerification(caller);
+    switch (portfolioItems.get(id)) {
+      case (null) { Runtime.trap("Portfolio item not found") };
+      case (?_) {
+        portfolioItems.remove(id);
+      };
+    };
   };
 
   public query func getPortfolioItems() : async [PortfolioItem] {
@@ -593,7 +628,7 @@ actor {
     description : Text;
     price : Nat;
     inStock : Bool;
-    image : Storage.ExternalBlob;
+    image : Blob;
     requiresQuote : Bool;
     category : ?Text;
   };
@@ -1003,5 +1038,41 @@ actor {
         status;
       };
     };
+  };
+
+  // Migration for legacy portfolio items
+  public shared ({ caller }) func migrateLegacyPortfolioItems() : async () {
+    requireAdminVerification(caller);
+    let legacyItems = Map.empty<Text, LegacyPortfolioItem>();
+    let migratedItems = Map.empty<Text, PortfolioItem>();
+
+    let itemsToMigrate = legacyItems.filter(func(_id, _legacyItem) { true });
+
+    for ((id, legacyItem) in itemsToMigrate.entries()) {
+      let migratedItem = {
+        id;
+        media = #image(Blob.fromArray([])); // Create empty Blob from array literal
+        title = "";
+        description = "";
+        category = null;
+      };
+      migratedItems.add(id, migratedItem);
+    };
+
+    legacyItems.clear();
+    portfolioItems.clear();
+    for (
+      (id, item) in migratedItems.entries()
+    ) {
+      portfolioItems.add(id, item);
+    };
+  };
+
+  public type LegacyPortfolioItem = {
+    id : Text;
+    title : Text;
+    image : Blob;
+    description : Text;
+    category : ?Text;
   };
 };

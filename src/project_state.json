@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 31,
+  "projectStateVersion": 35,
   "summary": "Project requires a new admin authentication system replacing the prior shared-passcode/admin-permission gate: Admin Dashboard access must be controlled exclusively via a separate three-step sequence of 25-character verification codes (stored server-side as hashes, never exposed client-side), with account-specific failed-attempt tracking and irreversible per-account admin lockout after 3 failures. Admins can rotate the three codes only after entering a separate 100-character master override code (also hashed server-side), with secure logging/audit of attempts and changes. Additionally, standard user login (e.g., email/Google/etc.) must be separated and must never grant Admin Dashboard access under any circumstances. After 3 failed admin verification attempts, the user must see a closable popup image and the Admin tab/link must be removed permanently for that locked-out user.",
   "architectural_notes": [
     "Shop supports both Stripe checkout and an alternative request-quote/contact flow on selected products.",
@@ -15,7 +15,6 @@
     "Track per-user failed attempts and permanently lock out admin access for that specific account after 3 failures (irreversible, persists across code rotations)."
   ],
   "known_issues": [
-    "User requested unlimited-size photo/video portfolio uploads (“no matter the size/length”); this conflicts with practical storage limits and will require defined max file size/duration or alternative hosting/streaming strategy.",
     "Admin button/link is currently not visible to the user; navigation needs to show Admin entry point on both mobile (hamburger) and desktop (top header) while keeping code gate protection.",
     "\"Permanently locked out\" and \"strict, irreversible, account-specific\" admin removal creates a high-risk support scenario; requires explicit owner recovery policy (or confirm no recovery exists).",
     "Moving away from Internet Identity/admin-permission gating toward code-only admin verification and introducing email/Google logins is a major auth-architecture shift; requires careful migration plan to avoid breaking existing accounts/admin tooling.",
@@ -24,7 +23,8 @@
     "User reports a \"Connection closed\" / service connection could not be established error triggered when clicking the website login button; may be browser-specific and requires cross-browser investigation/testing.",
     "User continues to paste plaintext admin verification codes and the master override code into chat; ensure support/UX discourages this and that no plaintext is ever logged or stored client-side/server-side beyond hashed verification.",
     "User provided a new set of plaintext admin verification codes and a plaintext master override code in chat; ensure these are never embedded in frontend bundles or logged, and are only stored/validated as server-side hashes.",
-    "User provided plaintext values for Code #1/#2/#3 in chat again; ensure these secrets are never logged, embedded, or stored in plaintext anywhere (frontend or backend), and discourage sharing them in support UX."
+    "User provided plaintext values for Code #1/#2/#3 in chat again; ensure these secrets are never logged, embedded, or stored in plaintext anywhere (frontend or backend), and discourage sharing them in support UX.",
+    "Storing up to 800MB photo/video blobs directly in the IC canister may cause rapid canister memory growth and high cost; requires careful limits, monitoring, and potential chunked upload strategy to avoid failures."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -483,6 +483,62 @@
         "REQ-73"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-portfolio-dashboard-ui-to-fully-manage-portfolio-items-with-photo-video-uploads-up-to-800-mb-including-create-edit-metadata-title-category-description-delete-and-re-upload-replace-the-media-file-for-an-existing-item",
+      "title": "Update the Admin Portfolio Dashboard UI to fully manage portfolio items with photo/video uploads up to 800 MB, including create, edit metadata (title/category/description), delete, and re-upload/replace the media file for an existing item.",
+      "reqIds": [
+        "REQ-77"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-admin-portfolio-something-went-wrong-failure-mode-by-adding-resilient-error-handling-and-aligning-frontend-media-validation-limits-with-the-new-800-mb-requirement-instead-of-the-current-smaller-limit",
+      "title": "Fix the Admin Portfolio 'Something went wrong' failure mode by adding resilient error handling and aligning frontend media validation limits with the new 800 MB requirement (instead of the current smaller limit).",
+      "reqIds": [
+        "REQ-78"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-public-portfolio-browsing-ui-with-flip-card-cards-for-both-photos-and-videos-using-the-existing-flipcard-component-implementing-the-exact-interaction-rules-photos-flip-on-click-videos-autoplay-on-hover-pause-on-unhover-clicking-a-video-pauses-it-and-flips-to-the-back-showing-the-description-clicking-again-flips-back-to-the-front-so-hovering-can-play-again",
+      "title": "Replace the public Portfolio browsing UI with flip-card cards for both photos and videos using the existing FlipCard component, implementing the exact interaction rules: photos flip on click; videos autoplay on hover, pause on unhover; clicking a video pauses it and flips to the back showing the description; clicking again flips back to the front so hovering can play again.",
+      "reqIds": [
+        "REQ-79"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-portfolio-lightbox-modal-behavior-to-correctly-display-either-an-image-or-a-video-muted-based-on-the-item-media-type-and-ensure-descriptions-are-readable-in-the-expanded-view",
+      "title": "Update the Portfolio lightbox/modal behavior to correctly display either an image or a video (muted) based on the item media type, and ensure descriptions are readable in the expanded view.",
+      "reqIds": [
+        "REQ-80"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-flip-card-click-handling-so-portfolio-flip-interactions-are-implemented-precisely-and-do-not-double-toggle-due-to-overlapping-click-handlers-between-flipcard-and-portfoliogrid",
+      "title": "Fix flip-card click handling so Portfolio flip interactions are implemented precisely and do not double-toggle due to overlapping click handlers between FlipCard and PortfolioGrid.",
+      "reqIds": [
+        "REQ-81"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-video-hover-behavior-on-public-portfolio-flip-cards-matches-the-specified-rules-exactly-and-is-resilient-across-browsers-autoplay-policy-differences-must-not-break-the-ui",
+      "title": "Ensure video hover behavior on public Portfolio flip-cards matches the specified rules exactly and is resilient across browsers (autoplay policy differences must not break the UI).",
+      "reqIds": [
+        "REQ-82"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-prevent-memory-leaks-from-repeated-portfolio-browsing-by-cleaning-up-object-urls-created-for-portfolio-image-video-previews-in-the-public-grid-and-lightbox",
+      "title": "Prevent memory leaks from repeated Portfolio browsing by cleaning up object URLs created for portfolio image/video previews in the public grid and lightbox.",
+      "reqIds": [
+        "REQ-83"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -778,6 +834,36 @@
       "id": "AR-52",
       "summary": "Fix Admin Dashboard mobile responsiveness issues on Motorola G5 and Motorola G5 Ace, including ensuring the main dashboard scrolls vertically and the left-side feature/tab navigation has independent scrolling so bottom items are reachable (no cut-off/overflow).",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-53",
+      "summary": "Phase 1: Fix Admin Portfolios “Something went wrong” error; extend existing Portfolio system to support photo+video uploads stored directly in IC canister blobs with 800MB max per file; allow delete and re-upload; unlimited-length descriptions; public Portfolio auto-displays all media as flip cards with behavior: photos flip on click; videos autoplay on hover, pause on unhover, and on click pause+flip to back showing description; updates reflect instantly in admin and public views",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-54",
+      "summary": "Extend the existing PortfolioItem data model and related backend APIs to support both images and videos stored directly in-canister as blobs, while preserving existing portfolio items and behavior for images.",
+      "reqIds": [
+        "REQ-74"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-55",
+      "summary": "Implement backend enforcement for a maximum per-file upload size of 800 MB for portfolio media (images and videos), rejecting any media larger than 800 MB with a clear error message.",
+      "reqIds": [
+        "REQ-75"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-56",
+      "summary": "Add backend support for deleting portfolio items (including associated stored blob media) so admins can remove photos/videos and re-upload replacements.",
+      "reqIds": [
+        "REQ-76"
+      ],
       "status": "pending"
     }
   ],

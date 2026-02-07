@@ -25,13 +25,16 @@ export const LoyaltyAction = IDL.Variant({
   'signup' : IDL.Null,
   'purchase' : IDL.Nat,
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const PortfolioMedia = IDL.Variant({
+  'video' : IDL.Vec(IDL.Nat8),
+  'image' : IDL.Vec(IDL.Nat8),
+});
 export const PortfolioItem = IDL.Record({
   'id' : IDL.Text,
+  'media' : PortfolioMedia,
   'title' : IDL.Text,
   'description' : IDL.Text,
   'category' : IDL.Opt(IDL.Text),
-  'image' : ExternalBlob,
 });
 export const Product = IDL.Record({
   'id' : IDL.Text,
@@ -40,7 +43,7 @@ export const Product = IDL.Record({
   'name' : IDL.Text,
   'description' : IDL.Text,
   'category' : IDL.Opt(IDL.Text),
-  'image' : ExternalBlob,
+  'image' : IDL.Vec(IDL.Nat8),
   'price' : IDL.Nat,
 });
 export const Time = IDL.Int;
@@ -214,6 +217,7 @@ export const idlService = IDL.Service({
   'createCoupon' : IDL.Func([Coupon], [], []),
   'createGiveaway' : IDL.Func([Giveaway], [], []),
   'createLoyaltyReward' : IDL.Func([LoyaltyReward], [], []),
+  'deletePortfolioItem' : IDL.Func([IDL.Text], [], []),
   'getActiveGiveaways' : IDL.Func([], [IDL.Vec(Giveaway)], ['query']),
   'getAdminVerificationStatus' : IDL.Func(
       [],
@@ -259,6 +263,7 @@ export const idlService = IDL.Service({
   'isPermanentlyLocked' : IDL.Func([], [IDL.Bool], ['query']),
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
   'listAdminUsers' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
+  'migrateLegacyPortfolioItems' : IDL.Func([], [], []),
   'redeemLoyaltyReward' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'selectGiveawayWinner' : IDL.Func(
@@ -309,13 +314,16 @@ export const idlFactory = ({ IDL }) => {
     'signup' : IDL.Null,
     'purchase' : IDL.Nat,
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const PortfolioMedia = IDL.Variant({
+    'video' : IDL.Vec(IDL.Nat8),
+    'image' : IDL.Vec(IDL.Nat8),
+  });
   const PortfolioItem = IDL.Record({
     'id' : IDL.Text,
+    'media' : PortfolioMedia,
     'title' : IDL.Text,
     'description' : IDL.Text,
     'category' : IDL.Opt(IDL.Text),
-    'image' : ExternalBlob,
   });
   const Product = IDL.Record({
     'id' : IDL.Text,
@@ -324,7 +332,7 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'description' : IDL.Text,
     'category' : IDL.Opt(IDL.Text),
-    'image' : ExternalBlob,
+    'image' : IDL.Vec(IDL.Nat8),
     'price' : IDL.Nat,
   });
   const Time = IDL.Int;
@@ -492,6 +500,7 @@ export const idlFactory = ({ IDL }) => {
     'createCoupon' : IDL.Func([Coupon], [], []),
     'createGiveaway' : IDL.Func([Giveaway], [], []),
     'createLoyaltyReward' : IDL.Func([LoyaltyReward], [], []),
+    'deletePortfolioItem' : IDL.Func([IDL.Text], [], []),
     'getActiveGiveaways' : IDL.Func([], [IDL.Vec(Giveaway)], ['query']),
     'getAdminVerificationStatus' : IDL.Func(
         [],
@@ -537,6 +546,7 @@ export const idlFactory = ({ IDL }) => {
     'isPermanentlyLocked' : IDL.Func([], [IDL.Bool], ['query']),
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
     'listAdminUsers' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
+    'migrateLegacyPortfolioItems' : IDL.Func([], [], []),
     'redeemLoyaltyReward' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'selectGiveawayWinner' : IDL.Func(

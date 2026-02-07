@@ -66,6 +66,11 @@ export default function ProductDetailPage() {
     navigate({ to: '/contact', search: { productId: product.id } });
   };
 
+  const getImageUrl = (imageBytes: Uint8Array): string => {
+    const blob = new Blob([imageBytes as Uint8Array<ArrayBuffer>], { type: 'image/jpeg' });
+    return URL.createObjectURL(blob);
+  };
+
   return (
     <div>
       <section className="py-8 sm:py-16">
@@ -80,7 +85,7 @@ export default function ProductDetailPage() {
           <div className="grid gap-6 sm:gap-8 md:grid-cols-2">
             <div className="aspect-square overflow-hidden rounded-lg bg-muted">
               <img
-                src={product.image.getDirectURL()}
+                src={getImageUrl(product.image)}
                 alt={product.name}
                 className="h-full w-full object-cover"
               />

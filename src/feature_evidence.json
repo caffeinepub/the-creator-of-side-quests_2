@@ -2,15 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-admin-dashboard-layout-on-small-android-phones-specifically-motorola-g5-and-motorola-g5-ace-so-the-admin-interface-renders-without-cut-off-content-horizontal-overflow-or-overlapping-ui-across-all-admin-pages",
-      "featureTitle": "Fix the Admin Dashboard layout on small Android phones (specifically Motorola G5 and Motorola G5 Ace) so the admin interface renders without cut-off content, horizontal overflow, or overlapping UI across all admin pages.",
+      "featureId": "feature-fix-flip-card-click-handling-so-portfolio-flip-interactions-are-implemented-precisely-and-do-not-double-toggle-due-to-overlapping-click-handlers-between-flipcard-and-portfoliogrid",
+      "featureTitle": "Fix flip-card click handling so Portfolio flip interactions are implemented precisely and do not double-toggle due to overlapping click handlers between FlipCard and PortfolioGrid.",
       "files": [
-        "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-        "frontend/src/components/products/AdminProductsTable.tsx",
-        "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-        "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-        "frontend/src/pages/admin/AdminLayout.tsx",
-        "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
+        "frontend/src/components/FlipCard.tsx",
+        "frontend/src/components/portfolio/PortfolioGrid.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -24,16 +20,16 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-70"
+        "REQ-81"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-make-the-main-admin-dashboard-content-area-vertically-scrollable-on-mobile-so-admins-can-scroll-up-down-through-page-content-reliably",
-      "featureTitle": "Make the main Admin Dashboard content area vertically scrollable on mobile so admins can scroll up/down through page content reliably.",
+      "featureId": "feature-ensure-video-hover-behavior-on-public-portfolio-flip-cards-matches-the-specified-rules-exactly-and-is-resilient-across-browsers-autoplay-policy-differences-must-not-break-the-ui",
+      "featureTitle": "Ensure video hover behavior on public Portfolio flip-cards matches the specified rules exactly and is resilient across browsers (autoplay policy differences must not break the UI).",
       "files": [
-        "frontend/index.css",
-        "frontend/src/pages/admin/AdminLayout.tsx"
+        "frontend/src/components/FlipCard.tsx",
+        "frontend/src/components/portfolio/PortfolioGrid.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -47,16 +43,17 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-71"
+        "REQ-82"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-make-the-admin-left-side-feature-tab-navigation-independently-scrollable-so-all-nav-items-including-the-bottom-most-entries-like-verification-codes-are-reachable-on-short-mobile-screens-without-being-cut-off",
-      "featureTitle": "Make the Admin left-side feature/tab navigation independently scrollable so all nav items (including the bottom-most entries like “Verification Codes”) are reachable on short mobile screens without being cut off.",
+      "featureId": "feature-prevent-memory-leaks-from-repeated-portfolio-browsing-by-cleaning-up-object-urls-created-for-portfolio-image-video-previews-in-the-public-grid-and-lightbox",
+      "featureTitle": "Prevent memory leaks from repeated Portfolio browsing by cleaning up object URLs created for portfolio image/video previews in the public grid and lightbox.",
       "files": [
-        "frontend/index.css",
-        "frontend/src/pages/admin/AdminLayout.tsx"
+        "frontend/src/components/portfolio/PortfolioGrid.tsx",
+        "frontend/src/components/portfolio/PortfolioLightbox.tsx",
+        "frontend/src/utils/objectUrls.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -70,29 +67,7 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-72"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-project-qa-checklist-to-include-explicit-verification-steps-for-the-admin-dashboard-layout-and-sidebar-scrolling-behavior-on-motorola-g5-and-motorola-g5-ace-or-equivalent-viewport-presets-covering-both-the-main-content-scrolling-and-the-left-navigation-scrolling",
-      "featureTitle": "Update the project QA checklist to include explicit verification steps for the Admin Dashboard layout and sidebar scrolling behavior on Motorola G5 and Motorola G5 Ace (or equivalent viewport presets), covering both the main content scrolling and the left navigation scrolling.",
-      "files": [
-        "frontend/QA-CHECKLIST.md"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-73"
+        "REQ-83"
       ],
       "confidence": "high"
     }

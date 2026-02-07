@@ -34,7 +34,6 @@ export interface Coupon {
 }
 export type CouponType = { 'fixed' : bigint } |
   { 'percentage' : bigint };
-export type ExternalBlob = Uint8Array;
 export interface FulfillmentOptions {
   'dropoff' : boolean,
   'pickup' : boolean,
@@ -78,11 +77,13 @@ export interface Policies {
 }
 export interface PortfolioItem {
   'id' : string,
+  'media' : PortfolioMedia,
   'title' : string,
   'description' : string,
   'category' : [] | [string],
-  'image' : ExternalBlob,
 }
+export type PortfolioMedia = { 'video' : Uint8Array } |
+  { 'image' : Uint8Array };
 export interface Product {
   'id' : string,
   'requiresQuote' : boolean,
@@ -90,7 +91,7 @@ export interface Product {
   'name' : string,
   'description' : string,
   'category' : [] | [string],
-  'image' : ExternalBlob,
+  'image' : Uint8Array,
   'price' : bigint,
 }
 export interface ShoppingItem {
@@ -187,6 +188,7 @@ export interface _SERVICE {
   'createCoupon' : ActorMethod<[Coupon], undefined>,
   'createGiveaway' : ActorMethod<[Giveaway], undefined>,
   'createLoyaltyReward' : ActorMethod<[LoyaltyReward], undefined>,
+  'deletePortfolioItem' : ActorMethod<[string], undefined>,
   'getActiveGiveaways' : ActorMethod<[], Array<Giveaway>>,
   'getAdminVerificationStatus' : ActorMethod<
     [],
@@ -221,6 +223,7 @@ export interface _SERVICE {
   'isPermanentlyLocked' : ActorMethod<[], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
   'listAdminUsers' : ActorMethod<[], Array<Principal>>,
+  'migrateLegacyPortfolioItems' : ActorMethod<[], undefined>,
   'redeemLoyaltyReward' : ActorMethod<[string], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'selectGiveawayWinner' : ActorMethod<[string, bigint], [] | [GiveawayWinner]>,

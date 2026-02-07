@@ -23,15 +23,15 @@ export default function AdminTestimonialsTable({ testimonials, onEdit }: AdminTe
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="overflow-x-auto rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Author</TableHead>
-            <TableHead>Rating</TableHead>
-            <TableHead>Content</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="min-w-[100px]">Author</TableHead>
+            <TableHead className="w-32">Rating</TableHead>
+            <TableHead className="hidden md:table-cell">Content</TableHead>
+            <TableHead className="hidden sm:table-cell">Date</TableHead>
+            <TableHead className="w-16 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -44,14 +44,19 @@ export default function AdminTestimonialsTable({ testimonials, onEdit }: AdminTe
           ) : (
             testimonials.map((testimonial) => (
               <TableRow key={testimonial.id}>
-                <TableCell className="font-medium">{testimonial.author}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="min-w-0 break-words">{testimonial.author}</div>
+                  <div className="mt-1 text-xs text-muted-foreground sm:hidden">
+                    {formatDate(testimonial.createdAt)}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <MossyStarRating rating={Number(testimonial.rating)} readonly size="sm" />
                 </TableCell>
-                <TableCell className="max-w-md">
+                <TableCell className="hidden max-w-md md:table-cell">
                   <p className="line-clamp-2 text-sm">{testimonial.content}</p>
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
+                <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">
                   {formatDate(testimonial.createdAt)}
                 </TableCell>
                 <TableCell className="text-right">

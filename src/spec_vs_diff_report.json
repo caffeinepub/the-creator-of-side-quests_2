@@ -1,71 +1,40 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T06:02:17.961Z",
-  "summary": "Diff implements a three-step admin verification gate in the frontend and introduces backend state/session checks and lockout handling, but the diff summary does not show the required backend credential replacement/secret handling (hashed storage, master override replacement, upgrade-safe migration/rotation). It also appears to include many unrelated frontend/marketing/theme/SEO changes not requested by the BuildRequest.",
-  "missing_requirements": [
-    {
-      "id": "REQ-62",
-      "requirement": "Backend must require Code #1 then Code #2 then Code #3 (in order) using newly provided code values, and accept only the new Master Override Code (reject prior codes).",
-      "reason": "The diff summary shows frontend calling backend methods like verifyAdminCodeStep1/2/3 and verifyAdminMasterOverride, but the backend diff excerpt does not include any implementation of the new codes themselves, any validation logic tied to the newly provided code values, nor any evidence that the previous master override credential is rejected in favor of a new one.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts"
-      ]
-    },
-    {
-      "id": "REQ-63",
-      "requirement": "Treat Code #1/#2/#3 and Master Override Code as secrets: do not embed plaintext in frontend, do not log them, and store/validate server-side in a rotation-suitable way (e.g., hashes), not persisted in plaintext stable state.",
-      "reason": "No evidence in the backend excerpt that codes are stored/validated as hashed/derived representations or that plaintext is never persisted in stable state. The frontend changes do not show plaintext constants (good), but backend secret-storage requirements are not evidenced in the shown diff.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
-        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx"
-      ]
-    },
-    {
-      "id": "REQ-65",
-      "requirement": "Upgrade-safe initialization/migration to update existing deployments to the newly provided Code #1/#2/#3 and Master Override Code without needing old codes, preserving permanent lockout state and invalidating in-progress sessions.",
-      "reason": "No backend upgrade/migration logic is shown (no backend/migration.mo added; no preupgrade/postupgrade logic evidenced). While a stable map for adminVerificationStates is shown, the requirements also include forced credential replacement to the new codes and invalidation of existing sessions on upgrade, which are not evidenced in the diff excerpt.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-66",
-      "requirement": "Verification Code Management page must continue to require the Master Override Code before allowing code rotation.",
-      "reason": "The management page marks the user as verified (enabling rotation UI) after only a non-empty input check (“Actual verification happens when saving”). This does not strictly ‘require’ master override verification before enabling rotation; it only requires entering something. Backend verification may still occur on save, but the AC is about UX behavior gating rotation behind master override verification.",
-      "evidence": [
-        "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-07T06:44:58.005Z",
+  "summary": "AdminLayout and multiple admin tables were adjusted for mobile usability (overflow handling and scrollable regions), and QA checklist gained an Admin Dashboard mobile section. However, the diff also includes significant unrelated UI/theme/public-site changes and appears to add a new admin route/page for verification code management, which is explicitly out of scope (non-goal).",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Large set of unrelated frontend/marketing/SEO/theme changes (site layout/header/footer, social icons, textured sections, flip cards, SEO meta hooks, global styles, Tailwind theme changes, homepage/about/services/shop content edits).",
-      "reason": "Non-goals explicitly say not to change unrelated marketing-site content beyond what is necessary for admin authentication replacement. The diff summary (frontend-file-summaries.txt) lists many non-auth changes across public pages and styling.",
+      "description": "Added/introduced a new admin page/route for verification code management (/admin/verification-codes).",
+      "reason": "BuildRequest non-goal explicitly states not to add new admin features, pages, or routes; this diff summary indicates a new /admin/verification-codes route and a dedicated management page file.",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend-file-summaries.txt (\"frontend/src/App.tsx\": \"... including new /admin/verification-codes route ...\")",
+        "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
       ]
     },
     {
-      "description": "Addition of extensive medieval-fantasy styling/theme updates and SEO meta handling unrelated to admin authentication replacement.",
-      "reason": "Not requested in REQ-62..REQ-66, and conflicts with the constraint to avoid unrelated marketing-site changes.",
+      "description": "Public site header/navigation and other broad site UI/theme changes unrelated to admin mobile layout/scrolling.",
+      "reason": "BuildRequest scope is admin dashboard layout/scroll behavior only and explicitly says not to redesign the public site header/navigation as part of this task; the diff summary indicates changes to SiteHeader/SiteLayout/SiteFooter and theme-wide CSS/Tailwind changes.",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend-file-summaries.txt (\"frontend/src/components/SiteHeader.tsx\": \"Responsive navigation header with improved mobile menu behavior...\")",
+        "frontend-file-summaries.txt (\"frontend/src/components/SiteLayout.tsx\", \"frontend/src/components/SiteFooter.tsx\")",
+        "frontend/index.css",
+        "frontend/tailwind.config.js"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.72,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/auth/AdminRouteGuard.tsx",
-    "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-    "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-    "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
+    "frontend/QA-CHECKLIST.md",
+    "frontend/index.css",
+    "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+    "frontend/src/components/products/AdminProductsTable.tsx",
+    "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+    "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
+    "frontend/src/pages/admin/AdminLayout.tsx",
     "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx",
-    "frontend/src/utils/adminSharedCodeSession.ts",
     "project_state.json"
   ]
 }

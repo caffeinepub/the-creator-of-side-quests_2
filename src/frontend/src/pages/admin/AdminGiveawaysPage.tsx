@@ -97,10 +97,10 @@ export default function AdminGiveawaysPage() {
   }
 
   return (
-    <div>
-      <h1 className="mb-8 font-serif text-3xl font-bold">Manage Giveaways</h1>
+    <div className="space-y-6">
+      <h1 className="font-serif text-3xl font-bold">Manage Giveaways</h1>
 
-      <div className="mb-6">
+      <div className="space-y-2">
         <Label htmlFor="giveaway-select">Select Giveaway</Label>
         <Select value={selectedGiveawayId || ''} onValueChange={setSelectedGiveawayId}>
           <SelectTrigger id="giveaway-select">
@@ -124,7 +124,7 @@ export default function AdminGiveawaysPage() {
               <CardDescription>{selectedGiveaway.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4">
                 <Badge variant="outline">
                   {selectedGiveaway.entrants.length} Entrant{selectedGiveaway.entrants.length !== 1 ? 's' : ''}
                 </Badge>
@@ -150,6 +150,7 @@ export default function AdminGiveawaysPage() {
                       value={principalText}
                       onChange={(e) => setPrincipalText(e.target.value)}
                       placeholder="Enter principal ID"
+                      className="min-w-0 break-all font-mono text-xs"
                       required
                     />
                   </div>
@@ -205,13 +206,13 @@ export default function AdminGiveawaysPage() {
               <CardTitle>Entrants ({selectedGiveaway.entrants.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Display Name</TableHead>
-                      <TableHead>Principal</TableHead>
-                      <TableHead>Entered At</TableHead>
+                      <TableHead className="min-w-[100px]">Display Name</TableHead>
+                      <TableHead className="hidden md:table-cell">Principal</TableHead>
+                      <TableHead className="hidden sm:table-cell">Entered At</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -224,9 +225,16 @@ export default function AdminGiveawaysPage() {
                     ) : (
                       selectedGiveaway.entrants.map((entrant, index) => (
                         <TableRow key={index}>
-                          <TableCell className="font-medium">{entrant.displayName}</TableCell>
-                          <TableCell className="font-mono text-xs">{entrant.principal.toString()}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
+                          <TableCell className="font-medium">
+                            <div className="min-w-0 break-words">{entrant.displayName}</div>
+                            <div className="mt-1 text-xs text-muted-foreground sm:hidden">
+                              {formatDate(entrant.enteredAt)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden font-mono text-xs md:table-cell">
+                            <div className="min-w-0 break-all">{entrant.principal.toString()}</div>
+                          </TableCell>
+                          <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">
                             {formatDate(entrant.enteredAt)}
                           </TableCell>
                         </TableRow>
@@ -243,13 +251,13 @@ export default function AdminGiveawaysPage() {
               <CardTitle>Winners History ({selectedGiveaway.winners.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Winner</TableHead>
-                      <TableHead>Principal</TableHead>
-                      <TableHead>Won At</TableHead>
+                      <TableHead className="min-w-[100px]">Winner</TableHead>
+                      <TableHead className="hidden md:table-cell">Principal</TableHead>
+                      <TableHead className="hidden sm:table-cell">Won At</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -264,14 +272,17 @@ export default function AdminGiveawaysPage() {
                         <TableRow key={index}>
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
-                              <Trophy className="h-4 w-4 text-primary" />
-                              {winner.entrant.displayName}
+                              <Trophy className="h-4 w-4 shrink-0 text-primary" />
+                              <span className="min-w-0 break-words">{winner.entrant.displayName}</span>
+                            </div>
+                            <div className="mt-1 text-xs text-muted-foreground sm:hidden">
+                              {formatDate(winner.wonAt)}
                             </div>
                           </TableCell>
-                          <TableCell className="font-mono text-xs">
-                            {winner.entrant.principal.toString()}
+                          <TableCell className="hidden font-mono text-xs md:table-cell">
+                            <div className="min-w-0 break-all">{winner.entrant.principal.toString()}</div>
                           </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
+                          <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">
                             {formatDate(winner.wonAt)}
                           </TableCell>
                         </TableRow>

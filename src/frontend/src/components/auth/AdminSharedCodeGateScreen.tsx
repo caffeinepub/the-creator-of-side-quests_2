@@ -20,6 +20,7 @@ import {
 } from '../../utils/adminSharedCodeSession';
 import { useAdminVerificationStatus } from '../../hooks/admin/useAdminVerificationStatus';
 import AdminLockoutModal from './AdminLockoutModal';
+import WelcomeAdminModal from './WelcomeAdminModal';
 
 interface AdminSharedCodeGateScreenProps {
   onSuccess: () => void;
@@ -32,6 +33,7 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [showLockoutModal, setShowLockoutModal] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [useMasterOverride, setUseMasterOverride] = useState(false);
 
   const { data: verificationStatus, refetch: refetchStatus } = useAdminVerificationStatus();
@@ -52,6 +54,11 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
       setCurrentStep(0);
     }
   }, [isLocked]);
+
+  const handleWelcomeContinue = () => {
+    setShowWelcomeModal(false);
+    onSuccess();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +95,8 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
         await verifyStep3.mutateAsync(code);
         setAdminVerificationProgress(3);
         setCurrentStep(3);
-        onSuccess();
+        // Show welcome modal after Step 3 succeeds
+        setShowWelcomeModal(true);
       }
     } catch (err: any) {
       // Refresh lockout status after any failed attempt
@@ -272,6 +280,11 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
       <AdminLockoutModal 
         open={showLockoutModal} 
         onClose={() => setShowLockoutModal(false)} 
+      />
+
+      <WelcomeAdminModal 
+        open={showWelcomeModal} 
+        onContinue={handleWelcomeContinue} 
       />
     </>
   );

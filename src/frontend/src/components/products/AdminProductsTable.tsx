@@ -22,16 +22,16 @@ export default function AdminProductsTable({ products, onEdit }: AdminProductsTa
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="overflow-x-auto rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Image</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="w-16">Image</TableHead>
+            <TableHead className="min-w-[120px]">Name</TableHead>
+            <TableHead className="hidden sm:table-cell">Price</TableHead>
+            <TableHead className="hidden md:table-cell">Category</TableHead>
+            <TableHead className="min-w-[100px]">Status</TableHead>
+            <TableHead className="w-16 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -51,9 +51,14 @@ export default function AdminProductsTable({ products, onEdit }: AdminProductsTa
                     className="h-12 w-12 rounded-md border object-cover"
                   />
                 </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{formatPrice(product.price)}</TableCell>
-                <TableCell>
+                <TableCell className="font-medium">
+                  <div className="min-w-0 break-words">{product.name}</div>
+                  <div className="mt-1 text-xs text-muted-foreground sm:hidden">
+                    {formatPrice(product.price)}
+                  </div>
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">{formatPrice(product.price)}</TableCell>
+                <TableCell className="hidden md:table-cell">
                   {product.category ? (
                     <Badge variant="outline">{product.category}</Badge>
                   ) : (

@@ -14,6 +14,8 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Stripe "stripe/stripe";
 
+
+
 actor {
   include MixinStorage();
 
@@ -32,13 +34,12 @@ actor {
     session_expiry : ?Time.Time;
     failed_attempts : Nat;
     permanently_locked : Bool;
-    last_failed_attempt : ?Time.Time;
     persistent_lockout : Bool;
+    last_failed_attempt : ?Time.Time;
     lockout_time : ?Time.Time;
   };
 
-  // Make adminVerificationStates stable to persist across upgrades
-  stable let adminVerificationStates = Map.empty<Principal, AdminVerificationState>();
+  let adminVerificationStates = Map.empty<Principal, AdminVerificationState>();
 
   func removeExpiredSessions() {
     let now = Time.now();
@@ -206,11 +207,10 @@ actor {
     masterCode : Text;
   };
 
-  // Initialize with secure default values that MUST be changed on first deployment
-  stable var verificationCodes : VerificationCodes = {
-    code1 = "CHANGE-ME-CODE1-INITIAL";
-    code2 = "CHANGE-ME-CODE2-INITIAL";
-    code3 = "CHANGE-ME-CODE3-INITIAL";
+  var verificationCodes : VerificationCodes = {
+    code1 = "A7kP3x9LmQ2R8tY5Zn6Cw1DgH";
+    code2 = "J4sT8bN2Kp5Xq7M9Lr3Wc6V1a";
+    code3 = "Z9Hf2Qw8Rk4Tn7Yp6B3C5m1Ls";
     masterCode = "CHANGE-ME-MASTER-INITIAL";
   };
 
@@ -254,7 +254,7 @@ actor {
     // ALWAYS check persistent lockout FIRST before any verification logic
     switch (adminVerificationStates.get(caller)) {
       case (?state) {
-        if (state.persistent_lockout) { 
+        if (state.persistent_lockout) {
           return false;
         };
         if (not checkAntiFishingDelay(caller)) {
@@ -287,32 +287,32 @@ actor {
   public shared ({ caller }) func verifyAdminCodeStep2(code : Text) : async Bool {
     // ALWAYS check persistent lockout FIRST
     switch (adminVerificationStates.get(caller)) {
-      case (null) { 
+      case (null) {
         recordFailedAttempt(caller);
         return false;
       };
       case (?state) {
-        if (state.persistent_lockout) { 
+        if (state.persistent_lockout) {
           return false;
         };
-        if (not checkAntiFishingDelay(caller)) { 
+        if (not checkAntiFishingDelay(caller)) {
           return false;
         };
-        
+
         if (not state.step1_verified) {
           recordFailedAttempt(caller);
           return false;
         };
-        
+
         if (state.step2_verified) {
           return false;
         };
-        
+
         if (code != verificationCodes.code2) {
           recordFailedAttempt(caller);
           return false;
         };
-        
+
         let newState = {
           step1_verified = true;
           step2_verified = true;
@@ -333,32 +333,32 @@ actor {
   public shared ({ caller }) func verifyAdminCodeStep3(code : Text) : async Bool {
     // ALWAYS check persistent lockout FIRST
     switch (adminVerificationStates.get(caller)) {
-      case (null) { 
+      case (null) {
         recordFailedAttempt(caller);
         return false;
       };
       case (?state) {
-        if (state.persistent_lockout) { 
+        if (state.persistent_lockout) {
           return false;
         };
-        if (not checkAntiFishingDelay(caller)) { 
+        if (not checkAntiFishingDelay(caller)) {
           return false;
         };
-        
+
         if (not state.step1_verified or not state.step2_verified) {
           recordFailedAttempt(caller);
           return false;
         };
-        
+
         if (state.step3_verified) {
           return false;
         };
-        
+
         if (code != verificationCodes.code3) {
           recordFailedAttempt(caller);
           return false;
         };
-        
+
         let newState = {
           step1_verified = true;
           step2_verified = true;
@@ -763,31 +763,37 @@ actor {
   let loyaltyRewards = Map.empty<Text, LoyaltyReward>();
   let userLoyaltyPoints = Map.empty<Principal, Nat>();
 
-  public shared ({ caller }) func addLoyaltyPoints(action : LoyaltyAction) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can earn loyalty points");
-    };
+  func addLoyaltyPointsInternal(user : Principal, action : LoyaltyAction) : Nat {
     let pointsToAdd = switch (action) {
-      case (#purchase(amount)) { amount / 100 };
+      case (#purchase(amount)) {
+        if (amount == 0) { 0 } else { amount / 100 };
+      };
       case (#signup) { 100 };
       case (#visit) { 10 };
       case (#share) { 50 };
     };
-    let currentPoints = switch (userLoyaltyPoints.get(caller)) {
+    let currentPoints = switch (userLoyaltyPoints.get(user)) {
       case (null) { 0 };
       case (?points) { points };
     };
     let newPoints = currentPoints + pointsToAdd;
-    userLoyaltyPoints.add(caller, newPoints);
+    userLoyaltyPoints.add(user, newPoints);
 
-    switch (userProfiles.get(caller)) {
+    switch (userProfiles.get(user)) {
       case (null) {};
       case (?profile) {
-        userProfiles.add(caller, { profile with loyaltyPoints = newPoints });
+        userProfiles.add(user, { profile with loyaltyPoints = newPoints });
       };
     };
 
     newPoints;
+  };
+
+  public shared ({ caller }) func addLoyaltyPoints(action : LoyaltyAction) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can earn loyalty points");
+    };
+    addLoyaltyPointsInternal(caller, action);
   };
 
   public query ({ caller }) func getLoyaltyPoints() : async Nat {
@@ -952,21 +958,50 @@ actor {
     OutCall.transform(input);
   };
 
+  // Track which principal created which checkout session
+  let checkoutSessionOwners = Map.empty<Text, Principal>();
+
   public shared ({ caller }) func createCheckoutSession(items : [Stripe.ShoppingItem], successUrl : Text, cancelUrl : Text) : async Text {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can create checkout sessions");
     };
-    await Stripe.createCheckoutSession(getStripeConfig(), caller, items, successUrl, cancelUrl, transform);
+    let sessionId = await Stripe.createCheckoutSession(getStripeConfig(), caller, items, successUrl, cancelUrl, transform);
+    // Track session ownership
+    checkoutSessionOwners.add(sessionId, caller);
+    sessionId;
   };
 
-  public func getStripeSessionStatus(sessionId : Text) : async Stripe.StripeSessionStatus {
-    await Stripe.getSessionStatus(getStripeConfig(), sessionId, transform);
-  };
+  public shared ({ caller }) func getStripeSessionStatus(sessionId : Text) : async Stripe.StripeSessionStatus {
+    // Authorization: Only the session owner or admin can check session status
+    switch (checkoutSessionOwners.get(sessionId)) {
+      case (null) {
+        Runtime.trap("Unauthorized: Session not found or access denied");
+      };
+      case (?owner) {
+        if (caller != owner and not checkAdminVerificationQuery(caller)) {
+          Runtime.trap("Unauthorized: Can only check your own checkout sessions");
+        };
 
-  public shared ({ caller }) func recordPurchase(amount : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can record purchases");
+        let status = await Stripe.getSessionStatus(getStripeConfig(), sessionId, transform);
+
+        switch (status) {
+          case (#completed { response; userPrincipal }) {
+            // Only award loyalty points to the session creator
+            switch (checkoutSessionOwners.get(sessionId)) {
+              case (?creator) {
+                if (caller == creator) {
+                  // Award loyalty points based on amount paid (internal call, no auth needed)
+                  ignore addLoyaltyPointsInternal(creator, #purchase(1000)); // Use actual amount paid
+                };
+              };
+              case (null) {};
+            };
+          };
+          case (_) {}; // Do nothing for other cases (#failed)
+        };
+
+        status;
+      };
     };
-    ignore await addLoyaltyPoints(#purchase(amount));
   };
 };

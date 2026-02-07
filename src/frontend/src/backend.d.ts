@@ -218,7 +218,6 @@ export interface backendInterface {
     isPermanentlyLocked(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
     listAdminUsers(): Promise<Array<Principal>>;
-    recordPurchase(amount: bigint): Promise<void>;
     redeemLoyaltyReward(rewardId: string): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     selectGiveawayWinner(giveawayId: string, winnerIndex: bigint): Promise<GiveawayWinner | null>;

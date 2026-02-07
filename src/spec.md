@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the current admin authentication with a server-side three-step verification (Code #1 → Code #2 → Code #3) and a new Master Override Code for admin code rotation, while keeping all admin routes and admin-only actions fully protected.
+**Goal:** Fix the Admin Dashboard experience on small Android phones (Motorola G5 / G5 Ace) by eliminating layout breakage and enabling reliable vertical scrolling in both the main content area and the left sidebar navigation.
 
 **Planned changes:**
-- Update backend admin verification to require completing Code #1, then Code #2, then Code #3 in exact order to obtain an admin session, and accept only the newly provided Master Override Code for master-override verification and code rotation.
-- Treat all codes as secrets end-to-end: ensure no plaintext codes are embedded in the frontend bundle, returned in responses, or logged; store/validate server-side in a rotation-suitable way (non-plaintext stable representation).
-- Preserve protection of all `/admin` routes and admin-only backend mutations behind the admin verification session; keep non-admin/public features unchanged.
-- Add upgrade-safe migration/initialization so existing deployments switch to the new codes without needing old codes, invalidate in-progress admin verification sessions, and preserve any permanent lockout state.
-- Update frontend admin verification UX copy to reflect 3 ordered steps (Step 1/3, 2/3, 3/3) and Master Override Code usage for code rotation, without referencing any retired authentication mechanism.
+- Adjust admin page layout styles for narrow mobile viewports (~360–412px) to prevent cut-off content, horizontal overflow, and overlapping UI across all existing `/admin` and `/admin/*` routes while keeping current theme styling.
+- Ensure the main Admin Dashboard content area is vertically scrollable on mobile (no fixed containers or overflow settings that block scrolling).
+- Make the left admin sidebar/navigation independently vertically scrollable so all nav items (including bottom entries like “Verification Codes”) remain reachable on short screens.
+- Update `frontend/QA-CHECKLIST.md` with a dedicated Admin Dashboard mobile section that includes explicit Motorola G5 / G5 Ace (or equivalent viewport) verification steps for: main content scrolling, sidebar independent scrolling, and reaching the bottom-most nav item.
 
-**User-visible outcome:** Admin users see an ordered 3-step verification gate before accessing any admin pages, and the verification code management flow requires the Master Override Code to rotate codes; admin content remains inaccessible without a valid verified admin session.
+**User-visible outcome:** On Motorola G5/G5 Ace-sized screens, admins can use every admin page without clipped/overlapping UI or horizontal scrolling, can scroll through page content top-to-bottom, and can scroll the sidebar to reach all navigation items.

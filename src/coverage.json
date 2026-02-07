@@ -1,90 +1,88 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T06:02:17.966Z",
+  "generatedAt": "2026-02-07T06:44:58.010Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 3,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-62",
-        "summary": "Update the backend’s active Admin verification credentials so that Admin Dashboard access requires successful completion of the three-step sequence using the newly provided Code #1, Code #2, and Code #3 (in that exact order), and ensure the new Master Override Code is the only master override credential accepted for master-override verification and code rotation.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-63",
-        "summary": "Ensure the new Code #1/#2/#3 and the new Master Override Code are treated as secrets: do not embed their plaintext values anywhere in the frontend bundle, and do not log them to browser console, backend logs, or error messages; store/validate them server-side in a way suitable for rotation (e.g., hashed/derived representation rather than plaintext).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
-          "frontend/src/components/auth/LoginButton.tsx",
-          "frontend/src/utils/adminSharedCodeSession.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
-          "frontend/src/utils/adminSharedCodeSession.ts"
-        ]
-      },
-      {
-        "id": "REQ-64",
-        "summary": "Keep the Admin Dashboard closed off: all /admin routes and all admin-only backend mutations must remain protected by the admin verification session (three-step verification), and must not become publicly accessible.",
+        "id": "REQ-70",
+        "summary": "Fix the Admin Dashboard layout on small Android phones (specifically Motorola G5 and Motorola G5 Ace) so the admin interface renders without cut-off content, horizontal overflow, or overlapping UI across all admin pages.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/admin/AdminLayout.tsx",
-          "frontend/src/components/auth/AdminRouteGuard.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/components/SiteHeader.tsx"
+          "frontend/src/components/products/AdminProductsTable.tsx",
+          "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+          "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+          "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
+          "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/auth/AdminRouteGuard.tsx"
+          "frontend/src/pages/admin/AdminLayout.tsx",
+          "frontend/src/components/products/AdminProductsTable.tsx",
+          "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+          "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+          "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
+          "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
         ]
       },
       {
-        "id": "REQ-65",
-        "summary": "Add upgrade-safe initialization/migration so that existing deployments are updated to use the newly provided Code #1/#2/#3 and Master Override Code values (without requiring the old codes to be known), while preserving existing per-principal permanent lockout state.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-66",
-        "summary": "Update the frontend Admin verification UX copy (gate screen and verification-code management page) as needed so it accurately reflects the system behavior: three steps in order (Step 1/3, 2/3, 3/3) and Master Override Code for code rotation, without referencing any retired/previous admin authentication system.",
+        "id": "REQ-71",
+        "summary": "Make the main Admin Dashboard content area vertically scrollable on mobile so admins can scroll up/down through page content reliably.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx",
-          "frontend/src/hooks/admin/useVerificationCodeManagement.ts"
+          "frontend/src/pages/admin/AdminLayout.tsx",
+          "frontend/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx",
-          "frontend/src/hooks/admin/useVerificationCodeManagement.ts"
+          "frontend/src/pages/admin/AdminLayout.tsx",
+          "frontend/index.css"
+        ]
+      },
+      {
+        "id": "REQ-72",
+        "summary": "Make the Admin left-side feature/tab navigation independently scrollable so all nav items (including the bottom-most entries like “Verification Codes”) are reachable on short mobile screens without being cut off.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/admin/AdminLayout.tsx",
+          "frontend/index.css"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/admin/AdminLayout.tsx",
+          "frontend/index.css"
+        ]
+      },
+      {
+        "id": "REQ-73",
+        "summary": "Update the project QA checklist to include explicit verification steps for the Admin Dashboard layout and sidebar scrolling behavior on Motorola G5 and Motorola G5 Ace (or equivalent viewport presets), covering both the main content scrolling and the left navigation scrolling.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/QA-CHECKLIST.md"
+        ],
+        "matchedFiles": [
+          "frontend/QA-CHECKLIST.md"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/auth/AdminRouteGuard.tsx",
-    "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-    "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-    "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
+    "frontend/QA-CHECKLIST.md",
+    "frontend/index.css",
+    "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+    "frontend/src/components/products/AdminProductsTable.tsx",
+    "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+    "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
+    "frontend/src/pages/admin/AdminLayout.tsx",
     "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx",
-    "frontend/src/utils/adminSharedCodeSession.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

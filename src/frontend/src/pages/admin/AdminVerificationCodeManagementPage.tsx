@@ -71,8 +71,8 @@ export default function AdminVerificationCodeManagementPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5" />
-            Master Override Verification
+            <ShieldCheck className="h-5 w-5 shrink-0" />
+            <span className="min-w-0 break-words">Master Override Verification</span>
           </CardTitle>
           <CardDescription>
             Enter the Master Override Code to unlock code rotation. This code bypasses all three verification steps and is required to change Codes #1, #2, and #3.
@@ -113,8 +113,8 @@ export default function AdminVerificationCodeManagementPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            Rotate Verification Codes
+            <Lock className="h-5 w-5 shrink-0" />
+            <span className="min-w-0 break-words">Rotate Verification Codes</span>
           </CardTitle>
           <CardDescription>
             Update the three verification codes used for admin access. After saving, all existing admin sessions will be cleared and users must re-verify with the new codes.

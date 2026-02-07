@@ -142,4 +142,16 @@
     .focus\:ring-mossy-glow:focus {
         --tw-ring-color: oklch(var(--mossy-glow) / 0.5);
     }
+
+    /* Admin navigation scroll container */
+    .admin-nav-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    /* Admin main content scroll container */
+    .admin-main-scroll {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
 }

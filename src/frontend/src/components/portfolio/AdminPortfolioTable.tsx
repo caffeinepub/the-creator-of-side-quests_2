@@ -61,15 +61,15 @@ export default function AdminPortfolioTable({ items }: AdminPortfolioTableProps)
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Thumbnail</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-16">Thumbnail</TableHead>
+              <TableHead className="min-w-[120px]">Title</TableHead>
+              <TableHead className="hidden md:table-cell">Category</TableHead>
+              <TableHead className="hidden lg:table-cell">Description</TableHead>
+              <TableHead className="w-16 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -89,15 +89,22 @@ export default function AdminPortfolioTable({ items }: AdminPortfolioTableProps)
                       className="h-12 w-12 rounded-md border object-cover"
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{item.title}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium">
+                    <div className="min-w-0 break-words">{item.title}</div>
+                    {item.category && (
+                      <div className="mt-1 md:hidden">
+                        <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {item.category ? (
                       <Badge variant="outline">{item.category}</Badge>
                     ) : (
                       <span className="text-sm text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="max-w-md">
+                  <TableCell className="hidden max-w-md lg:table-cell">
                     <p className="line-clamp-2 text-sm">{item.description}</p>
                   </TableCell>
                   <TableCell className="text-right">

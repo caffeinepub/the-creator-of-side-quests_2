@@ -259,7 +259,6 @@ export const idlService = IDL.Service({
   'isPermanentlyLocked' : IDL.Func([], [IDL.Bool], ['query']),
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
   'listAdminUsers' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
-  'recordPurchase' : IDL.Func([IDL.Nat], [], []),
   'redeemLoyaltyReward' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'selectGiveawayWinner' : IDL.Func(
@@ -538,7 +537,6 @@ export const idlFactory = ({ IDL }) => {
     'isPermanentlyLocked' : IDL.Func([], [IDL.Bool], ['query']),
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
     'listAdminUsers' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
-    'recordPurchase' : IDL.Func([IDL.Nat], [], []),
     'redeemLoyaltyReward' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'selectGiveawayWinner' : IDL.Func(

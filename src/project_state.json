@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 27,
+  "projectStateVersion": 31,
   "summary": "Project requires a new admin authentication system replacing the prior shared-passcode/admin-permission gate: Admin Dashboard access must be controlled exclusively via a separate three-step sequence of 25-character verification codes (stored server-side as hashes, never exposed client-side), with account-specific failed-attempt tracking and irreversible per-account admin lockout after 3 failures. Admins can rotate the three codes only after entering a separate 100-character master override code (also hashed server-side), with secure logging/audit of attempts and changes. Additionally, standard user login (e.g., email/Google/etc.) must be separated and must never grant Admin Dashboard access under any circumstances. After 3 failed admin verification attempts, the user must see a closable popup image and the Admin tab/link must be removed permanently for that locked-out user.",
   "architectural_notes": [
     "Shop supports both Stripe checkout and an alternative request-quote/contact flow on selected products.",
@@ -23,7 +23,8 @@
     "User provided plaintext 100-character Master Override Code in the prompt; ensure implementation stores/validates it only as a server-side hash and never exposes/logs it client-side or in backend logs.",
     "User reports a \"Connection closed\" / service connection could not be established error triggered when clicking the website login button; may be browser-specific and requires cross-browser investigation/testing.",
     "User continues to paste plaintext admin verification codes and the master override code into chat; ensure support/UX discourages this and that no plaintext is ever logged or stored client-side/server-side beyond hashed verification.",
-    "User provided a new set of plaintext admin verification codes and a plaintext master override code in chat; ensure these are never embedded in frontend bundles or logged, and are only stored/validated as server-side hashes."
+    "User provided a new set of plaintext admin verification codes and a plaintext master override code in chat; ensure these are never embedded in frontend bundles or logged, and are only stored/validated as server-side hashes.",
+    "User provided plaintext values for Code #1/#2/#3 in chat again; ensure these secrets are never logged, embedded, or stored in plaintext anywhere (frontend or backend), and discourage sharing them in support UX."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -442,6 +443,46 @@
         "REQ-66"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-after-the-user-successfully-completes-step-3-3-i-e-code-3-is-accepted-display-a-popup-modal-that-says-exactly-welcome-to-the-admin-dashboard-enjoy-your-stay-before-proceeding-into-the-admin-dashboard",
+      "title": "After the user successfully completes Step 3/3 (i.e., Code #3 is accepted), display a popup/modal that says exactly: \"Welcome to the Admin Dashboard — enjoy your stay\" before proceeding into the Admin Dashboard.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-admin-dashboard-layout-on-small-android-phones-specifically-motorola-g5-and-motorola-g5-ace-so-the-admin-interface-renders-without-cut-off-content-horizontal-overflow-or-overlapping-ui-across-all-admin-pages",
+      "title": "Fix the Admin Dashboard layout on small Android phones (specifically Motorola G5 and Motorola G5 Ace) so the admin interface renders without cut-off content, horizontal overflow, or overlapping UI across all admin pages.",
+      "reqIds": [
+        "REQ-70"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-main-admin-dashboard-content-area-vertically-scrollable-on-mobile-so-admins-can-scroll-up-down-through-page-content-reliably",
+      "title": "Make the main Admin Dashboard content area vertically scrollable on mobile so admins can scroll up/down through page content reliably.",
+      "reqIds": [
+        "REQ-71"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-admin-left-side-feature-tab-navigation-independently-scrollable-so-all-nav-items-including-the-bottom-most-entries-like-verification-codes-are-reachable-on-short-mobile-screens-without-being-cut-off",
+      "title": "Make the Admin left-side feature/tab navigation independently scrollable so all nav items (including the bottom-most entries like “Verification Codes”) are reachable on short mobile screens without being cut off.",
+      "reqIds": [
+        "REQ-72"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-project-qa-checklist-to-include-explicit-verification-steps-for-the-admin-dashboard-layout-and-sidebar-scrolling-behavior-on-motorola-g5-and-motorola-g5-ace-or-equivalent-viewport-presets-covering-both-the-main-content-scrolling-and-the-left-navigation-scrolling",
+      "title": "Update the project QA checklist to include explicit verification steps for the Admin Dashboard layout and sidebar scrolling behavior on Motorola G5 and Motorola G5 Ace (or equivalent viewport presets), covering both the main content scrolling and the left navigation scrolling.",
+      "reqIds": [
+        "REQ-73"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -709,6 +750,34 @@
       "reqIds": [
         "REQ-65"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-49",
+      "summary": "After successful completion of Code #3 in the three-step admin verification flow, display a popup/modal message such as “Welcome to the Admin Dashboard — enjoy your stay” before entering the dashboard.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "Update the backend admin verification to accept the user-provided three-step codes (in this exact order) as the active Code #1, Code #2, and Code #3, and ensure they work end-to-end with the existing Step 1/3 → Step 2/3 → Step 3/3 flow: Code #1 = \"A7kP3x9LmQ2R8tY5Zn6Cw1DgH\", Code #2 = \"J4sT8bN2Kp5Xq7M9Lr3Wc6V1a\", Code #3 = \"Z9Hf2Qw8Rk4Tn7Yp6B3C5m1Ls\".",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "Add an upgrade-safe initialization/migration path so existing deployments are updated to use the new active Code #1/#2/#3 values without requiring knowledge of any previous codes, while preserving all existing per-principal permanent lockout state.",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-52",
+      "summary": "Fix Admin Dashboard mobile responsiveness issues on Motorola G5 and Motorola G5 Ace, including ensuring the main dashboard scrolls vertically and the left-side feature/tab navigation has independent scrolling so bottom items are reachable (no cut-off/overflow).",
+      "reqIds": [],
       "status": "pending"
     }
   ],

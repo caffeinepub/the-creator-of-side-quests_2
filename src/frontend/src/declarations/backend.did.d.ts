@@ -221,7 +221,6 @@ export interface _SERVICE {
   'isPermanentlyLocked' : ActorMethod<[], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
   'listAdminUsers' : ActorMethod<[], Array<Principal>>,
-  'recordPurchase' : ActorMethod<[bigint], undefined>,
   'redeemLoyaltyReward' : ActorMethod<[string], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'selectGiveawayWinner' : ActorMethod<[string, bigint], [] | [GiveawayWinner]>,

@@ -311,7 +311,6 @@ export interface backendInterface {
     isPermanentlyLocked(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
     listAdminUsers(): Promise<Array<Principal>>;
-    recordPurchase(amount: bigint): Promise<void>;
     redeemLoyaltyReward(rewardId: string): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     selectGiveawayWinner(giveawayId: string, winnerIndex: bigint): Promise<GiveawayWinner | null>;
@@ -991,20 +990,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.listAdminUsers();
-            return result;
-        }
-    }
-    async recordPurchase(arg0: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.recordPurchase(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.recordPurchase(arg0);
             return result;
         }
     }

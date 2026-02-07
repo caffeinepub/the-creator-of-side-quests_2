@@ -1,28 +1,10 @@
-import { useEffect } from 'react';
-import { Link, useSearch } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { CheckCircle2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { usePageMeta } from '../hooks/usePageMeta';
-import { useMutation } from '@tanstack/react-query';
-import { useActor } from '../hooks/useActor';
 
 export default function PaymentSuccessPage() {
   usePageMeta('Payment Successful', 'Your payment was processed successfully.');
-  const search = useSearch({ strict: false }) as { session_id?: string };
-  const { actor } = useActor();
-
-  const recordPurchase = useMutation({
-    mutationFn: async (amount: number) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.recordPurchase(BigInt(amount));
-    },
-  });
-
-  useEffect(() => {
-    if (search.session_id && actor) {
-      recordPurchase.mutate(100);
-    }
-  }, [search.session_id, actor]);
 
   return (
     <div className="container py-16">

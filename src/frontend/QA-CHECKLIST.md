@@ -13,89 +13,240 @@ This checklist covers the minimum manual verification steps for ensuring the app
 ### 1. Login Flow (Internet Identity)
 
 #### Clean Session Login
-- [ ] **Chrome**: Click Login button → Internet Identity popup opens → Complete authentication → User is logged in
-- [ ] **Firefox**: Click Login button → Internet Identity popup opens → Complete authentication → User is logged in
-- [ ] **Safari**: Click Login button → Internet Identity popup opens → Complete authentication → User is logged in
-- [ ] **Opera/Opera GX**: Click Login button → Internet Identity popup opens → Complete authentication → User is logged in
+- [ ] **Chrome**: Click Login button → II window opens → Complete authentication → Redirected back → Profile setup modal appears (if first time) → Login successful
+- [ ] **Firefox**: Same flow as Chrome
+- [ ] **Safari**: Same flow as Chrome
+- [ ] **Opera/Opera GX**: Same flow as Chrome
 
-#### Popup Blocked Scenario
-- [ ] **Chrome**: Block popups → Click Login → User sees clear error message about popup being blocked
-- [ ] **Firefox**: Block popups → Click Login → User sees clear error message about popup being blocked
-- [ ] **Safari**: Block popups → Click Login → User sees clear error message about popup being blocked
-- [ ] **Opera/Opera GX**: Block popups → Click Login → User sees clear error message about popup being blocked
+#### Returning User Login
+- [ ] **Chrome**: Click Login → II recognizes user → Auto-login → No profile setup modal → Dashboard accessible
+- [ ] **Firefox**: Same flow as Chrome
+- [ ] **Safari**: Same flow as Chrome
+- [ ] **Opera/Opera GX**: Same flow as Chrome
 
-#### Login Button State Recovery
-- [ ] **All browsers**: If login fails or times out, the Login button returns to an actionable state (not stuck on "Logging in...")
-- [ ] **All browsers**: User can retry login after a failure without refreshing the page
+#### Login Error Handling
+- [ ] **Chrome**: Close II window without completing → Error toast appears → Login button remains clickable → Retry works
+- [ ] **Firefox**: Same flow as Chrome
+- [ ] **Safari**: Same flow as Chrome
+- [ ] **Opera/Opera GX**: Same flow as Chrome
 
-### 2. Logout Recovery
-- [ ] **Chrome**: Click Logout → User is logged out → App remains functional → Can navigate to public pages
-- [ ] **Firefox**: Click Logout → User is logged out → App remains functional → Can navigate to public pages
-- [ ] **Safari**: Click Logout → User is logged out → App remains functional → Can navigate to public pages
-- [ ] **Opera/Opera GX**: Click Logout → User is logged out → App remains functional → Can navigate to public pages
+#### Logout
+- [ ] **Chrome**: Click Logout → Confirmation → Session cleared → Redirected to public view → Login button visible
+- [ ] **Firefox**: Same flow as Chrome
+- [ ] **Safari**: Same flow as Chrome
+- [ ] **Opera/Opera GX**: Same flow as Chrome
 
-### 3. Basic Navigation (Public Routes)
+### 2. Navigation & Routing
 
-#### Shop Page
-- [ ] **All browsers**: Navigate to /shop → Page loads without errors → Products display correctly
+#### Public Pages
+- [ ] **Chrome**: All public pages load without errors (Home, About, Services, Shop, Portfolio, Testimonials, Contact, Hours & Policies)
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
 
-#### Contact Page
-- [ ] **All browsers**: Navigate to /contact → Page loads → Form is usable → Can submit contact request
+#### Admin Pages (After Login)
+- [ ] **Chrome**: All admin routes accessible after verification (Dashboard, Products, Portfolio, Testimonials, Social Links, Contact Requests, Coupons, Loyalty Rewards, Giveaways, Policies & Fulfillment, Stripe Setup, Access, Verification Codes)
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
 
-#### Testimonials Page
-- [ ] **All browsers**: Navigate to /testimonials → Page loads → Testimonials display → Create Testimony button works
+#### Route Guards
+- [ ] **Chrome**: Accessing /admin without login → Redirected to verification gate → Login required
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
 
-#### Portfolio Page
-- [ ] **All browsers**: Navigate to /portfolio → Page loads → Portfolio items display → Lightbox opens on click
+### 3. Responsive Layout
 
-### 4. Admin Guard Screens
+#### Desktop (1920x1080)
+- [ ] **Chrome**: Header, navigation, content, footer all visible and properly aligned
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
 
-#### Authentication Required Screen
-- [ ] **All browsers**: Navigate to /admin while logged out → Shows "Authentication Required" message → "Return Home" button works
+#### Tablet (768x1024)
+- [ ] **Chrome**: Layout adapts, mobile menu works, no horizontal scroll
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
 
-#### Admin Verification Screen
-- [ ] **All browsers**: Navigate to /admin while logged in (but not verified) → Shows three-step verification form → Form is usable
+#### Mobile (375x667)
+- [ ] **Chrome**: Mobile menu accessible, content readable, forms usable, no horizontal overflow
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
 
-#### Lockout Screen
-- [ ] **All browsers**: If user is permanently locked out → Shows "Admin Access Permanently Locked" message → User can still access non-admin pages
+### 4. Admin Dashboard Mobile (Motorola G5/G5 Ace)
 
-### 5. Responsive Layout (Mobile/Tablet/Desktop)
+#### Viewport Sizes to Test
+- Motorola G5: 360x640 (or similar small Android phone)
+- Motorola G5 Ace: 412x915 (or similar mid-size Android phone)
 
-#### Header Navigation
-- [ ] **Mobile (360px-767px)**: Hamburger menu opens/closes reliably → Links are tappable → No horizontal overflow
-- [ ] **Tablet (768px-1023px)**: Navigation displays correctly → All links accessible
-- [ ] **Desktop (1024px+)**: Full navigation bar displays → All links accessible
+#### Main Content Vertical Scrolling
+- [ ] **Chrome (360x640)**: Visit /admin → Main content area scrolls vertically from top to bottom → No stuck scroll behavior
+- [ ] **Chrome (412x915)**: Same as above
+- [ ] **Firefox (360x640)**: Same as Chrome
+- [ ] **Firefox (412x915)**: Same as Chrome
+- [ ] **Safari iOS (similar size)**: Same as Chrome
+- [ ] **Opera/Opera GX (360x640)**: Same as Chrome
+- [ ] **Opera/Opera GX (412x915)**: Same as Chrome
 
-#### Forms
-- [ ] **Mobile**: Contact form is readable and usable → Inputs don't overflow → Submit button works
-- [ ] **Mobile**: Testimonial dialog is readable and usable → Form fits on screen
-- [ ] **Tablet**: All forms remain usable and readable
+#### Sidebar Navigation Independent Scrolling
+- [ ] **Chrome (360x640)**: Visit /admin → Sidebar navigation scrolls independently → Can reach "Verification Codes" at bottom → No horizontal scroll triggered
+- [ ] **Chrome (412x915)**: Same as above
+- [ ] **Firefox (360x640)**: Same as Chrome
+- [ ] **Firefox (412x915)**: Same as Chrome
+- [ ] **Safari iOS (similar size)**: Same as Chrome
+- [ ] **Opera/Opera GX (360x640)**: Same as Chrome
+- [ ] **Opera/Opera GX (412x915)**: Same as Chrome
 
-#### Dialogs/Modals
-- [ ] **Mobile**: Portfolio lightbox displays correctly → Content scrolls if needed → No content clipped off-screen
-- [ ] **Mobile**: Testimonial creation dialog displays correctly → Content scrolls if needed
-- [ ] **Mobile**: Admin lockout modal displays correctly
+#### Admin Tables Mobile Responsiveness
+- [ ] **Chrome (360x640)**: Visit /admin/products → Table displays without horizontal overflow → Essential columns visible → Long text wraps
+- [ ] **Chrome (360x640)**: Visit /admin/portfolio → Table displays without horizontal overflow → Responsive column visibility
+- [ ] **Chrome (360x640)**: Visit /admin/testimonials → Table displays without horizontal overflow → Content readable
+- [ ] **Chrome (360x640)**: Visit /admin/giveaways → Tables display without horizontal overflow → Principal IDs wrap properly
+- [ ] **Chrome (412x915)**: Repeat above for all admin tables
+- [ ] **Firefox (360x640)**: Same as Chrome for all admin tables
+- [ ] **Firefox (412x915)**: Same as Chrome for all admin tables
+- [ ] **Safari iOS (similar size)**: Same as Chrome for all admin tables
+- [ ] **Opera/Opera GX (360x640)**: Same as Chrome for all admin tables
+- [ ] **Opera/Opera GX (412x915)**: Same as Chrome for all admin tables
 
-### 6. Error Handling
+#### Admin Layout No Clipping
+- [ ] **Chrome (360x640)**: Visit all /admin/* routes → No content clipped → All interactive elements reachable → Proper spacing maintained
+- [ ] **Chrome (412x915)**: Same as above
+- [ ] **Firefox (360x640)**: Same as Chrome
+- [ ] **Firefox (412x915)**: Same as Chrome
+- [ ] **Safari iOS (similar size)**: Same as Chrome
+- [ ] **Opera/Opera GX (360x640)**: Same as Chrome
+- [ ] **Opera/Opera GX (412x915)**: Same as Chrome
 
-#### Network Issues
-- [ ] **All browsers**: Simulate network failure during login → User sees clear error message → App remains usable
+### 5. Error Handling
 
-#### Missing URL Parameters
-- [ ] **All browsers**: Load app without admin token parameter → App loads normally → Public pages work → Admin pages show appropriate guard screens
+#### Network Errors
+- [ ] **Chrome**: Disconnect network → Attempt action → Error toast with user-friendly message → No sensitive data exposed
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Backend Errors
+- [ ] **Chrome**: Trigger backend error (e.g., invalid input) → Generic error message shown → No stack traces or internal details exposed
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Session Expiry
+- [ ] **Chrome**: Wait for session to expire → Attempt admin action → Redirected to verification gate → Can re-authenticate
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+### 6. Admin Verification Flow
+
+#### Three-Step Verification
+- [ ] **Chrome**: Enter Code #1 → Step 1 success → Enter Code #2 → Step 2 success → Enter Code #3 → Step 3 success → Welcome modal → Dashboard accessible
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Master Override
+- [ ] **Chrome**: Enter Master Override Code → All steps bypassed → Welcome modal → Dashboard accessible
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Failed Attempts & Lockout
+- [ ] **Chrome**: Enter wrong code 3 times → Permanent lockout modal appears → Cannot access admin → Lockout persists across sessions
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Remaining Attempts Display
+- [ ] **Chrome**: Enter wrong code → Remaining attempts counter decreases → Displayed correctly on each step
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+### 7. Forms & Inputs
+
+#### Contact Form
+- [ ] **Chrome**: Fill all fields → Submit → Success message → Form cleared
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Product Creation (Admin)
+- [ ] **Chrome**: Upload image → Fill fields → Submit → Product appears in list
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Testimonial Creation (Public)
+- [ ] **Chrome**: Rate with stars → Write content → Submit → Success toast
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+### 8. Image & Media Handling
+
+#### Image Upload
+- [ ] **Chrome**: Select valid image → Upload progress shown → Image appears correctly
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Image Display
+- [ ] **Chrome**: Product images, portfolio images, generated assets all load and display correctly
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Invalid File Handling
+- [ ] **Chrome**: Attempt to upload invalid file type → Error message → Upload blocked
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+### 9. Performance & Loading States
+
+#### Initial Page Load
+- [ ] **Chrome**: Page loads within 3 seconds → No blank screens → Loading indicators shown where appropriate
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Data Fetching
+- [ ] **Chrome**: Loading states shown during data fetch → Smooth transition to content → No flash of empty state
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Mutation Loading States
+- [ ] **Chrome**: Button shows loading state during mutation → Disabled during operation → Re-enabled after completion
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+### 10. Accessibility
+
+#### Keyboard Navigation
+- [ ] **Chrome**: Tab through all interactive elements → Focus visible → Enter/Space activates buttons
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
+
+#### Screen Reader (Optional)
+- [ ] **Chrome + NVDA/JAWS**: Page structure announced → Form labels read → Error messages announced
+- [ ] **Safari + VoiceOver**: Same as Chrome
+
+#### Color Contrast
+- [ ] **Chrome**: Text readable in both light and dark modes → Sufficient contrast ratios
+- [ ] **Firefox**: Same as Chrome
+- [ ] **Safari**: Same as Chrome
+- [ ] **Opera/Opera GX**: Same as Chrome
 
 ## Notes
-- Test with browser developer tools open to catch console errors
-- Verify no sensitive data (tokens, secrets) is logged to console
-- Check that no unhandled promise rejections occur
-- Ensure all error messages are in clear English
-- Verify that the app never shows a blank screen (always shows some UI)
-
-## Reporting Issues
-When reporting a browser-specific issue, include:
-1. Browser name and version
-2. Operating system
-3. Steps to reproduce
-4. Expected behavior
-5. Actual behavior
-6. Console errors (if any)
+- Test on actual devices when possible, especially for mobile scenarios
+- Use browser DevTools device emulation as a fallback
+- Document any browser-specific issues discovered
+- Verify fixes across all browsers before marking as resolved

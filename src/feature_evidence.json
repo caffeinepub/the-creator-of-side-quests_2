@@ -2,58 +2,14 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-the-new-code-1-2-3-and-the-new-master-override-code-are-treated-as-secrets-do-not-embed-their-plaintext-values-anywhere-in-the-frontend-bundle-and-do-not-log-them-to-browser-console-backend-logs-or-error-messages-store-validate-them-server-side-in-a-way-suitable-for-rotation-e-g-hashed-derived-representation-rather-than-plaintext",
-      "featureTitle": "Ensure the new Code #1/#2/#3 and the new Master Override Code are treated as secrets: do not embed their plaintext values anywhere in the frontend bundle, and do not log them to browser console, backend logs, or error messages; store/validate them server-side in a way suitable for rotation (e.g., hashed/derived representation rather than plaintext).",
+      "featureId": "feature-fix-the-admin-dashboard-layout-on-small-android-phones-specifically-motorola-g5-and-motorola-g5-ace-so-the-admin-interface-renders-without-cut-off-content-horizontal-overflow-or-overlapping-ui-across-all-admin-pages",
+      "featureTitle": "Fix the Admin Dashboard layout on small Android phones (specifically Motorola G5 and Motorola G5 Ace) so the admin interface renders without cut-off content, horizontal overflow, or overlapping UI across all admin pages.",
       "files": [
-        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-        "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
-        "frontend/src/utils/adminSharedCodeSession.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-63"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-keep-the-admin-dashboard-closed-off-all-admin-routes-and-all-admin-only-backend-mutations-must-remain-protected-by-the-admin-verification-session-three-step-verification-and-must-not-become-publicly-accessible",
-      "featureTitle": "Keep the Admin Dashboard closed off: all /admin routes and all admin-only backend mutations must remain protected by the admin verification session (three-step verification), and must not become publicly accessible.",
-      "files": [
-        "frontend/src/components/auth/AdminRouteGuard.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-64"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-frontend-admin-verification-ux-copy-gate-screen-and-verification-code-management-page-as-needed-so-it-accurately-reflects-the-system-behavior-three-steps-in-order-step-1-3-2-3-3-3-and-master-override-code-for-code-rotation-without-referencing-any-retired-previous-admin-authentication-system",
-      "featureTitle": "Update the frontend Admin verification UX copy (gate screen and verification-code management page) as needed so it accurately reflects the system behavior: three steps in order (Step 1/3, 2/3, 3/3) and Master Override Code for code rotation, without referencing any retired/previous admin authentication system.",
-      "files": [
-        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-        "frontend/src/hooks/admin/useVerificationCodeManagement.ts",
+        "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
+        "frontend/src/components/products/AdminProductsTable.tsx",
+        "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
+        "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
+        "frontend/src/pages/admin/AdminLayout.tsx",
         "frontend/src/pages/admin/AdminVerificationCodeManagementPage.tsx"
       ],
       "components": [
@@ -68,7 +24,75 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-66"
+        "REQ-70"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-make-the-main-admin-dashboard-content-area-vertically-scrollable-on-mobile-so-admins-can-scroll-up-down-through-page-content-reliably",
+      "featureTitle": "Make the main Admin Dashboard content area vertically scrollable on mobile so admins can scroll up/down through page content reliably.",
+      "files": [
+        "frontend/index.css",
+        "frontend/src/pages/admin/AdminLayout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-71"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-make-the-admin-left-side-feature-tab-navigation-independently-scrollable-so-all-nav-items-including-the-bottom-most-entries-like-verification-codes-are-reachable-on-short-mobile-screens-without-being-cut-off",
+      "featureTitle": "Make the Admin left-side feature/tab navigation independently scrollable so all nav items (including the bottom-most entries like “Verification Codes”) are reachable on short mobile screens without being cut off.",
+      "files": [
+        "frontend/index.css",
+        "frontend/src/pages/admin/AdminLayout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-72"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-project-qa-checklist-to-include-explicit-verification-steps-for-the-admin-dashboard-layout-and-sidebar-scrolling-behavior-on-motorola-g5-and-motorola-g5-ace-or-equivalent-viewport-presets-covering-both-the-main-content-scrolling-and-the-left-navigation-scrolling",
+      "featureTitle": "Update the project QA checklist to include explicit verification steps for the Admin Dashboard layout and sidebar scrolling behavior on Motorola G5 and Motorola G5 Ace (or equivalent viewport presets), covering both the main content scrolling and the left navigation scrolling.",
+      "files": [
+        "frontend/QA-CHECKLIST.md"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "stripe@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "http-outcalls@3.0.0"
+      ],
+      "testIds": [
+        "REQ-73"
       ],
       "confidence": "high"
     }

@@ -5,10 +5,9 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog';
-import { useListAdminUsers, useGrantAdminAccess, useRevokeAdminAccess } from '../../hooks/admin/useAdminAccess';
+import { useListAdminUsers, useGrantAdminAccess } from '../../hooks/admin/useAdminAccess';
 import { Principal } from '@dfinity/principal';
-import { UserPlus, Trash2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { UserPlus, ShieldCheck, AlertCircle } from 'lucide-react';
 
 export default function AdminAccessPage() {
   const [principalInput, setPrincipalInput] = useState('');
@@ -16,7 +15,6 @@ export default function AdminAccessPage() {
 
   const { data: adminUsers = [], isLoading } = useListAdminUsers();
   const grantMutation = useGrantAdminAccess();
-  const revokeMutation = useRevokeAdminAccess();
 
   const handleGrantAccess = async () => {
     setInputError(null);
@@ -35,16 +33,12 @@ export default function AdminAccessPage() {
     }
   };
 
-  const handleRevokeAccess = async (principal: Principal) => {
-    await revokeMutation.mutateAsync(principal);
-  };
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-serif text-3xl font-bold">Admin Access Management</h1>
         <p className="mt-2 text-muted-foreground">
-          Grant or revoke admin access for users. Users must also enter the shared admin code to access the admin panel.
+          Grant user access. Users must also complete the separate three-step verification process to access the admin panel.
         </p>
       </div>
 
@@ -52,10 +46,10 @@ export default function AdminAccessPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            Grant Admin Access
+            Grant User Access
           </CardTitle>
           <CardDescription>
-            Enter a user's Principal ID to grant them admin access. They will also need the shared admin code.
+            Enter a user's Principal ID to grant them access. They will also need to complete the separate admin verification process.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,7 +94,7 @@ export default function AdminAccessPage() {
             Current Admin Users
           </CardTitle>
           <CardDescription>
-            List of users with admin access. You can revoke access from this list.
+            List of users with admin access.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -115,7 +109,6 @@ export default function AdminAccessPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Principal ID</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -123,36 +116,6 @@ export default function AdminAccessPage() {
                   <TableRow key={principal.toString()}>
                     <TableCell className="font-mono text-sm">
                       {principal.toString()}
-                    </TableCell>
-                    <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={revokeMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Revoke Admin Access</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to revoke admin access for this user? They will no longer be able to access the admin panel.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleRevokeAccess(principal)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Revoke Access
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}

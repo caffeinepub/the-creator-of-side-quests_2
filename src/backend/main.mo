@@ -5,7 +5,6 @@ import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Iter "mo:core/Iter";
-import Order "mo:core/Order";
 import OutCall "http-outcalls/outcall";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
@@ -13,7 +12,9 @@ import Stripe "stripe/stripe";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Runtime "mo:core/Runtime";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -21,154 +22,117 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Admin shared code system
-  let ADMIN_SHARED_CODE = "A7F9K2M8Q4R6T1Z5X3LJH9C8";
-  let MAX_ATTEMPTS = 3;
-  let LOCKOUT_DURATION_NS : Int = 300_000_000_000; // 5 minutes in nanoseconds
-  let SHARED_CODE_SESSION_DURATION_NS : Int = 900_000_000_000; // 15 minutes in nanoseconds
+  // Three-step admin code verification system
+  let ADMIN_CODE_1 = "CODE1-ADJFO823FKLJ";
+  let ADMIN_CODE_2 = "CODE2-23JKLF923JKL";
+  let ADMIN_CODE_3 = "CODE3-DJFI234DFLJKL";
+  let SESSION_DURATION_NS : Int = 900_000_000_000; // 15 minutes
 
-  public type AdminCodeAttempt = {
-    attemptCount : Nat;
-    lastAttempt : Time.Time;
-    lockedUntil : ?Time.Time;
-    sharedCodeSession : ?Time.Time;
+  public type AdminVerificationState = {
+    step1_verified : Bool;
+    step2_verified : Bool;
+    step3_verified : Bool;
+    session_expiry : ?Time.Time;
   };
 
-  let adminCodeAttempts = Map.empty<Principal, AdminCodeAttempt>();
+  let adminVerificationStates = Map.empty<Principal, AdminVerificationState>();
 
-  // Helper function to check if caller has valid admin shared code session
-  func requireAdminSharedCodeSession(caller : Principal) {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Admin permission required");
+  func cleanUpExpiredSessions() {
+    let now = Time.now();
+    let activeEntries = adminVerificationStates.filter(func(_p, state) { switch (state.session_expiry) { case (?expiry) { expiry > now }; case (null) { true } } });
+    adminVerificationStates.clear();
+    for ((p, state) in activeEntries.entries()) {
+      adminVerificationStates.add(p, state);
     };
+  };
 
-    switch (adminCodeAttempts.get(caller)) {
-      case (?attempt) {
-        switch (attempt.sharedCodeSession) {
+  func requireAdminVerification(caller : Principal) {
+    cleanUpExpiredSessions();
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        if (not state.step1_verified or not state.step2_verified or not state.step3_verified) {
+          Runtime.trap("Unauthorized: Admin verification required. Please complete all three code steps in order.");
+        };
+        switch (state.session_expiry) {
           case (?expiry) {
             if (Time.now() > expiry) {
-              Runtime.trap("Unauthorized: Admin shared code session expired. Please re-enter the shared code.");
+              Runtime.trap("Unauthorized: Admin verification session expired. Please start verification process again.");
             };
           };
           case (null) {
-            Runtime.trap("Unauthorized: Admin shared code verification required. Please enter the shared code.");
+            Runtime.trap("Unauthorized: Admin verification required. Please complete all three code steps.");
           };
         };
       };
       case (null) {
-        Runtime.trap("Unauthorized: Admin shared code verification required. Please enter the shared code.");
+        Runtime.trap("Unauthorized: Admin verification required. Please complete all three code steps.");
       };
     };
   };
 
-  public shared ({ caller }) func verifyAdminSharedCode(code : Text) : async Bool {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Admin permission required");
+  public shared ({ caller }) func verifyAdminCodeStep1(code : Text) : async Bool {
+    if (code != ADMIN_CODE_1) {
+      false;
+    } else {
+      let now = Time.now();
+      let newState : AdminVerificationState = {
+        step1_verified = true;
+        step2_verified = false;
+        step3_verified = false;
+        session_expiry = ?(now + SESSION_DURATION_NS);
+      };
+      adminVerificationStates.add(caller, newState);
+      true;
     };
-
-    if (code != ADMIN_SHARED_CODE) {
-      Runtime.trap("Incorrect admin shared code");
-    };
-
-    let now = Time.now();
-    let sessionExpiry = now + SHARED_CODE_SESSION_DURATION_NS;
-
-    let attempt : AdminCodeAttempt = {
-      attemptCount = 0;
-      lastAttempt = now;
-      lockedUntil = null;
-      sharedCodeSession = ?sessionExpiry;
-    };
-
-    adminCodeAttempts.add(caller, attempt);
-    true;
   };
 
-  public shared ({ caller }) func retryVerifyAdminSharedCode(code : Text) : async Bool {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Admin permission required");
-    };
-
-    switch (adminCodeAttempts.get(caller)) {
-      case (?attempt) {
-        let now = Time.now();
-        let attempts = attempt.attemptCount;
-        let lockedUntil = attempt.lockedUntil;
-
-        switch (lockedUntil) {
-          case (?lockTime) {
-            if (now < lockTime) {
-              Runtime.trap("This account is currently locked out due to too many unsuccessful attempts. Please try again later.");
-            };
+  public shared ({ caller }) func verifyAdminCodeStep2(code : Text) : async Bool {
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        if (state.step1_verified and not state.step2_verified and code == ADMIN_CODE_2) {
+          let newState = {
+            step1_verified = true;
+            step2_verified = true;
+            step3_verified = false;
+            session_expiry = ?(Time.now() + SESSION_DURATION_NS);
           };
-          case (null) {};
-        };
-
-        if (attempts >= MAX_ATTEMPTS) {
-          let newAttempt = {
-            attempt with
-            attemptCount = attempts + 1;
-            lastAttempt = now;
-            lockedUntil = ?(now + LOCKOUT_DURATION_NS);
-          };
-          adminCodeAttempts.add(caller, newAttempt);
-          Runtime.trap("Too many attempts. This account is temporarily locked out for 5 minutes.");
-        };
-
-        if (code != ADMIN_SHARED_CODE) {
-          let newAttempt = {
-            attempt with
-            attemptCount = attempts + 1;
-            lastAttempt = now;
-          };
-          adminCodeAttempts.add(caller, newAttempt);
-          Runtime.trap("Incorrect admin shared code. Attempt " # Nat.toText(attempts + 1) # "/" # Nat.toText(MAX_ATTEMPTS));
-        };
-
-        let sessionExpiry = now + SHARED_CODE_SESSION_DURATION_NS;
-        let successAttempt = {
-          attempt with
-          attemptCount = 0;
-          lastAttempt = now;
-          sharedCodeSession = ?sessionExpiry;
-        };
-        adminCodeAttempts.add(caller, successAttempt);
-        true;
-      };
-      case (null) {
-        if (code != ADMIN_SHARED_CODE) {
-          let firstAttempt : AdminCodeAttempt = {
-            attemptCount = 1;
-            lastAttempt = Time.now();
-            lockedUntil = null;
-            sharedCodeSession = null;
-          };
-          adminCodeAttempts.add(caller, firstAttempt);
-          Runtime.trap("Incorrect admin shared code. Attempt 1/" # Nat.toText(MAX_ATTEMPTS));
-        } else {
-          let now = Time.now();
-          let sessionExpiry = now + SHARED_CODE_SESSION_DURATION_NS;
-          let successAttempt : AdminCodeAttempt = {
-            attemptCount = 0;
-            lastAttempt = now;
-            lockedUntil = null;
-            sharedCodeSession = ?sessionExpiry;
-          };
-          adminCodeAttempts.add(caller, successAttempt);
+          adminVerificationStates.add(caller, newState);
           true;
+        } else {
+          false;
         };
       };
+      case (null) { false };
     };
   };
 
-  public query ({ caller }) func hasValidAdminSharedCode() : async Bool {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      return false;
+  public shared ({ caller }) func verifyAdminCodeStep3(code : Text) : async Bool {
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        if (state.step1_verified and state.step2_verified and not state.step3_verified and code == ADMIN_CODE_3) {
+          let newState = {
+            step1_verified = true;
+            step2_verified = true;
+            step3_verified = true;
+            session_expiry = ?(Time.now() + SESSION_DURATION_NS);
+          };
+          adminVerificationStates.add(caller, newState);
+          true;
+        } else {
+          false;
+        };
+      };
+      case (null) { false };
     };
+  };
 
-    switch (adminCodeAttempts.get(caller)) {
-      case (?attempt) {
-        switch (attempt.sharedCodeSession) {
+  public query ({ caller }) func hasValidAdminSession() : async Bool {
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        if (not state.step1_verified or not state.step2_verified or not state.step3_verified) {
+          return false;
+        };
+        switch (state.session_expiry) {
           case (?expiry) {
             Time.now() <= expiry;
           };
@@ -179,7 +143,7 @@ actor {
     };
   };
 
-  // User Profile (required by instructions)
+  // User Profile System
   public type UserProfile = {
     name : Text;
     email : ?Text;
@@ -210,18 +174,13 @@ actor {
   };
 
   // Admin Access Management
-  public shared ({ caller }) func grantAdminAccess(user : Principal) : async () {
-    requireAdminSharedCodeSession(caller);
-    AccessControl.assignRole(accessControlState, caller, user, #admin);
-  };
-
-  public shared ({ caller }) func revokeAdminAccess(user : Principal) : async () {
-    requireAdminSharedCodeSession(caller);
+  public shared ({ caller }) func grantUserAccess(user : Principal) : async () {
+    requireAdminVerification(caller);
     AccessControl.assignRole(accessControlState, caller, user, #user);
   };
 
   public query ({ caller }) func listAdminUsers() : async [Principal] {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     [];
   };
 
@@ -234,24 +193,11 @@ actor {
   let socialMediaLinks = Map.empty<Text, SocialMediaLink>();
 
   public shared ({ caller }) func addSocialMediaLink(platform : Text, url : Text) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     socialMediaLinks.add(platform, {
       platform;
       url;
     });
-  };
-
-  public shared ({ caller }) func updateSocialMediaLink(platform : Text, url : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    socialMediaLinks.add(platform, {
-      platform;
-      url;
-    });
-  };
-
-  public shared ({ caller }) func deleteSocialMediaLink(platform : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    socialMediaLinks.remove(platform);
   };
 
   public query func getSocialMediaLinks() : async [SocialMediaLink] {
@@ -270,18 +216,8 @@ actor {
   let portfolioItems = Map.empty<Text, PortfolioItem>();
 
   public shared ({ caller }) func addPortfolioItem(item : PortfolioItem) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     portfolioItems.add(item.id, item);
-  };
-
-  public shared ({ caller }) func updatePortfolioItem(item : PortfolioItem) : async () {
-    requireAdminSharedCodeSession(caller);
-    portfolioItems.add(item.id, item);
-  };
-
-  public shared ({ caller }) func deletePortfolioItem(id : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    portfolioItems.remove(id);
   };
 
   public query func getPortfolioItems() : async [PortfolioItem] {
@@ -304,18 +240,8 @@ actor {
   let testimonials = Map.empty<Text, Testimonial>();
 
   public shared ({ caller }) func addTestimonial(testimonial : Testimonial) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     testimonials.add(testimonial.id, testimonial);
-  };
-
-  public shared ({ caller }) func updateTestimonial(testimonial : Testimonial) : async () {
-    requireAdminSharedCodeSession(caller);
-    testimonials.add(testimonial.id, testimonial);
-  };
-
-  public shared ({ caller }) func deleteTestimonial(id : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    testimonials.remove(id);
   };
 
   public query func getTestimonials() : async [Testimonial] {
@@ -342,7 +268,7 @@ actor {
   };
 
   public shared ({ caller }) func setFulfillmentOptions(options : FulfillmentOptions) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     fulfillmentOptions := options;
   };
 
@@ -364,7 +290,7 @@ actor {
   };
 
   public shared ({ caller }) func setPolicies(newPolicies : Policies) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     policies := newPolicies;
   };
 
@@ -387,18 +313,8 @@ actor {
   let products = Map.empty<Text, Product>();
 
   public shared ({ caller }) func addProduct(product : Product) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     products.add(product.id, product);
-  };
-
-  public shared ({ caller }) func updateProduct(product : Product) : async () {
-    requireAdminSharedCodeSession(caller);
-    products.add(product.id, product);
-  };
-
-  public shared ({ caller }) func deleteProduct(id : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    products.remove(id);
   };
 
   public query func getProducts() : async [Product] {
@@ -439,7 +355,7 @@ actor {
   };
 
   public query ({ caller }) func getContactRequests() : async [ContactRequest] {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     contactRequests.values().toArray();
   };
 
@@ -453,7 +369,7 @@ actor {
   };
 
   public shared ({ caller }) func updateContactRequestStatus(id : Text, status : Text) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     switch (contactRequests.get(id)) {
       case (null) { Runtime.trap("Contact request not found") };
       case (?request) {
@@ -481,22 +397,12 @@ actor {
   let coupons = Map.empty<Text, Coupon>();
 
   public shared ({ caller }) func createCoupon(coupon : Coupon) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     coupons.add(coupon.code, coupon);
-  };
-
-  public shared ({ caller }) func updateCoupon(coupon : Coupon) : async () {
-    requireAdminSharedCodeSession(caller);
-    coupons.add(coupon.code, coupon);
-  };
-
-  public shared ({ caller }) func deleteCoupon(code : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    coupons.remove(code);
   };
 
   public query ({ caller }) func getCoupons() : async [Coupon] {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     coupons.values().toArray();
   };
 
@@ -611,18 +517,8 @@ actor {
   };
 
   public shared ({ caller }) func createLoyaltyReward(reward : LoyaltyReward) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     loyaltyRewards.add(reward.id, reward);
-  };
-
-  public shared ({ caller }) func updateLoyaltyReward(reward : LoyaltyReward) : async () {
-    requireAdminSharedCodeSession(caller);
-    loyaltyRewards.add(reward.id, reward);
-  };
-
-  public shared ({ caller }) func deleteLoyaltyReward(id : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    loyaltyRewards.remove(id);
   };
 
   public query func getLoyaltyRewards() : async [LoyaltyReward] {
@@ -686,7 +582,7 @@ actor {
   let giveaways = Map.empty<Text, Giveaway>();
 
   public shared ({ caller }) func createGiveaway(giveaway : Giveaway) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     giveaways.add(giveaway.id, giveaway);
   };
 
@@ -710,7 +606,7 @@ actor {
   };
 
   public shared ({ caller }) func addGiveawayEntrantByAdmin(giveawayId : Text, userPrincipal : Principal, displayName : Text) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     switch (giveaways.get(giveawayId)) {
       case (null) { Runtime.trap("Giveaway not found") };
       case (?giveaway) {
@@ -726,7 +622,7 @@ actor {
   };
 
   public shared ({ caller }) func selectGiveawayWinner(giveawayId : Text, winnerIndex : Nat) : async ?GiveawayWinner {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     switch (giveaways.get(giveawayId)) {
       case (null) { null };
       case (?giveaway) {
@@ -744,22 +640,12 @@ actor {
   };
 
   public query ({ caller }) func getGiveaway(id : Text) : async ?Giveaway {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     giveaways.get(id);
   };
 
   public query func getActiveGiveaways() : async [Giveaway] {
     giveaways.values().filter(func(g : Giveaway) : Bool { g.active }).toArray();
-  };
-
-  public shared ({ caller }) func updateGiveaway(giveaway : Giveaway) : async () {
-    requireAdminSharedCodeSession(caller);
-    giveaways.add(giveaway.id, giveaway);
-  };
-
-  public shared ({ caller }) func deleteGiveaway(id : Text) : async () {
-    requireAdminSharedCodeSession(caller);
-    giveaways.remove(id);
   };
 
   // Stripe integration
@@ -770,7 +656,7 @@ actor {
   };
 
   public shared ({ caller }) func setStripeConfiguration(config : Stripe.StripeConfiguration) : async () {
-    requireAdminSharedCodeSession(caller);
+    requireAdminVerification(caller);
     stripeConfig := ?config;
   };
 

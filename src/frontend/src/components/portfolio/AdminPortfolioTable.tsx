@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { PortfolioItem } from '../../backend';
-import { useDeletePortfolioItem, useUpdatePortfolioItem } from '../../hooks/admin/useAdminPortfolio';
+import { useUpdatePortfolioItem } from '../../hooks/admin/useAdminPortfolio';
 import {
   Table,
   TableBody,
@@ -11,16 +11,6 @@ import {
 } from '../ui/table';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../ui/alert-dialog';
 import {
   Dialog,
   DialogContent,
@@ -33,28 +23,19 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit } from 'lucide-react';
 
 interface AdminPortfolioTableProps {
   items: PortfolioItem[];
 }
 
 export default function AdminPortfolioTable({ items }: AdminPortfolioTableProps) {
-  const deletePortfolioItem = useDeletePortfolioItem();
   const updatePortfolioItem = useUpdatePortfolioItem();
 
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editItem, setEditItem] = useState<PortfolioItem | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editCategory, setEditCategory] = useState('');
-
-  const handleDelete = async () => {
-    if (deleteId) {
-      await deletePortfolioItem.mutateAsync(deleteId);
-      setDeleteId(null);
-    }
-  };
 
   const handleEditOpen = (item: PortfolioItem) => {
     setEditItem(item);
@@ -120,24 +101,13 @@ export default function AdminPortfolioTable({ items }: AdminPortfolioTableProps)
                     <p className="line-clamp-2 text-sm">{item.description}</p>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditOpen(item)}
-                        disabled={deletePortfolioItem.isPending}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteId(item.id)}
-                        disabled={deletePortfolioItem.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditOpen(item)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -145,23 +115,6 @@ export default function AdminPortfolioTable({ items }: AdminPortfolioTableProps)
           </TableBody>
         </Table>
       </div>
-
-      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Portfolio Item</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this portfolio item? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deletePortfolioItem.isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={deletePortfolioItem.isPending}>
-              {deletePortfolioItem.isPending ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={!!editItem} onOpenChange={(open) => !open && setEditItem(null)}>
         <DialogContent className="sm:max-w-[500px]">

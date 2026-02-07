@@ -280,13 +280,6 @@ export interface backendInterface {
     createCoupon(coupon: Coupon): Promise<void>;
     createGiveaway(giveaway: Giveaway): Promise<void>;
     createLoyaltyReward(reward: LoyaltyReward): Promise<void>;
-    deleteCoupon(code: string): Promise<void>;
-    deleteGiveaway(id: string): Promise<void>;
-    deleteLoyaltyReward(id: string): Promise<void>;
-    deletePortfolioItem(id: string): Promise<void>;
-    deleteProduct(id: string): Promise<void>;
-    deleteSocialMediaLink(platform: string): Promise<void>;
-    deleteTestimonial(id: string): Promise<void>;
     getActiveGiveaways(): Promise<Array<Giveaway>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -307,15 +300,13 @@ export interface backendInterface {
     getTestimonial(id: string): Promise<Testimonial | null>;
     getTestimonials(): Promise<Array<Testimonial>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
-    grantAdminAccess(user: Principal): Promise<void>;
-    hasValidAdminSharedCode(): Promise<boolean>;
+    grantUserAccess(user: Principal): Promise<void>;
+    hasValidAdminSession(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
     listAdminUsers(): Promise<Array<Principal>>;
     recordPurchase(amount: bigint): Promise<void>;
     redeemLoyaltyReward(rewardId: string): Promise<boolean>;
-    retryVerifyAdminSharedCode(code: string): Promise<boolean>;
-    revokeAdminAccess(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     selectGiveawayWinner(giveawayId: string, winnerIndex: bigint): Promise<GiveawayWinner | null>;
     setFulfillmentOptions(options: FulfillmentOptions): Promise<void>;
@@ -324,15 +315,10 @@ export interface backendInterface {
     submitContactRequest(request: ContactRequest): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
     updateContactRequestStatus(id: string, status: string): Promise<void>;
-    updateCoupon(coupon: Coupon): Promise<void>;
-    updateGiveaway(giveaway: Giveaway): Promise<void>;
-    updateLoyaltyReward(reward: LoyaltyReward): Promise<void>;
-    updatePortfolioItem(item: PortfolioItem): Promise<void>;
-    updateProduct(product: Product): Promise<void>;
-    updateSocialMediaLink(platform: string, url: string): Promise<void>;
-    updateTestimonial(testimonial: Testimonial): Promise<void>;
     validateCoupon(code: string): Promise<Coupon | null>;
-    verifyAdminSharedCode(code: string): Promise<boolean>;
+    verifyAdminCodeStep1(code: string): Promise<boolean>;
+    verifyAdminCodeStep2(code: string): Promise<boolean>;
+    verifyAdminCodeStep3(code: string): Promise<boolean>;
 }
 import type { ContactRequest as _ContactRequest, Coupon as _Coupon, CouponType as _CouponType, ExternalBlob as _ExternalBlob, Giveaway as _Giveaway, GiveawayWinner as _GiveawayWinner, LoyaltyAction as _LoyaltyAction, PortfolioItem as _PortfolioItem, Product as _Product, StripeSessionStatus as _StripeSessionStatus, Testimonial as _Testimonial, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -617,104 +603,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async deleteCoupon(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deleteCoupon(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deleteCoupon(arg0);
-            return result;
-        }
-    }
-    async deleteGiveaway(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deleteGiveaway(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deleteGiveaway(arg0);
-            return result;
-        }
-    }
-    async deleteLoyaltyReward(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deleteLoyaltyReward(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deleteLoyaltyReward(arg0);
-            return result;
-        }
-    }
-    async deletePortfolioItem(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deletePortfolioItem(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deletePortfolioItem(arg0);
-            return result;
-        }
-    }
-    async deleteProduct(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deleteProduct(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deleteProduct(arg0);
-            return result;
-        }
-    }
-    async deleteSocialMediaLink(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deleteSocialMediaLink(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deleteSocialMediaLink(arg0);
-            return result;
-        }
-    }
-    async deleteTestimonial(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.deleteTestimonial(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.deleteTestimonial(arg0);
-            return result;
-        }
-    }
     async getActiveGiveaways(): Promise<Array<Giveaway>> {
         if (this.processError) {
             try {
@@ -995,31 +883,31 @@ export class Backend implements backendInterface {
             return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
         }
     }
-    async grantAdminAccess(arg0: Principal): Promise<void> {
+    async grantUserAccess(arg0: Principal): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.grantAdminAccess(arg0);
+                const result = await this.actor.grantUserAccess(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.grantAdminAccess(arg0);
+            const result = await this.actor.grantUserAccess(arg0);
             return result;
         }
     }
-    async hasValidAdminSharedCode(): Promise<boolean> {
+    async hasValidAdminSession(): Promise<boolean> {
         if (this.processError) {
             try {
-                const result = await this.actor.hasValidAdminSharedCode();
+                const result = await this.actor.hasValidAdminSession();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.hasValidAdminSharedCode();
+            const result = await this.actor.hasValidAdminSession();
             return result;
         }
     }
@@ -1090,34 +978,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.redeemLoyaltyReward(arg0);
-            return result;
-        }
-    }
-    async retryVerifyAdminSharedCode(arg0: string): Promise<boolean> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.retryVerifyAdminSharedCode(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.retryVerifyAdminSharedCode(arg0);
-            return result;
-        }
-    }
-    async revokeAdminAccess(arg0: Principal): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.revokeAdminAccess(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.revokeAdminAccess(arg0);
             return result;
         }
     }
@@ -1233,104 +1093,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async updateCoupon(arg0: Coupon): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateCoupon(to_candid_Coupon_n17(this._uploadFile, this._downloadFile, arg0));
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateCoupon(to_candid_Coupon_n17(this._uploadFile, this._downloadFile, arg0));
-            return result;
-        }
-    }
-    async updateGiveaway(arg0: Giveaway): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateGiveaway(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateGiveaway(arg0);
-            return result;
-        }
-    }
-    async updateLoyaltyReward(arg0: LoyaltyReward): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateLoyaltyReward(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateLoyaltyReward(arg0);
-            return result;
-        }
-    }
-    async updatePortfolioItem(arg0: PortfolioItem): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updatePortfolioItem(await to_candid_PortfolioItem_n10(this._uploadFile, this._downloadFile, arg0));
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updatePortfolioItem(await to_candid_PortfolioItem_n10(this._uploadFile, this._downloadFile, arg0));
-            return result;
-        }
-    }
-    async updateProduct(arg0: Product): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateProduct(await to_candid_Product_n13(this._uploadFile, this._downloadFile, arg0));
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateProduct(await to_candid_Product_n13(this._uploadFile, this._downloadFile, arg0));
-            return result;
-        }
-    }
-    async updateSocialMediaLink(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateSocialMediaLink(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateSocialMediaLink(arg0, arg1);
-            return result;
-        }
-    }
-    async updateTestimonial(arg0: Testimonial): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateTestimonial(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateTestimonial(arg0);
-            return result;
-        }
-    }
     async validateCoupon(arg0: string): Promise<Coupon | null> {
         if (this.processError) {
             try {
@@ -1345,17 +1107,45 @@ export class Backend implements backendInterface {
             return from_candid_opt_n54(this._uploadFile, this._downloadFile, result);
         }
     }
-    async verifyAdminSharedCode(arg0: string): Promise<boolean> {
+    async verifyAdminCodeStep1(arg0: string): Promise<boolean> {
         if (this.processError) {
             try {
-                const result = await this.actor.verifyAdminSharedCode(arg0);
+                const result = await this.actor.verifyAdminCodeStep1(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.verifyAdminSharedCode(arg0);
+            const result = await this.actor.verifyAdminCodeStep1(arg0);
+            return result;
+        }
+    }
+    async verifyAdminCodeStep2(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyAdminCodeStep2(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyAdminCodeStep2(arg0);
+            return result;
+        }
+    }
+    async verifyAdminCodeStep3(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyAdminCodeStep3(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyAdminCodeStep3(arg0);
             return result;
         }
     }

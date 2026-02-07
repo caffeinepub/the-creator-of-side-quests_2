@@ -1,67 +1,61 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T00:32:15.786Z",
-  "summary": "Implemented a frontend shared-code gate screen and updated the Admin route guard/layout to require shared-code verification (with sessionStorage) before rendering admin UI. Added frontend hooks and an Admin Access page plus navigation entry. Backend was modified to include shared-code verification and attempt tracking, but the diff is truncated and shows trap-based failures, a 3-attempt limit, and no clear evidence that all admin-only methods and required query APIs were fully updated.",
+  "generatedAt": "2026-02-07T02:59:29.902Z",
+  "summary": "Diff implements a multi-step admin verification flow in the frontend (3-step UI, session progress in sessionStorage, and updated AdminRouteGuard) and adds backend Motoko functions for step-based verification state. However, the backend diff excerpt does not show the required 'hasValidAdminSession' API nor evidence that all admin-only methods were migrated off the old shared-code authorization. Also, plaintext admin codes are embedded in backend/main.mo, which is risky relative to the secrecy requirement.",
   "missing_requirements": [
     {
-      "id": "REQ-22",
-      "requirement": "Backend must enforce shared-code session marker for all admin-only backend operations (in addition to existing admin permission checks).",
-      "reason": "The diff shows a helper `requireAdminSharedCodeSession` but does not show it being applied across all admin-only methods; the backend diff is truncated before any such updates are visible.",
+      "id": "REQ-32",
+      "requirement": "Backend exposes a way for the frontend to (a) check whether the caller is fully admin-verified and (b) submit a code for the current step so the backend can validate step order server-side.",
+      "reason": "Frontend calls actor.hasValidAdminSession(), but the provided backend/main.mo excerpt only shows verifyAdminCodeStep1/2/3 and does not show any hasValidAdminSession (or equivalent) method implementation.",
+      "evidence": [
+        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-32",
+      "requirement": "Remove/retire the old single-code (ADMIN_SHARED_CODE) verification/session behavior and update all admin-only backend methods to require the new full three-step verification state.",
+      "reason": "The diff excerpt shows the new requireAdminVerification() helper, but does not show removal of the old shared-code constants/logic nor updates to the existing admin-only methods that previously used requireAdminSharedCodeSession(caller). Because backend/main.mo is truncated, there is insufficient evidence these migrations were completed across all admin-only methods.",
       "evidence": [
         "backend/main.mo (truncated)"
       ]
     },
     {
-      "id": "REQ-22",
-      "requirement": "Backend should provide clear success/fail responses for verification and lockout rather than trapping, including lockout after too many attempts (e.g., 5) with cooldown responses.",
-      "reason": "Backend verification methods shown use `Runtime.trap(...)` for incorrect code and lockout conditions, which contradicts the AC stating attempts should \"return a clear failure state rather than trapping.\" Also `MAX_ATTEMPTS = 3`, not the suggested 5 attempts in the requirement/AC example.",
+      "id": "REQ-36",
+      "requirement": "Remove/disable any remaining UI/logic implying the old single-code gate (wording updated to the new step-based process).",
+      "reason": "The updated gate screen still contains legacy-style wording that may imply the old flow (it explicitly says 'Enter the first verification code to begin' inside a component still named AdminSharedCodeGateScreen). While it mentions a three-step process, the requirement calls out updating/disabling remaining old-gate implications; the diff does not show a rename/removal of old-gate semantics beyond partial text changes.",
       "evidence": [
-        "backend/main.mo (truncated): `let MAX_ATTEMPTS = 3;`",
-        "backend/main.mo (truncated): `Runtime.trap(\"Incorrect admin shared code\")`",
-        "backend/main.mo (truncated): `Runtime.trap(\"This account is currently locked out...\")`"
-      ]
-    },
-    {
-      "id": "REQ-22",
-      "requirement": "Backend should expose an API to check whether the caller currently has a valid shared-code session marker (used by the frontend to avoid prompting when still valid).",
-      "reason": "Frontend calls `actor.hasValidAdminSharedCode()`, but no corresponding backend method is shown in the truncated backend diff.",
-      "evidence": [
-        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts: `return actor.hasValidAdminSharedCode();`",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-23",
-      "requirement": "Backend must provide admin-only APIs to list/grant/revoke admin access (and these must be protected by BOTH admin permission and shared-code session marker).",
-      "reason": "Frontend calls `actor.listAdminUsers()`, `actor.grantAdminAccess(...)`, and `actor.revokeAdminAccess(...)`, but the backend diff shown does not include these methods or evidence they are protected by the shared-code session requirement (backend diff is truncated).",
-      "evidence": [
-        "frontend/src/hooks/admin/useAdminAccess.ts: `actor.listAdminUsers()` / `actor.grantAdminAccess(...)` / `actor.revokeAdminAccess(...)`",
-        "backend/main.mo (truncated)"
+        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Large-scale frontend theming/SEO/site feature changes (e.g., medieval-fantasy design system, SEO meta hooks, homepage/about/services/shop content updates, various UI components) unrelated to shared-code gated admin access and admin permission management.",
-      "reason": "The BuildRequest scope is specifically shared-code gating + admin permission management; it explicitly cautions against expanding unrelated sections. The diff summary indicates many broad UI/content/theme changes not required to satisfy REQ-21..24.",
+      "description": "Introduced a backend migration module (backend/migration.mo) and wired it into the main actor via '(with migration = Migration.run)'.",
+      "reason": "The BuildRequest/requirements do not request adding a migration module or running a migration hook; this is additional behavior beyond replacing the admin gate and updating authorization checks.",
       "evidence": [
-        "frontend-file-summaries.txt (truncated): entries for `frontend/index.css`, `frontend/tailwind.config.js`, `frontend/src/hooks/usePageMeta.ts`, `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/AboutPage.tsx`, `frontend/src/pages/ServicesPage.tsx`, etc."
+        "backend/migration.mo",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "description": "Embedded new plaintext admin verification codes directly in backend/main.mo (ADMIN_CODE_1/2/3).",
+      "reason": "While codes must be validated server-side, the request emphasizes treating codes as secrets and not leaking them; it does not request committing plaintext secrets into source. This is an implementation choice not explicitly requested and increases risk of secret exposure via source access.",
+      "evidence": [
+        "backend/main.mo (truncated)"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.62,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
     "frontend/src/components/auth/AdminRouteGuard.tsx",
     "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
     "frontend/src/components/auth/LoginButton.tsx",
-    "frontend/src/hooks/admin/useAdminAccess.ts",
     "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-    "frontend/src/pages/admin/AdminAccessPage.tsx",
-    "frontend/src/pages/admin/AdminLayout.tsx",
     "frontend/src/utils/adminSharedCodeSession.ts",
     "project_state.json"
   ]

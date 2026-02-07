@@ -1,7 +1,7 @@
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
-import { clearAdminCodeVerified } from '../../utils/adminSharedCodeSession';
+import { clearAdminVerificationProgress } from '../../utils/adminSharedCodeSession';
 
 export default function LoginButton() {
   const { login, clear, loginStatus, identity } = useInternetIdentity();
@@ -15,12 +15,11 @@ export default function LoginButton() {
     if (isAuthenticated) {
       await clear();
       queryClient.clear();
-      clearAdminCodeVerified();
+      clearAdminVerificationProgress();
     } else {
       try {
         await login();
       } catch (error: any) {
-        console.error('Login error:', error);
         if (error.message === 'User is already authenticated') {
           await clear();
           setTimeout(() => login(), 300);

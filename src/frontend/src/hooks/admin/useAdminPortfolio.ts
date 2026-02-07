@@ -42,7 +42,8 @@ export function useUpdatePortfolioItem() {
   return useMutation({
     mutationFn: async (item: PortfolioItem) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updatePortfolioItem(item);
+      // Backend uses addPortfolioItem for both add and update (overwrites by ID)
+      await actor.addPortfolioItem(item);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portfolioItems'] });
@@ -50,25 +51,6 @@ export function useUpdatePortfolioItem() {
     },
     onError: (error: Error) => {
       toast.error(`Failed to update portfolio item: ${error.message}`);
-    },
-  });
-}
-
-export function useDeletePortfolioItem() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.deletePortfolioItem(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['portfolioItems'] });
-      toast.success('Portfolio item deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete portfolio item: ${error.message}`);
     },
   });
 }

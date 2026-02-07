@@ -1,96 +1,137 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Shared-code gated admin access + admin permission management (frontend)",
+  "title": "Three-step sequential admin verification (frontend-only migration)",
   "requirements": [
     {
-      "id": "REQ-21",
-      "summary": "Add a shared-code gate for all /admin routes, persisting verification only for the browser session and clearing on sign out.",
+      "id": "REQ-31",
+      "summary": "Replace the single shared-code gate with a sequential three-step admin verification flow that blocks all /admin content until all steps succeed in order.",
       "acceptanceCriteria": [
-        "When a signed-in admin visits /admin (or any /admin/* route) without having entered the shared code in the current session, they are blocked and shown a code-entry screen instead of the admin layout.",
-        "After entering the correct shared code once, the user can navigate across all /admin pages during that browser session without being prompted again.",
-        "If the code is incorrect, the user remains blocked and receives a clear error message in English.",
-        "If the user signs out, any stored admin-code verification state is cleared and the user must re-enter the shared code after signing back in."
+        "When navigating to /admin while signed out, the user sees the existing authentication-required guard messaging and cannot access admin pages.",
+        "When navigating to /admin while signed in but not verified, the user is shown Step 1 code entry UI; admin pages are not rendered.",
+        "Entering Code #1 correctly unlocks Step 2 entry UI; entering Code #2 correctly unlocks Step 3 entry UI; entering Code #3 correctly grants access to /admin routes.",
+        "Users cannot skip steps (e.g., cannot submit Code #3 before completing Steps 1 and 2).",
+        "Any incorrect code at a given step keeps the user on the same step and does not grant admin access.",
+        "All admin-only backend methods currently protected by the old shared-code session are protected by the new three-step verification state instead."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/adminSharedCodeSession.ts",
-          "operation": "create",
-          "description": "Add a small sessionStorage-backed utility for reading/writing/clearing the admin shared-code verification flag for the current browser session (do not store the shared code itself)."
+          "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "operation": "modify",
+          "description": "Update the /admin guard to require a fully completed 3-step verification state before rendering admin children, and to render the new step UI otherwise. Ensure the guard uses backend capabilities to (a) check current verification status and (b) refresh status after each successful step."
         },
         {
           "path": "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "operation": "create",
-          "description": "Create React Query hooks that call backend capabilities to (a) check whether the current caller has a valid shared-code marker and (b) submit a code for verification using existing actor methods (hasValidAdminSharedCode, verifyAdminSharedCode / retryVerifyAdminSharedCode). Verify the component's usage instructions before implementing."
+          "operation": "modify",
+          "description": "Replace the old single-code verification hooks with multi-step verification hooks that call backend capabilities for verifying the current step and checking whether the caller is fully admin-verified. Update caching so the verification status can be refetched after each successful step."
         },
         {
+          "path": "frontend/src/utils/adminSharedCodeSession.ts",
+          "operation": "modify",
+          "description": "Replace the single boolean session flag with a session-stored multi-step progress model (e.g., current completed step 0–3). Provide helpers to set/get progress and determine 'fully authorized' only when all steps are completed."
+        }
+      ]
+    },
+    {
+      "id": "REQ-33",
+      "summary": "Implement a step-by-step admin verification screen that shows progress (Step 1/3, 2/3, 3/3) and only allows progressing after each successful entry.",
+      "acceptanceCriteria": [
+        "The admin verification UI presents a single code input at a time for the current step and includes visible progress (e.g., “Step 2 of 3”).",
+        "On success for a step, the UI transitions to the next step without requiring a page refresh.",
+        "On success for Step 3, the user is routed to or shown the admin dashboard content.",
+        "On an incorrect code, the UI shows an error state/message in English and remains on the same step.",
+        "The UI does not display, hardcode, or otherwise reveal the codes in any visible text or hints (no placeholders containing the codes)."
+      ],
+      "file_operations": [
+        {
           "path": "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "operation": "create",
-          "description": "Implement a code-entry screen shown to admins when shared-code verification is missing/expired; on success, persist a session-only verified flag and allow admin rendering; on failure, show a clear English error message. Verify the component's usage instructions before implementing."
-        },
+          "operation": "modify",
+          "description": "Rewrite the existing gate screen to be a 3-step sequential verification UI (single input shown per step) with clear progress indicator, English-only messages, and step transitions after successful verification. Integrate with the updated multi-step admin verification hook(s) and session progress utilities; do not render any admin pages until Step 3 is completed."
+        }
+      ]
+    },
+    {
+      "id": "REQ-34",
+      "summary": "Update admin route protection and related hooks/utilities to track partial progress and authorize only after all three steps are completed, clearing progress on logout.",
+      "acceptanceCriteria": [
+        "AdminRouteGuard only renders children with data-guard-state=\"authorized\" when the caller is fully verified (all three steps complete).",
+        "The session/local state keying previously used for single-code verification is replaced or extended to represent the three-step completion state (including partial progress).",
+        "Logging out clears any stored admin-verification progress so a subsequent login requires re-verification.",
+        "The React Query query key(s) used to cache “admin verification validity” are updated so they correctly reflect the new multi-step state and can be refreshed after each successful step."
+      ],
+      "file_operations": [
         {
           "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
           "operation": "modify",
-          "description": "Extend the existing admin route guard to include the shared-code gate after authentication + admin permission checks: if signed in and admin but no valid shared-code marker for the current session, render AdminSharedCodeGateScreen and do not render children (AdminLayout/sidebar) until verification succeeds."
+          "description": "Ensure the guard computes authorization strictly from 'step 3 completed' (not from a legacy boolean), uses updated React Query keys, and keeps the existing signed-out guard messaging behavior intact."
+        },
+        {
+          "path": "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+          "operation": "modify",
+          "description": "Update React Query queryKey(s) and mutation invalidation/refetching so admin verification validity is refreshed after each successful step. Remove legacy single-code verification call paths from the hook API surface."
+        },
+        {
+          "path": "frontend/src/utils/adminSharedCodeSession.ts",
+          "operation": "modify",
+          "description": "Implement session helpers for partial progress (0/1/2/3) and a single 'isFullyVerified()' check. Maintain a clear/cleanup function used on logout."
         },
         {
           "path": "frontend/src/components/auth/LoginButton.tsx",
           "operation": "modify",
-          "description": "On logout, clear React Query cache (already done) and also clear any session-only shared-code verification state so the user must re-enter the shared code after signing back in. Verify the component's usage instructions before implementing."
+          "description": "Update logout behavior to clear the new multi-step admin verification progress from session storage (not just a legacy single-code flag), while keeping existing query cache clearing intact."
         }
       ]
     },
     {
-      "id": "REQ-23",
-      "summary": "Add an Admin \"Access\" management page in /admin to grant/revoke admin access for other accounts (behind admin + shared-code gate).",
+      "id": "REQ-35",
+      "summary": "Treat the three admin codes as secrets: do not embed plaintext codes in the frontend bundle, do not log them, and only submit user-entered values to the backend for validation.",
       "acceptanceCriteria": [
-        "A new Admin section/page exists in the /admin area for managing admin access (grant/revoke).",
-        "The page provides a way to add an admin by entering a Principal text value (and optionally selecting from a list of known users if available), and to revoke admin from an existing admin.",
-        "All grant/revoke actions call backend admin-only APIs and show success/error feedback in English.",
-        "Only a caller that is an admin AND has a valid shared-code session can access and use this page; otherwise they are blocked by the same shared-code gate/admin guard behavior as other admin pages."
+        "No frontend source files contain the plaintext values of Code #1, Code #2, or Code #3.",
+        "Frontend network requests only send the user-entered code string to the backend for verification; the frontend never compares against hardcoded expected values.",
+        "Backend error messages are generic enough to avoid leaking the expected codes; returned errors do not echo back the submitted code.",
+        "Any telemetry/toast/error handling does not include the code values."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/admin/useAdminAccess.ts",
-          "operation": "create",
-          "description": "Add React Query hooks to list current admin principals and to grant/revoke admin access via existing actor methods (listAdminUsers, grantAdminAccess, revokeAdminAccess), with cache invalidation and English success/error feedback. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminAccessPage.tsx",
-          "operation": "create",
-          "description": "Create the /admin access management UI: show current admins, provide a Principal text input to grant admin, and revoke controls per admin; display English feedback for success/failure. This page relies on AdminRouteGuard for auth/admin/shared-code gating."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
+          "path": "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
           "operation": "modify",
-          "description": "Add an \"Access\" navigation item in the admin sidebar pointing to /admin/access (keep existing sections intact)."
+          "description": "Ensure the UI never hardcodes, displays, or hints the expected codes (including placeholders/help text), and does not log user-entered codes. Error messages must be generic and English-only."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
           "operation": "modify",
-          "description": "Register the new /admin/access route under the existing /admin route tree so it is reachable via navigation and direct URL."
-        }
-      ]
-    },
-    {
-      "id": "REQ-24",
-      "summary": "Update admin route protection to preserve Internet Identity login and admin permission checks while adding the shared-code verification step before rendering AdminLayout.",
-      "acceptanceCriteria": [
-        "If the user is not signed in, admin routes still show the existing \"Authentication Required\" state.",
-        "If the user is signed in but is not an admin, admin routes still show the existing \"Access Denied\" state.",
-        "If the user is signed in and is an admin, but has not completed shared-code verification (or it expired), the UI prompts for the shared code and does not render the AdminLayout/sidebar content until verification succeeds.",
-        "After successful shared-code verification, the AdminLayout renders normally and existing admin pages remain functional."
-      ],
-      "file_operations": [
+          "description": "Ensure hook error handling/toasts do not include submitted code values; only submit the raw user-entered string to the backend verification capability and do not perform any client-side comparisons."
+        },
         {
           "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
           "operation": "modify",
-          "description": "Refactor the guard flow to explicitly sequence: (1) Internet Identity authenticated check, (2) admin permission check, (3) shared-code session marker check/prompt, ensuring the existing \"Authentication Required\" and \"Access Denied\" screens remain unchanged and all admin pages continue to render once verified."
+          "description": "Ensure guard-level messaging and any error handling does not echo submitted codes and does not rely on any hardcoded expected values."
+        }
+      ]
+    },
+    {
+      "id": "REQ-36",
+      "summary": "Make the new three-step flow the only supported UI/logic for admin access and remove/disable remaining single-code gate wording and logic.",
+      "acceptanceCriteria": [
+        "The admin verification messaging is updated to describe a three-step process without referencing an “old shared code” system.",
+        "There is no route or screen in the app that still performs the old single-code verification call path as the primary admin authorization mechanism.",
+        "All user-facing strings related to admin verification are in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+          "operation": "modify",
+          "description": "Update all user-facing strings to describe a three-step verification flow (Step 1/3, Step 2/3, Step 3/3) and remove legacy single-code wording such as references to an 'old shared code' system."
         },
         {
-          "path": "frontend/src/pages/admin/AdminLayout.tsx",
+          "path": "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
           "operation": "modify",
-          "description": "Ensure AdminLayout remains wrapped by AdminRouteGuard so the sidebar/layout never renders until shared-code verification has succeeded (no additional public routes added)."
+          "description": "Remove or refactor legacy exports/logic that imply a single-code verification model so the only supported path is the 3-step sequential backend-validated flow."
+        },
+        {
+          "path": "frontend/src/utils/adminSharedCodeSession.ts",
+          "operation": "modify",
+          "description": "Rename/repurpose storage keys and helpers away from 'shared code verified' semantics so the app no longer implies a single-code session model."
         }
       ]
     }

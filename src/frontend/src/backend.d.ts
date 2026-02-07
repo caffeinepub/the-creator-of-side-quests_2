@@ -187,13 +187,6 @@ export interface backendInterface {
     createCoupon(coupon: Coupon): Promise<void>;
     createGiveaway(giveaway: Giveaway): Promise<void>;
     createLoyaltyReward(reward: LoyaltyReward): Promise<void>;
-    deleteCoupon(code: string): Promise<void>;
-    deleteGiveaway(id: string): Promise<void>;
-    deleteLoyaltyReward(id: string): Promise<void>;
-    deletePortfolioItem(id: string): Promise<void>;
-    deleteProduct(id: string): Promise<void>;
-    deleteSocialMediaLink(platform: string): Promise<void>;
-    deleteTestimonial(id: string): Promise<void>;
     getActiveGiveaways(): Promise<Array<Giveaway>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -214,15 +207,13 @@ export interface backendInterface {
     getTestimonial(id: string): Promise<Testimonial | null>;
     getTestimonials(): Promise<Array<Testimonial>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
-    grantAdminAccess(user: Principal): Promise<void>;
-    hasValidAdminSharedCode(): Promise<boolean>;
+    grantUserAccess(user: Principal): Promise<void>;
+    hasValidAdminSession(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
     listAdminUsers(): Promise<Array<Principal>>;
     recordPurchase(amount: bigint): Promise<void>;
     redeemLoyaltyReward(rewardId: string): Promise<boolean>;
-    retryVerifyAdminSharedCode(code: string): Promise<boolean>;
-    revokeAdminAccess(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     selectGiveawayWinner(giveawayId: string, winnerIndex: bigint): Promise<GiveawayWinner | null>;
     setFulfillmentOptions(options: FulfillmentOptions): Promise<void>;
@@ -231,13 +222,8 @@ export interface backendInterface {
     submitContactRequest(request: ContactRequest): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
     updateContactRequestStatus(id: string, status: string): Promise<void>;
-    updateCoupon(coupon: Coupon): Promise<void>;
-    updateGiveaway(giveaway: Giveaway): Promise<void>;
-    updateLoyaltyReward(reward: LoyaltyReward): Promise<void>;
-    updatePortfolioItem(item: PortfolioItem): Promise<void>;
-    updateProduct(product: Product): Promise<void>;
-    updateSocialMediaLink(platform: string, url: string): Promise<void>;
-    updateTestimonial(testimonial: Testimonial): Promise<void>;
     validateCoupon(code: string): Promise<Coupon | null>;
-    verifyAdminSharedCode(code: string): Promise<boolean>;
+    verifyAdminCodeStep1(code: string): Promise<boolean>;
+    verifyAdminCodeStep2(code: string): Promise<boolean>;
+    verifyAdminCodeStep3(code: string): Promise<boolean>;
 }

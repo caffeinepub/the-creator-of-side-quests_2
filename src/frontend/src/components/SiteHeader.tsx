@@ -5,12 +5,10 @@ import { Button } from './ui/button';
 import LoginButton from './auth/LoginButton';
 import LoyaltyBadge from './loyalty/LoyaltyBadge';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useIsAdmin } from '../hooks/useCurrentUser';
 
 export default function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { identity } = useInternetIdentity();
-  const { data: isAdmin } = useIsAdmin();
   const navigate = useNavigate();
 
   const navLinks = [
@@ -49,15 +47,13 @@ export default function SiteHeader() {
               {link.label}
             </Link>
           ))}
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className="text-sm font-medium transition-colors hover:text-primary"
-              activeProps={{ className: 'text-primary' }}
-            >
-              Admin
-            </Link>
-          )}
+          <Link
+            to="/admin"
+            className="text-sm font-medium transition-colors hover:text-primary"
+            activeProps={{ className: 'text-primary' }}
+          >
+            Admin
+          </Link>
         </nav>
 
         <div className="flex items-center space-x-4">
@@ -89,16 +85,14 @@ export default function SiteHeader() {
                 {link.label}
               </Link>
             ))}
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="text-sm font-medium transition-colors hover:text-primary"
-                activeProps={{ className: 'text-primary' }}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Admin
-              </Link>
-            )}
+            <Link
+              to="/admin"
+              className="text-sm font-medium transition-colors hover:text-primary"
+              activeProps={{ className: 'text-primary' }}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Admin
+            </Link>
           </nav>
         </div>
       )}

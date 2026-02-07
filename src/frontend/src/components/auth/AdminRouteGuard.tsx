@@ -1,13 +1,12 @@
 import { ReactNode, useState, useEffect } from 'react';
-import { useIsAdmin } from '../../hooks/useCurrentUser';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
-import { useHasValidAdminSharedCode } from '../../hooks/admin/useAdminSharedCodeGate';
+import { useHasValidAdminSession } from '../../hooks/admin/useAdminSharedCodeGate';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Link } from '@tanstack/react-router';
 import AdminSharedCodeGateScreen from './AdminSharedCodeGateScreen';
-import { isAdminCodeVerified } from '../../utils/adminSharedCodeSession';
+import { isFullyVerified } from '../../utils/adminSharedCodeSession';
 
 interface AdminRouteGuardProps {
   children: ReactNode;
@@ -15,31 +14,30 @@ interface AdminRouteGuardProps {
 
 export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
   const { identity } = useInternetIdentity();
-  const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
-  const { data: hasValidCode, isLoading: isCodeLoading, refetch: refetchCodeStatus } = useHasValidAdminSharedCode();
-  const [showCodeGate, setShowCodeGate] = useState(false);
+  const { data: hasValidSession, isLoading: isSessionLoading, refetch: refetchSessionStatus } = useHasValidAdminSession();
+  const [showVerificationGate, setShowVerificationGate] = useState(false);
 
-  // Check session storage on mount and when admin status changes
+  // Check session storage on mount and when verification status changes
   useEffect(() => {
-    if (isAdmin && !isAdminLoading) {
-      const sessionVerified = isAdminCodeVerified();
-      if (!sessionVerified && !hasValidCode) {
-        setShowCodeGate(true);
+    if (identity) {
+      const sessionFullyVerified = isFullyVerified();
+      if (!sessionFullyVerified && !hasValidSession) {
+        setShowVerificationGate(true);
       } else {
-        setShowCodeGate(false);
+        setShowVerificationGate(false);
       }
     }
-  }, [isAdmin, isAdminLoading, hasValidCode]);
+  }, [identity, hasValidSession]);
 
   // Step 1: Check authentication
   if (!identity) {
     return (
-      <div className="container py-16">
+      <div className="container py-16" data-guard-state="authentication-required">
         <Alert variant="destructive">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Authentication Required</AlertTitle>
           <AlertDescription>
-            You must be logged in to access the admin panel.
+            You must be logged in to access the admin panel. However, logging in alone does not grant admin access. Admin access requires completing a separate three-step verification process.
           </AlertDescription>
         </Alert>
         <div className="mt-4">
@@ -51,55 +49,29 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
     );
   }
 
-  // Step 2: Check admin permission
-  if (isAdminLoading) {
+  // Step 2: Check admin verification (separate from login)
+  if (isSessionLoading) {
     return (
-      <div className="container py-16">
-        <p>Verifying permissions...</p>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="container py-16">
-        <Alert variant="destructive">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>
-            You do not have permission to access the admin panel.
-          </AlertDescription>
-        </Alert>
-        <div className="mt-4">
-          <Link to="/">
-            <Button>Return Home</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Step 3: Check shared code verification
-  if (isCodeLoading) {
-    return (
-      <div className="container py-16">
+      <div className="container py-16" data-guard-state="verifying-admin-access">
         <p>Verifying admin access...</p>
       </div>
     );
   }
 
-  const sessionVerified = isAdminCodeVerified();
-  if (!sessionVerified && !hasValidCode) {
+  const sessionFullyVerified = isFullyVerified();
+  if (!sessionFullyVerified && !hasValidSession) {
     return (
-      <AdminSharedCodeGateScreen
-        onSuccess={() => {
-          setShowCodeGate(false);
-          refetchCodeStatus();
-        }}
-      />
+      <div data-guard-state="admin-verification-required">
+        <AdminSharedCodeGateScreen
+          onSuccess={() => {
+            setShowVerificationGate(false);
+            refetchSessionStatus();
+          }}
+        />
+      </div>
     );
   }
 
   // All checks passed, render admin content
-  return <>{children}</>;
+  return <div data-guard-state="authorized">{children}</div>;
 }

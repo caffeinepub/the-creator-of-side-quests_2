@@ -42,7 +42,8 @@ export function useUpdateProduct() {
   return useMutation({
     mutationFn: async (product: Product) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateProduct(product);
+      // Backend uses addProduct for both add and update (overwrites by ID)
+      await actor.addProduct(product);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -50,25 +51,6 @@ export function useUpdateProduct() {
     },
     onError: (error: Error) => {
       toast.error(`Failed to update product: ${error.message}`);
-    },
-  });
-}
-
-export function useDeleteProduct() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.deleteProduct(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast.success('Product deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete product: ${error.message}`);
     },
   });
 }

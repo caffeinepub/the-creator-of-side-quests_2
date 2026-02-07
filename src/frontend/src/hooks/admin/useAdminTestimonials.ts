@@ -42,7 +42,8 @@ export function useUpdateTestimonial() {
   return useMutation({
     mutationFn: async (testimonial: Testimonial) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.updateTestimonial(testimonial);
+      // Backend uses addTestimonial for both add and update (overwrites by ID)
+      await actor.addTestimonial(testimonial);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testimonials'] });
@@ -50,25 +51,6 @@ export function useUpdateTestimonial() {
     },
     onError: (error: Error) => {
       toast.error(`Failed to update testimonial: ${error.message}`);
-    },
-  });
-}
-
-export function useDeleteTestimonial() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      if (!actor) throw new Error('Actor not available');
-      await actor.deleteTestimonial(id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['testimonials'] });
-      toast.success('Testimonial deleted successfully');
-    },
-    onError: (error: Error) => {
-      toast.error(`Failed to delete testimonial: ${error.message}`);
     },
   });
 }

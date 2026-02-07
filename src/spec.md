@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add a shared-code verification step for all admin access (frontend + backend) and provide an admin-only page to grant/revoke admin permissions for other accounts.
+**Goal:** Replace the old single shared-code admin gate with a sequential three-step admin verification flow, enforced by both UI and backend authorization.
 
 **Planned changes:**
-- Add a shared-code gate on all `/admin` and `/admin/*` routes that requires a signed-in admin to enter the code `A7F9K2M8Q4R6T1Z5X3LJH9C8` before the admin layout/pages render.
-- Persist shared-code verification for the current browser session and clear it on sign-out; show clear English errors for incorrect codes.
-- Add backend APIs to verify the shared code and create an expiring admin-session marker, plus enforce that marker on all admin-only backend operations (in addition to existing admin permission checks).
-- Add basic brute-force protection for shared-code verification (per-caller attempt counting and temporary lockout with clear failure responses).
-- Create an Admin “Access” page within `/admin` to grant/revoke admin access for other accounts via backend admin-only APIs, with English success/error feedback.
+- Implement a new step-by-step Admin verification screen to replace the existing single-code gate UI, showing one code input at a time with “Step 1 of 3 / Step 2 of 3 / Step 3 of 3” progress and English-only messaging.
+- Update admin route protection and related frontend hooks/utilities to track multi-step verification state (including partial progress), only authorizing access after all three steps complete, and clearing progress on logout.
+- Update backend admin verification APIs and authorization checks to validate step order server-side, expose endpoints to check verification status and submit the current step code, and retire the old single-code verification/session behavior.
+- Ensure the three codes are treated as secrets: do not embed plaintext codes in the frontend bundle, do not log codes, and return generic English errors that do not leak expected or submitted codes.
 
-**User-visible outcome:** Signed-in admins must enter the shared code once per session to access any admin page; verified admins can manage (grant/revoke) admin access for other users from a dedicated Admin Access page.
+**User-visible outcome:** Signed-in users who click or navigate to Admin are guided through a 3-step verification flow and only see the Admin Dashboard after completing all steps in order; unauthorized users remain blocked from admin routes and admin-only backend actions.

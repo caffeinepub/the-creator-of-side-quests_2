@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "Build a full multi-page website for “The Creator of Side Quests” with a medieval-fantasy premium brand style, responsive/SEO-friendly UI, interactive elements, social link integration, and a full admin-managed platform including e-commerce (Stripe checkout + request-quote flow), portfolio/testimonials management (including user-submitted star reviews), coupons, loyalty points/rewards, a livestream-driven giveaway wheel system, and admin-driven newsletters including birthday-triggered coupons/cards. Admin access is requested to be controlled via a shared passcode gate plus in-app admin permission granting, rather than requiring an Internet Identity principal allowlist.",
+  "projectStateVersion": 13,
+  "summary": "Project now requires a new admin authentication system that completely replaces the prior shared-passcode/admin-permission gate approach: Admin Dashboard access must be controlled exclusively via a separate three-step sequence of 25-character verification codes (stored server-side as hashes, never exposed client-side), with account-specific failed-attempt tracking and irreversible per-account admin lockout after 3 failures. Admins can rotate the three codes only after entering a separate 100-character master override code (also hashed server-side), with secure logging/audit of attempts and changes. Additionally, standard user login (e.g., email/Google/etc.) must be separated and must never grant Admin Dashboard access under any circumstances.",
   "architectural_notes": [
     "Shop supports both Stripe checkout and an alternative request-quote/contact flow on selected products.",
     "Customer login/accounts are needed to track loyalty points and to uniquely identify giveaway entrants by username.",
@@ -9,14 +9,20 @@
     "Fulfillment/shipping options are configurable in admin; current operating mode is local coordination (no shipping) centered on Ashland/Westwood, KY.",
     "Testimonials should support a user-submitted review flow (1–5 stars) in addition to admin management; star styling must match the mossy-green glow theme.",
     "Portfolio management must support both photo and video uploads and a curated “What I have created for the community” subsection.",
-    "Admin access requested to use a shared passcode (second factor) to enter the Admin panel, instead of relying on an Internet Identity principal allowlist for initial access.",
-    "Admin panel should support granting/revoking admin permissions for other accounts, and must enforce server-side route protection (not just hiding the Admin tab) so direct URL access is blocked without both permission + passcode."
+    "Admin entry point (button/link) should be publicly visible and clickable in the site navigation (desktop header + mobile hamburger menu); actual access must still be enforced by the shared-passcode gate + admin permission checks and server-side route protection.",
+    "Admin Dashboard access is controlled exclusively by a three-step sequence of 25-character verification codes; standard user login must never grant admin access.",
+    "All admin verification codes (3x 25-char) and the 100-character master override code must be stored server-side as hashes only; no plaintext exposure in client code.",
+    "Track per-user failed attempts and permanently lock out admin access for that specific account after 3 failures (irreversible, persists across code rotations)."
   ],
   "known_issues": [
     "User requested unlimited-size photo/video portfolio uploads (“no matter the size/length”); this conflicts with practical storage limits and will require defined max file size/duration or alternative hosting/streaming strategy.",
-    "Shared passcode–based Admin access is weaker security than principal allowlisting; requires secure storage (not hard-coded), rate limiting/lockouts, and a recovery/rotation process to mitigate passcode leakage."
+    "Admin button/link is currently not visible to the user; navigation needs to show Admin entry point on both mobile (hamburger) and desktop (top header) while keeping code gate protection.",
+    "Requirements conflict noted during planning: some Phase 1 prompts stated the Admin button must remain visible to all users at all times, while the final spec requires the Admin button permanently disappear for locked-out accounts; must resolve to a single behavior.",
+    "\"Permanently locked out\" and \"strict, irreversible, account-specific\" admin removal creates a high-risk support scenario; requires explicit owner recovery policy (or confirm no recovery exists).",
+    "Moving away from Internet Identity/admin-permission gating toward code-only admin verification and introducing email/Google logins is a major auth-architecture shift; requires careful migration plan to avoid breaking existing accounts/admin tooling.",
+    "User provided plaintext admin verification codes in the prompt; ensure implementation does not embed/expose these codes in frontend bundles, logs, or client config (must be server-side hashed/validated only)."
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-create-a-responsive-multi-page-marketing-website-for-the-creator-of-side-quests-with-the-following-routes-pages-and-user-facing-copy-in-english-based-on-the-provided-prompt-home-hero-with-headline-subheadline-ctas-quotes-about-bio-vision-mission-emission-quotes-services-categories-micro-services-starting-at-placeholders-ky-guidance-quotes-shop-portfolio-testimonials-contact-form-with-specified-fields-response-time-guidance-quotes-hours-policies-hours-payments-quotes-scope-licensing-returns-adjustments-local-service-area-anti-discrimination-quote-include-ctas-throughout-linking-to-contact-booking-and-shop-services-as-specified",
@@ -201,6 +207,86 @@
         "REQ-24"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-site-header-navigation-so-an-admin-link-is-always-visible-and-clickable-for-everyone-regardless-of-login-admin-status-on-desktop-it-must-appear-in-the-top-header-navigation-very-top-of-the-website-and-on-mobile-it-must-appear-inside-the-top-right-hamburger-menu",
+      "title": "Update the site header navigation so an “Admin” link is always visible and clickable for everyone (regardless of login/admin status): on desktop it must appear in the top header navigation (very top of the website), and on mobile it must appear inside the top-right hamburger menu.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-preserve-the-existing-admin-protection-behavior-on-admin-routes-internet-identity-login-requirement-admin-permission-check-and-shared-code-gate-if-a-non-authorized-user-clicks-the-always-visible-admin-link-the-user-must-still-be-prevented-from-accessing-admin-content-by-the-existing-guard-screens",
+      "title": "Preserve the existing admin protection behavior on /admin routes (Internet Identity login requirement, admin permission check, and shared-code gate). If a non-authorized user clicks the always-visible “Admin” link, the user must still be prevented from accessing admin content by the existing guard screens.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-that-standard-website-login-only-authenticates-a-user-for-normal-non-admin-site-features-and-can-never-grant-admin-dashboard-access-by-itself-admin-dashboard-access-must-be-controlled-exclusively-by-a-separate-three-step-verification-system-not-by-simply-being-logged-in",
+      "title": "Ensure that standard website login only authenticates a user for normal (non-admin) site features and can never grant Admin Dashboard access by itself. Admin Dashboard access must be controlled exclusively by a separate three-step verification system (not by simply being logged in).",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-decouple-current-admin-dashboard-route-protection-from-any-login-derived-admin-permission-e-g-roles-allowlists-so-that-adminrouteguard-does-not-treat-being-logged-in-or-being-marked-as-an-admin-role-as-sufficient-for-access-it-must-require-the-dedicated-admin-verification-state-produced-by-the-separate-three-step-verification-system",
+      "title": "Decouple current Admin Dashboard route protection from any login-derived admin permission (e.g., roles/allowlists) so that AdminRouteGuard does not treat being logged-in or being marked as an admin role as sufficient for access; it must require the dedicated admin verification state produced by the separate three-step verification system.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-clear-user-facing-messaging-on-admin-guard-screens-stating-that-logging-in-is-not-sufficient-for-admin-access-and-that-admin-access-requires-completing-the-separate-three-step-verification-process",
+      "title": "Add clear user-facing messaging on admin guard screens stating that logging in is not sufficient for admin access and that admin access requires completing the separate three-step verification process.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-single-shared-code-admin-gate-with-a-three-step-sequential-admin-verification-flow-that-requires-users-to-enter-three-codes-in-the-exact-order-code-1-then-code-2-then-code-3-before-any-admin-content-becomes-accessible",
+      "title": "Replace the current single shared-code admin gate with a three-step sequential admin verification flow that requires users to enter three codes in the exact order (Code #1 then Code #2 then Code #3) before any /admin content becomes accessible.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-new-admin-verification-screen-component-to-replace-the-existing-single-code-ui-frontend-src-components-auth-adminsharedcodegatescreen-tsx-with-a-step-by-step-interface-that-clearly-indicates-step-1-3-step-2-3-step-3-3-and-only-allows-progressing-after-each-successful-entry",
+      "title": "Implement a new Admin verification screen/component to replace the existing single-code UI (frontend/src/components/auth/AdminSharedCodeGateScreen.tsx) with a step-by-step interface that clearly indicates Step 1/3, Step 2/3, Step 3/3 and only allows progressing after each successful entry.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-admin-route-protection-frontend-src-components-auth-adminrouteguard-tsx-and-the-related-hooks-utilities-frontend-src-hooks-admin-useadminsharedcodegate-ts-and-frontend-src-utils-adminsharedcodesession-ts-to-track-multi-step-verification-state-and-to-consider-the-user-authorized-only-when-all-three-steps-are-completed",
+      "title": "Update frontend admin route protection (frontend/src/components/auth/AdminRouteGuard.tsx) and the related hooks/utilities (frontend/src/hooks/admin/useAdminSharedCodeGate.ts and frontend/src/utils/adminSharedCodeSession.ts) to track multi-step verification state and to consider the user authorized only when all three steps are completed.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-three-provided-codes-are-treated-as-secrets-do-not-embed-the-plaintext-codes-anywhere-in-the-frontend-bundle-and-do-not-log-them-to-the-browser-console-backend-logs-or-error-messages",
+      "title": "Ensure the three provided codes are treated as secrets: do not embed the plaintext codes anywhere in the frontend bundle, and do not log them to the browser console, backend logs, or error messages.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-new-three-step-verification-flow-the-only-supported-path-to-admin-dashboard-access-and-remove-disable-any-remaining-ui-logic-implying-the-old-single-code-gate-e-g-enter-the-first-verification-code-to-begin-in-the-current-gate-screen-should-be-updated-to-the-new-step-based-wording",
+      "title": "Make the new three-step verification flow the only supported path to Admin Dashboard access and remove/disable any remaining UI/logic implying the old single-code gate (e.g., “Enter the first verification code to begin” in the current gate screen should be updated to the new step-based wording).",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -319,16 +405,36 @@
       "status": "pending"
     },
     {
-      "id": "AR-20",
-      "summary": "Implement shared-passcode–gated Admin access: users must enter shared code to access Admin; within Admin, authorized users can grant/revoke admin permission for other accounts; Admin tab hidden unless user has admin permission; protect Admin routes from direct URL access",
+      "id": "AR-23",
+      "summary": "Make the Admin button/link always visible and clickable for everyone: on mobile it appears in the top-right hamburger menu; on desktop it appears at the very top header/nav. Access remains protected by the existing shared-passcode gate.",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-22",
-      "summary": "Enforce the shared-code gate on the backend (not only in the UI) by adding backend APIs to: (1) verify the shared code for the caller and create a short-lived admin session marker, and (2) require that marker for all admin-only backend operations (in addition to existing admin permission checks). Include basic brute-force protection (per-caller attempt counting + temporary lockout).",
+      "id": "AR-24",
+      "summary": "Replace existing admin access gating with a separate three-step admin verification system (three 25-char codes, hashed server-side, sequential entry) plus per-account failed-attempt tracking and irreversible admin lockout after 3 failures; include master override code (100 chars) required to change/rotate codes with secure logging",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Separate base user login (email/Google/etc.) from admin access: normal logins grant only standard user access and can never grant Admin Dashboard access; admin access is controlled only by the three-step verification system",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Update backend authorization so that admin-only operations are gated by the separate three-step verification system rather than being implied by the caller’s login state. Ensure there is no backend API that grants admin capability purely from standard login/authentication.",
       "reqIds": [
-        "REQ-22"
+        "REQ-29"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Update the backend admin verification APIs and authorization checks so that admin access is granted only after successful completion of all three steps, and remove/retire the old single-code (ADMIN_SHARED_CODE) verification/session behavior from backend/main.mo.",
+      "reqIds": [
+        "REQ-32"
       ],
       "status": "pending"
     }

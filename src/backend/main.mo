@@ -1,43 +1,49 @@
-import Map "mo:core/Map";
-import Array "mo:core/Array";
-import List "mo:core/List";
+import Blob "mo:core/Blob";
 import Principal "mo:core/Principal";
-import Text "mo:core/Text";
-import Time "mo:core/Time";
 import Iter "mo:core/Iter";
+import Array "mo:core/Array";
+import Time "mo:core/Time";
+import Text "mo:core/Text";
+import Map "mo:core/Map";
+import Nat "mo:core/Nat";
+import Runtime "mo:core/Runtime";
 import OutCall "http-outcalls/outcall";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
-import Stripe "stripe/stripe";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-import Runtime "mo:core/Runtime";
-import Migration "migration";
+import Stripe "stripe/stripe";
 
-(with migration = Migration.run)
+
+// Enable migration on upgrade
+
 actor {
   include MixinStorage();
 
-  // Add authentication
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Three-step admin code verification system
-  let ADMIN_CODE_1 = "CODE1-ADJFO823FKLJ";
-  let ADMIN_CODE_2 = "CODE2-23JKLF923JKL";
-  let ADMIN_CODE_3 = "CODE3-DJFI234DFLJKL";
-  let SESSION_DURATION_NS : Int = 900_000_000_000; // 15 minutes
+  let SESSION_DURATION_NS : Int = 900_000_000_000;
+  let MAX_FAILED_ATTEMPTS = 3;
+  let FISHING_INCREMENT_MAX_FAILS_NS : Int = 30_000_000_000;
+  let PERSISTENCY_TTL_NS : Int = 90 * 24 * 60 * 60 * 1_000_000_000; // 90 days in nanoseconds
 
   public type AdminVerificationState = {
     step1_verified : Bool;
     step2_verified : Bool;
     step3_verified : Bool;
     session_expiry : ?Time.Time;
+    failed_attempts : Nat;
+    permanently_locked : Bool;
+    last_failed_attempt : ?Time.Time;
+    persistent_lockout : Bool; // Explicit persistent lockout flag
+    lockout_time : ?Time.Time; // Timestamp when the persistent lockout occurred
   };
 
-  let adminVerificationStates = Map.empty<Principal, AdminVerificationState>();
+  // CRITICAL: Make adminVerificationStates stable to persist across upgrades
+  stable let adminVerificationStates = Map.empty<Principal, AdminVerificationState>();
 
-  func cleanUpExpiredSessions() {
+  func removeExpiredSessions() {
     let now = Time.now();
     let activeEntries = adminVerificationStates.filter(func(_p, state) { switch (state.session_expiry) { case (?expiry) { expiry > now }; case (null) { true } } });
     adminVerificationStates.clear();
@@ -46,96 +52,16 @@ actor {
     };
   };
 
-  func requireAdminVerification(caller : Principal) {
-    cleanUpExpiredSessions();
+  func checkAdminVerificationQuery(caller : Principal) : Bool {
     switch (adminVerificationStates.get(caller)) {
       case (?state) {
-        if (not state.step1_verified or not state.step2_verified or not state.step3_verified) {
-          Runtime.trap("Unauthorized: Admin verification required. Please complete all three code steps in order.");
-        };
-        switch (state.session_expiry) {
-          case (?expiry) {
-            if (Time.now() > expiry) {
-              Runtime.trap("Unauthorized: Admin verification session expired. Please start verification process again.");
-            };
-          };
-          case (null) {
-            Runtime.trap("Unauthorized: Admin verification required. Please complete all three code steps.");
-          };
-        };
-      };
-      case (null) {
-        Runtime.trap("Unauthorized: Admin verification required. Please complete all three code steps.");
-      };
-    };
-  };
-
-  public shared ({ caller }) func verifyAdminCodeStep1(code : Text) : async Bool {
-    if (code != ADMIN_CODE_1) {
-      false;
-    } else {
-      let now = Time.now();
-      let newState : AdminVerificationState = {
-        step1_verified = true;
-        step2_verified = false;
-        step3_verified = false;
-        session_expiry = ?(now + SESSION_DURATION_NS);
-      };
-      adminVerificationStates.add(caller, newState);
-      true;
-    };
-  };
-
-  public shared ({ caller }) func verifyAdminCodeStep2(code : Text) : async Bool {
-    switch (adminVerificationStates.get(caller)) {
-      case (?state) {
-        if (state.step1_verified and not state.step2_verified and code == ADMIN_CODE_2) {
-          let newState = {
-            step1_verified = true;
-            step2_verified = true;
-            step3_verified = false;
-            session_expiry = ?(Time.now() + SESSION_DURATION_NS);
-          };
-          adminVerificationStates.add(caller, newState);
-          true;
-        } else {
-          false;
-        };
-      };
-      case (null) { false };
-    };
-  };
-
-  public shared ({ caller }) func verifyAdminCodeStep3(code : Text) : async Bool {
-    switch (adminVerificationStates.get(caller)) {
-      case (?state) {
-        if (state.step1_verified and state.step2_verified and not state.step3_verified and code == ADMIN_CODE_3) {
-          let newState = {
-            step1_verified = true;
-            step2_verified = true;
-            step3_verified = true;
-            session_expiry = ?(Time.now() + SESSION_DURATION_NS);
-          };
-          adminVerificationStates.add(caller, newState);
-          true;
-        } else {
-          false;
-        };
-      };
-      case (null) { false };
-    };
-  };
-
-  public query ({ caller }) func hasValidAdminSession() : async Bool {
-    switch (adminVerificationStates.get(caller)) {
-      case (?state) {
+        // Persistent lockout check - AUTHORITATIVE
+        if (state.persistent_lockout) { return false };
         if (not state.step1_verified or not state.step2_verified or not state.step3_verified) {
           return false;
         };
         switch (state.session_expiry) {
-          case (?expiry) {
-            Time.now() <= expiry;
-          };
+          case (?expiry) { Time.now() <= expiry };
           case (null) { false };
         };
       };
@@ -143,7 +69,344 @@ actor {
     };
   };
 
-  // User Profile System
+  func requireAdminVerification(caller : Principal) {
+    removeExpiredSessions();
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        // Persistent lockout check (authoritative) - ALWAYS ENFORCED FIRST
+        if (state.persistent_lockout) {
+          Runtime.trap("Unauthorized: Your access is permanently locked (max attempts reached)");
+        };
+        if (not state.step1_verified or not state.step2_verified or not state.step3_verified) {
+          Runtime.trap("Unauthorized: Admin verification required. Complete all code steps in order.");
+        };
+        switch (state.session_expiry) {
+          case (?expiry) {
+            if (Time.now() > expiry) {
+              Runtime.trap("Unauthorized: Admin verification session expired. Restart verification.");
+            };
+          };
+          case (null) {
+            Runtime.trap("Unauthorized: Admin verification required. Complete all code steps.");
+          };
+        };
+      };
+      case (null) {
+        Runtime.trap("Unauthorized: Admin verification required. Complete all code steps.");
+      };
+    };
+  };
+
+  public query ({ caller }) func isPermanentlyLocked() : async Bool {
+    // Return persistent lockout status from stable storage
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) { state.persistent_lockout };
+      case (null) { false };
+    };
+  };
+
+  public query ({ caller }) func getAdminVerificationStatus() : async {
+    failed_attempts : Nat;
+    remaining_attempts : ?Nat;
+    permanently_locked : Bool;
+  } {
+    // Return status from stable storage
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        {
+          failed_attempts = state.failed_attempts;
+          remaining_attempts =
+            if (state.persistent_lockout) { null }
+            else { ?remainingAttemptsHelper(MAX_FAILED_ATTEMPTS, state.failed_attempts) };
+          permanently_locked = state.persistent_lockout;
+        };
+      };
+      case (null) {
+        {
+          failed_attempts = 0;
+          remaining_attempts = ?MAX_FAILED_ATTEMPTS;
+          permanently_locked = false;
+        };
+      };
+    };
+  };
+
+  func remainingAttemptsHelper(max : Nat, used : Nat) : Nat {
+    var result = max;
+    var counter1 = 0;
+    while (counter1 < used) {
+      counter1 += 1;
+      var counter2 = 0;
+      while (counter2 < max) {
+        if (counter2 + 1 == result + 1) {
+          result -= 1;
+        };
+        counter2 += 1;
+      };
+    };
+    result;
+  };
+
+  func getFailedAttemptsAndLockout(caller : Principal) : (Nat, Bool) {
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) { (state.failed_attempts, state.persistent_lockout) };
+      case (null) { (0, false) };
+    };
+  };
+
+  func recordFailedAttempt(caller : Principal) : () {
+    let (currentAttempts, isLocked) = getFailedAttemptsAndLockout(caller);
+    if (isLocked) { return () };
+    let newAttempts = currentAttempts + 1;
+    if (newAttempts >= MAX_FAILED_ATTEMPTS) {
+      let newState : AdminVerificationState = {
+        step1_verified = false;
+        step2_verified = false;
+        step3_verified = false;
+        session_expiry = null;
+        failed_attempts = newAttempts;
+        permanently_locked = false;
+        persistent_lockout = true; // Set persistent lockout flag
+        last_failed_attempt = ?Time.now();
+        lockout_time = ?Time.now(); // Store lockout timestamp
+      };
+      adminVerificationStates.add(caller, newState);
+    } else {
+      let newState : AdminVerificationState = {
+        step1_verified = false;
+        step2_verified = false;
+        step3_verified = false;
+        session_expiry = null;
+        failed_attempts = newAttempts;
+        permanently_locked = false;
+        persistent_lockout = false; // Not locked out persistently yet
+        last_failed_attempt = ?Time.now();
+        lockout_time = null;
+      };
+      adminVerificationStates.add(caller, newState);
+    };
+  };
+
+  func checkAntiFishingDelay(caller : Principal) : Bool {
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        switch (state.last_failed_attempt) {
+          case (?lastFail) {
+            let timeSinceLastFail = Time.now() - lastFail;
+            timeSinceLastFail >= FISHING_INCREMENT_MAX_FAILS_NS;
+          };
+          case (null) { true };
+        };
+      };
+      case (null) { true };
+    };
+  };
+
+  // Verification codes and Master Override Code - persisted as stable variables
+  type VerificationCodes = {
+    code1 : Text;
+    code2 : Text;
+    code3 : Text;
+    masterCode : Text;
+  };
+
+  // Initialize with secure default values that MUST be changed on first deployment
+  stable var verificationCodes : VerificationCodes = {
+    code1 = "CHANGE-ME-CODE1-INITIAL";
+    code2 = "CHANGE-ME-CODE2-INITIAL";
+    code3 = "CHANGE-ME-CODE3-INITIAL";
+    masterCode = "CHANGE-ME-MASTER-INITIAL";
+  };
+
+  public shared ({ caller }) func verifyAdminCodeStep1(code : Text) : async Bool {
+    // ALWAYS check persistent lockout FIRST before any verification logic
+    switch (adminVerificationStates.get(caller)) {
+      case (?state) {
+        if (state.persistent_lockout) { 
+          return false;
+        };
+        if (not checkAntiFishingDelay(caller)) {
+          return false;
+        };
+      };
+      case (null) {};
+    };
+
+    if (code != verificationCodes.code1) {
+      recordFailedAttempt(caller);
+      return false;
+    };
+    let now = Time.now();
+    let newState : AdminVerificationState = {
+      step1_verified = true;
+      step2_verified = false;
+      step3_verified = false;
+      session_expiry = ?(now + SESSION_DURATION_NS);
+      failed_attempts = 0;
+      permanently_locked = false;
+      persistent_lockout = false;
+      last_failed_attempt = null;
+      lockout_time = null;
+    };
+    adminVerificationStates.add(caller, newState);
+    true;
+  };
+
+  public shared ({ caller }) func verifyAdminCodeStep2(code : Text) : async Bool {
+    // ALWAYS check persistent lockout FIRST
+    switch (adminVerificationStates.get(caller)) {
+      case (null) { 
+        recordFailedAttempt(caller);
+        return false;
+      };
+      case (?state) {
+        if (state.persistent_lockout) { 
+          return false;
+        };
+        if (not checkAntiFishingDelay(caller)) { 
+          return false;
+        };
+        
+        if (not state.step1_verified) {
+          recordFailedAttempt(caller);
+          return false;
+        };
+        
+        if (state.step2_verified) {
+          return false;
+        };
+        
+        if (code != verificationCodes.code2) {
+          recordFailedAttempt(caller);
+          return false;
+        };
+        
+        let newState = {
+          step1_verified = true;
+          step2_verified = true;
+          step3_verified = false;
+          session_expiry = ?(Time.now() + SESSION_DURATION_NS);
+          failed_attempts = 0;
+          permanently_locked = false;
+          persistent_lockout = false;
+          last_failed_attempt = null;
+          lockout_time = null;
+        };
+        adminVerificationStates.add(caller, newState);
+        return true;
+      };
+    };
+  };
+
+  public shared ({ caller }) func verifyAdminCodeStep3(code : Text) : async Bool {
+    // ALWAYS check persistent lockout FIRST
+    switch (adminVerificationStates.get(caller)) {
+      case (null) { 
+        recordFailedAttempt(caller);
+        return false;
+      };
+      case (?state) {
+        if (state.persistent_lockout) { 
+          return false;
+        };
+        if (not checkAntiFishingDelay(caller)) { 
+          return false;
+        };
+        
+        if (not state.step1_verified or not state.step2_verified) {
+          recordFailedAttempt(caller);
+          return false;
+        };
+        
+        if (state.step3_verified) {
+          return false;
+        };
+        
+        if (code != verificationCodes.code3) {
+          recordFailedAttempt(caller);
+          return false;
+        };
+        
+        let newState = {
+          step1_verified = true;
+          step2_verified = true;
+          step3_verified = true;
+          session_expiry = ?(Time.now() + SESSION_DURATION_NS);
+          failed_attempts = 0;
+          permanently_locked = false;
+          persistent_lockout = false;
+          last_failed_attempt = null;
+          lockout_time = null;
+        };
+        adminVerificationStates.add(caller, newState);
+        return true;
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateWithMasterOverride(
+    masterOverride : Text,
+    newCode1 : Text,
+    newCode2 : Text,
+    newCode3 : Text
+  ) : async () {
+    // Master Override Code is required for rotating admin codes
+    if (masterOverride != verificationCodes.masterCode) {
+      Runtime.trap("Unauthorized: Master override code required for admin code rotation");
+    };
+
+    // Validate new codes are not empty
+    if (newCode1 == "" or newCode2 == "" or newCode3 == "") {
+      Runtime.trap("Invalid: New codes cannot be empty");
+    };
+
+    verificationCodes := {
+      verificationCodes with
+      code1 = newCode1;
+      code2 = newCode2;
+      code3 = newCode3;
+    };
+
+    // Clear all admin verification sessions after code rotation for security
+    // BUT preserve persistent lockouts (they survive code rotation)
+    let lockedPrincipals = adminVerificationStates.filter(func(_p, state) { state.persistent_lockout });
+    adminVerificationStates.clear();
+    for ((p, state) in lockedPrincipals.entries()) {
+      adminVerificationStates.add(p, state);
+    };
+  };
+
+  public shared ({ caller }) func updateMasterOverride(
+    currentMasterOverride : Text,
+    newMasterOverride : Text
+  ) : async () {
+    // Current Master Override Code must match to rotate it
+    if (currentMasterOverride != verificationCodes.masterCode) {
+      Runtime.trap("Unauthorized: Current master override code must match");
+    };
+
+    // Validate new master code is not empty
+    if (newMasterOverride == "") {
+      Runtime.trap("Invalid: New master override code cannot be empty");
+    };
+
+    verificationCodes := {
+      verificationCodes with masterCode = newMasterOverride;
+    };
+
+    // Clear all admin verification sessions after master code rotation for security
+    // BUT preserve persistent lockouts (they survive master code rotation)
+    let lockedPrincipals = adminVerificationStates.filter(func(_p, state) { state.persistent_lockout });
+    adminVerificationStates.clear();
+    for ((p, state) in lockedPrincipals.entries()) {
+      adminVerificationStates.add(p, state);
+    };
+  };
+
+  public query ({ caller }) func hasValidAdminSession() : async Bool {
+    checkAdminVerificationQuery(caller);
+  };
+
   public type UserProfile = {
     name : Text;
     email : ?Text;
@@ -173,18 +436,16 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Admin Access Management
   public shared ({ caller }) func grantUserAccess(user : Principal) : async () {
     requireAdminVerification(caller);
     AccessControl.assignRole(accessControlState, caller, user, #user);
   };
 
-  public query ({ caller }) func listAdminUsers() : async [Principal] {
+  public shared ({ caller }) func listAdminUsers() : async [Principal] {
     requireAdminVerification(caller);
     [];
   };
 
-  // Social media links
   public type SocialMediaLink = {
     platform : Text;
     url : Text;
@@ -204,7 +465,6 @@ actor {
     socialMediaLinks.values().toArray();
   };
 
-  // Portfolio management
   public type PortfolioItem = {
     id : Text;
     title : Text;
@@ -228,7 +488,6 @@ actor {
     portfolioItems.get(id);
   };
 
-  // Testimonials management
   public type Testimonial = {
     id : Text;
     author : Text;
@@ -252,7 +511,6 @@ actor {
     testimonials.get(id);
   };
 
-  // Fulfillment options
   public type FulfillmentOptions = {
     pickup : Bool;
     dropoff : Bool;
@@ -276,7 +534,6 @@ actor {
     fulfillmentOptions;
   };
 
-  // Policies management
   public type Policies = {
     shippingPolicy : Text;
     returnPolicy : Text;
@@ -298,7 +555,6 @@ actor {
     policies;
   };
 
-  // Products management
   public type Product = {
     id : Text;
     name : Text;
@@ -325,7 +581,6 @@ actor {
     products.get(id);
   };
 
-  // Contact/Quote request system
   public type ContactRequest = {
     id : Text;
     name : Text;
@@ -337,7 +592,7 @@ actor {
     productId : ?Text;
     submittedBy : Principal;
     submittedAt : Time.Time;
-    status : Text; // "pending", "reviewed", "responded"
+    status : Text;
   };
 
   let contactRequests = Map.empty<Text, ContactRequest>();
@@ -354,7 +609,7 @@ actor {
     contactRequests.add(request.id, newRequest);
   };
 
-  public query ({ caller }) func getContactRequests() : async [ContactRequest] {
+  public shared ({ caller }) func getContactRequests() : async [ContactRequest] {
     requireAdminVerification(caller);
     contactRequests.values().toArray();
   };
@@ -378,10 +633,9 @@ actor {
     };
   };
 
-  // Coupon system
   public type CouponType = {
-    #percentage : Nat; // 0-100
-    #fixed : Nat; // fixed amount in cents
+    #percentage : Nat;
+    #fixed : Nat;
   };
 
   public type Coupon = {
@@ -401,7 +655,7 @@ actor {
     coupons.add(coupon.code, coupon);
   };
 
-  public query ({ caller }) func getCoupons() : async [Coupon] {
+  public shared ({ caller }) func getCoupons() : async [Coupon] {
     requireAdminVerification(caller);
     coupons.values().toArray();
   };
@@ -458,9 +712,8 @@ actor {
     };
   };
 
-  // Loyalty points system
   public type LoyaltyAction = {
-    #purchase : Nat; // amount in cents
+    #purchase : Nat;
     #signup;
     #visit;
     #share;
@@ -470,7 +723,7 @@ actor {
     id : Text;
     name : Text;
     pointsRequired : Nat;
-    rewardType : Text; // "coupon", "discount", "free_gift", "free_item"
+    rewardType : Text;
     rewardValue : Text;
     active : Bool;
   };
@@ -495,7 +748,6 @@ actor {
     let newPoints = currentPoints + pointsToAdd;
     userLoyaltyPoints.add(caller, newPoints);
 
-    // Update user profile
     switch (userProfiles.get(caller)) {
       case (null) {};
       case (?profile) {
@@ -541,7 +793,6 @@ actor {
           let newPoints = currentPoints - reward.pointsRequired;
           userLoyaltyPoints.add(caller, newPoints);
 
-          // Update user profile
           switch (userProfiles.get(caller)) {
             case (null) {};
             case (?profile) {
@@ -557,7 +808,6 @@ actor {
     };
   };
 
-  // Giveaway system
   public type GiveawayEntrant = {
     principal : Principal;
     displayName : Text;
@@ -639,7 +889,7 @@ actor {
     };
   };
 
-  public query ({ caller }) func getGiveaway(id : Text) : async ?Giveaway {
+  public shared ({ caller }) func getGiveaway(id : Text) : async ?Giveaway {
     requireAdminVerification(caller);
     giveaways.get(id);
   };
@@ -648,7 +898,6 @@ actor {
     giveaways.values().filter(func(g : Giveaway) : Bool { g.active }).toArray();
   };
 
-  // Stripe integration
   var stripeConfig : ?Stripe.StripeConfiguration = null;
 
   public query func isStripeConfigured() : async Bool {

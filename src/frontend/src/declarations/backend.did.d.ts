@@ -188,6 +188,14 @@ export interface _SERVICE {
   'createGiveaway' : ActorMethod<[Giveaway], undefined>,
   'createLoyaltyReward' : ActorMethod<[LoyaltyReward], undefined>,
   'getActiveGiveaways' : ActorMethod<[], Array<Giveaway>>,
+  'getAdminVerificationStatus' : ActorMethod<
+    [],
+    {
+      'failed_attempts' : bigint,
+      'remaining_attempts' : [] | [bigint],
+      'permanently_locked' : boolean,
+    }
+  >,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getContactRequests' : ActorMethod<[], Array<ContactRequest>>,
@@ -210,6 +218,7 @@ export interface _SERVICE {
   'grantUserAccess' : ActorMethod<[Principal], undefined>,
   'hasValidAdminSession' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isPermanentlyLocked' : ActorMethod<[], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
   'listAdminUsers' : ActorMethod<[], Array<Principal>>,
   'recordPurchase' : ActorMethod<[bigint], undefined>,
@@ -222,6 +231,11 @@ export interface _SERVICE {
   'submitContactRequest' : ActorMethod<[ContactRequest], undefined>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
   'updateContactRequestStatus' : ActorMethod<[string, string], undefined>,
+  'updateMasterOverride' : ActorMethod<[string, string], undefined>,
+  'updateWithMasterOverride' : ActorMethod<
+    [string, string, string, string],
+    undefined
+  >,
   'validateCoupon' : ActorMethod<[string], [] | [Coupon]>,
   'verifyAdminCodeStep1' : ActorMethod<[string], boolean>,
   'verifyAdminCodeStep2' : ActorMethod<[string], boolean>,

@@ -1,113 +1,102 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T02:59:29.906Z",
+  "generatedAt": "2026-02-07T04:08:32.979Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 5,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-31",
-        "summary": "Replace the current single shared-code admin gate with a three-step sequential admin verification flow that requires users to enter three codes in the exact order (Code #1 then Code #2 then Code #3) before any /admin content becomes accessible.",
+        "id": "REQ-55",
+        "summary": "Fix the reported “Connection closed / service connection could not be established” issue triggered by clicking the website Login button by making the Internet Identity login flow resilient across major browsers (Chrome, Firefox, Safari, Opera/Opera GX) and by providing clear user-facing error handling when the auth popup cannot be opened or the auth session fails.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/auth/AdminRouteGuard.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/utils/adminSharedCodeSession.ts"
+          "frontend/src/hooks/useInternetIdentity.ts",
+          "frontend/src/components/auth/LoginButton.tsx",
+          "frontend/src/utils/authErrorMessages.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/auth/AdminRouteGuard.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/utils/adminSharedCodeSession.ts"
+          "frontend/src/components/auth/LoginButton.tsx",
+          "frontend/src/utils/authErrorMessages.ts"
         ]
       },
       {
-        "id": "REQ-32",
-        "summary": "Update the backend admin verification APIs and authorization checks so that admin access is granted only after successful completion of all three steps, and remove/retire the old single-code (ADMIN_SHARED_CODE) verification/session behavior from backend/main.mo.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-33",
-        "summary": "Implement a new Admin verification screen/component to replace the existing single-code UI (frontend/src/components/auth/AdminSharedCodeGateScreen.tsx) with a step-by-step interface that clearly indicates Step 1/3, Step 2/3, Step 3/3 and only allows progressing after each successful entry.",
+        "id": "REQ-56",
+        "summary": "Harden actor initialization so that cross-browser differences or URL-parameter/session behaviors cannot break authenticated or anonymous app usage (including login/logout), and ensure failures in access-control initialization do not crash the app.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx"
-        ]
-      },
-      {
-        "id": "REQ-34",
-        "summary": "Update frontend admin route protection (frontend/src/components/auth/AdminRouteGuard.tsx) and the related hooks/utilities (frontend/src/hooks/admin/useAdminSharedCodeGate.ts and frontend/src/utils/adminSharedCodeSession.ts) to track multi-step verification state and to consider the user authorized only when all three steps are completed.",
-        "status": "implemented",
-        "plannedFiles": [
+          "frontend/src/hooks/useActor.ts",
+          "frontend/src/utils/urlParams.ts",
           "frontend/src/components/auth/AdminRouteGuard.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/utils/adminSharedCodeSession.ts",
           "frontend/src/components/auth/LoginButton.tsx"
         ],
         "matchedFiles": [
+          "frontend/src/utils/urlParams.ts",
           "frontend/src/components/auth/AdminRouteGuard.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/utils/adminSharedCodeSession.ts",
           "frontend/src/components/auth/LoginButton.tsx"
         ]
       },
       {
-        "id": "REQ-35",
-        "summary": "Ensure the three provided codes are treated as secrets: do not embed the plaintext codes anywhere in the frontend bundle, and do not log them to the browser console, backend logs, or error messages.",
+        "id": "REQ-57",
+        "summary": "Ensure the full website UI is fully responsive and functional across a comprehensive set of screen sizes (small Android phones, iPhones, iPads/tablets, and desktop sizes), including header navigation, mobile hamburger menu behavior, forms, dialogs/modals, and key flows (Shop, Contact, Testimonials, Admin entry guard screens).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/components/auth/AdminRouteGuard.tsx"
+          "frontend/src/components/SiteHeader.tsx",
+          "frontend/src/components/portfolio/PortfolioLightbox.tsx",
+          "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+          "frontend/src/pages/ContactPage.tsx",
+          "frontend/src/pages/ProductDetailPage.tsx",
+          "frontend/index.css"
         ],
         "matchedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/components/auth/AdminRouteGuard.tsx"
+          "frontend/src/components/SiteHeader.tsx",
+          "frontend/src/components/portfolio/PortfolioLightbox.tsx",
+          "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+          "frontend/src/pages/ContactPage.tsx",
+          "frontend/src/pages/ProductDetailPage.tsx",
+          "frontend/index.css"
         ]
       },
       {
-        "id": "REQ-36",
-        "summary": "Make the new three-step verification flow the only supported path to Admin Dashboard access and remove/disable any remaining UI/logic implying the old single-code gate (e.g., “Enter the first verification code to begin” in the current gate screen should be updated to the new step-based wording).",
+        "id": "REQ-58",
+        "summary": "Add a lightweight cross-browser QA checklist and automated smoke coverage (where feasible within the existing React app tooling) focused on the login button/auth flow and critical navigation, to prevent regressions of the reported connection/login issue.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/utils/adminSharedCodeSession.ts"
+          "frontend/QA-CHECKLIST.md",
+          "frontend/src/components/auth/LoginButton.smoke.test.tsx",
+          "frontend/src/App.smoke.test.tsx",
+          "frontend/package.json"
         ],
         "matchedFiles": [
-          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
-          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-          "frontend/src/utils/adminSharedCodeSession.ts"
+          "frontend/QA-CHECKLIST.md",
+          "frontend/src/components/auth/LoginButton.smoke.test.tsx",
+          "frontend/src/App.smoke.test.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
+    "frontend/QA-CHECKLIST.md",
+    "frontend/index.css",
+    "frontend/src/App.smoke.test.tsx",
+    "frontend/src/components/SiteHeader.tsx",
     "frontend/src/components/auth/AdminRouteGuard.tsx",
-    "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+    "frontend/src/components/auth/LoginButton.smoke.test.tsx",
     "frontend/src/components/auth/LoginButton.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-    "frontend/src/utils/adminSharedCodeSession.ts",
+    "frontend/src/components/portfolio/PortfolioLightbox.tsx",
+    "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+    "frontend/src/pages/ContactPage.tsx",
+    "frontend/src/pages/ProductDetailPage.tsx",
+    "frontend/src/utils/authErrorMessages.ts",
+    "frontend/src/utils/urlParams.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

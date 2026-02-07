@@ -1,62 +1,78 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-07T02:59:29.902Z",
-  "summary": "Diff implements a multi-step admin verification flow in the frontend (3-step UI, session progress in sessionStorage, and updated AdminRouteGuard) and adds backend Motoko functions for step-based verification state. However, the backend diff excerpt does not show the required 'hasValidAdminSession' API nor evidence that all admin-only methods were migrated off the old shared-code authorization. Also, plaintext admin codes are embedded in backend/main.mo, which is risky relative to the secrecy requirement.",
+  "generatedAt": "2026-02-07T04:08:32.975Z",
+  "summary": "Diff implements QA checklist + smoke tests (REQ-58) and several responsive/layout fixes (parts of REQ-57). LoginButton gained user-facing error toasts and error-message mapping (partial REQ-55). However, there is no clear implementation of a timeout/recovery path for a potentially stuck “Logging in...” state, async login errors may not be caught by the new try/catch, and multiple new console.error logs may violate the “no secrets/tokens logged” requirement. Actor initialization hardening (REQ-56) is only partially evidenced (AdminRouteGuard error states + url param helpers), but no direct evidence shows actor init hooks were hardened.",
   "missing_requirements": [
     {
-      "id": "REQ-32",
-      "requirement": "Backend exposes a way for the frontend to (a) check whether the caller is fully admin-verified and (b) submit a code for the current step so the backend can validate step order server-side.",
-      "reason": "Frontend calls actor.hasValidAdminSession(), but the provided backend/main.mo excerpt only shows verifyAdminCodeStep1/2/3 and does not show any hasValidAdminSession (or equivalent) method implementation.",
+      "id": "REQ-55",
+      "requirement": "The login flow must not leave the Login button indefinitely stuck in “Logging in...” and must recover to an actionable state via failure/timeout handling.",
+      "reason": "LoginButton only disables based on `loginStatus === 'logging-in'` and shows toasts if `loginError` appears, but no explicit timeout/recovery logic is shown in the diff to guarantee it cannot remain stuck indefinitely.",
       "evidence": [
-        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-        "backend/main.mo (truncated)"
+        "frontend/src/components/auth/LoginButton.tsx"
       ]
     },
     {
-      "id": "REQ-32",
-      "requirement": "Remove/retire the old single-code (ADMIN_SHARED_CODE) verification/session behavior and update all admin-only backend methods to require the new full three-step verification state.",
-      "reason": "The diff excerpt shows the new requireAdminVerification() helper, but does not show removal of the old shared-code constants/logic nor updates to the existing admin-only methods that previously used requireAdminSharedCodeSession(caller). Because backend/main.mo is truncated, there is insufficient evidence these migrations were completed across all admin-only methods.",
+      "id": "REQ-55",
+      "requirement": "No secrets or sensitive tokens are logged to the browser console as part of any new error handling.",
+      "reason": "The diff includes new/remaining `console.error(...)` statements that log the raw error object, which may contain sensitive information depending on the thrown error contents.",
       "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+        "frontend/src/pages/ContactPage.tsx",
+        "frontend/src/pages/ProductDetailPage.tsx"
       ]
     },
     {
-      "id": "REQ-36",
-      "requirement": "Remove/disable any remaining UI/logic implying the old single-code gate (wording updated to the new step-based process).",
-      "reason": "The updated gate screen still contains legacy-style wording that may imply the old flow (it explicitly says 'Enter the first verification code to begin' inside a component still named AdminSharedCodeGateScreen). While it mentions a three-step process, the requirement calls out updating/disabling remaining old-gate implications; the diff does not show a rename/removal of old-gate semantics beyond partial text changes.",
+      "id": "REQ-55",
+      "requirement": "Provide clear user-facing error handling when the auth popup cannot be opened or the auth session fails (no silent failure).",
+      "reason": "LoginButton adds toast-based user messaging, but in CreateTestimonyDialog the login failure path only logs to console and does not show a user-facing English error, which can still result in a silent failure from the user perspective.",
       "evidence": [
-        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx"
+        "frontend/src/components/testimonials/CreateTestimonyDialog.tsx"
+      ]
+    },
+    {
+      "id": "REQ-55",
+      "requirement": "Login button click initiates Internet Identity login successfully across major browsers with resilient error handling.",
+      "reason": "LoginButton wraps `login()` in try/catch but does not `await` it; if `login()` is async and rejects, the catch will not capture the failure. The error toast relies on `loginError` being set elsewhere, but the diff does not show a resilience mechanism for async rejection at the call site.",
+      "evidence": [
+        "frontend/src/components/auth/LoginButton.tsx"
+      ]
+    },
+    {
+      "id": "REQ-56",
+      "requirement": "Harden actor initialization so that cross-browser differences or URL-parameter/session behaviors cannot break authenticated or anonymous app usage, and ensure actor access-control init failures do not crash the app.",
+      "reason": "While url parameter utilities and AdminRouteGuard graceful error states were modified, the diff summary provides no direct evidence of changes to the actor initialization hooks/logic themselves (e.g., the actor setup that uses admin token URL params) to ensure it cannot crash the app or break navigation.",
+      "evidence": [
+        "frontend/src/utils/urlParams.ts",
+        "frontend/src/components/auth/AdminRouteGuard.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Introduced a backend migration module (backend/migration.mo) and wired it into the main actor via '(with migration = Migration.run)'.",
-      "reason": "The BuildRequest/requirements do not request adding a migration module or running a migration hook; this is additional behavior beyond replacing the admin gate and updating authorization checks.",
+      "description": "Added/introduced a new admin route for managing verification codes (/admin/verification-codes).",
+      "reason": "This is a new app feature unrelated to the requested cross-browser login stability, actor init hardening, responsive layout, or QA coverage.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "description": "Embedded new plaintext admin verification codes directly in backend/main.mo (ADMIN_CODE_1/2/3).",
-      "reason": "While codes must be validated server-side, the request emphasizes treating codes as secrets and not leaking them; it does not request committing plaintext secrets into source. This is an implementation choice not explicitly requested and increases risk of secret exposure via source access.",
-      "evidence": [
-        "backend/main.mo (truncated)"
+        "frontend-file-summaries.txt (mentions: \"frontend/src/App.tsx\" includes new /admin/verification-codes route)"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/QA-CHECKLIST.md",
+    "frontend/index.css",
+    "frontend/src/App.smoke.test.tsx",
+    "frontend/src/components/SiteHeader.tsx",
     "frontend/src/components/auth/AdminRouteGuard.tsx",
-    "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+    "frontend/src/components/auth/LoginButton.smoke.test.tsx",
     "frontend/src/components/auth/LoginButton.tsx",
-    "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
-    "frontend/src/utils/adminSharedCodeSession.ts",
+    "frontend/src/components/portfolio/PortfolioLightbox.tsx",
+    "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+    "frontend/src/pages/ContactPage.tsx",
+    "frontend/src/pages/ProductDetailPage.tsx",
+    "frontend/src/utils/authErrorMessages.ts",
+    "frontend/src/utils/urlParams.ts",
     "project_state.json"
   ]
 }

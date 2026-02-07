@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 13,
-  "summary": "Project now requires a new admin authentication system that completely replaces the prior shared-passcode/admin-permission gate approach: Admin Dashboard access must be controlled exclusively via a separate three-step sequence of 25-character verification codes (stored server-side as hashes, never exposed client-side), with account-specific failed-attempt tracking and irreversible per-account admin lockout after 3 failures. Admins can rotate the three codes only after entering a separate 100-character master override code (also hashed server-side), with secure logging/audit of attempts and changes. Additionally, standard user login (e.g., email/Google/etc.) must be separated and must never grant Admin Dashboard access under any circumstances.",
+  "projectStateVersion": 23,
+  "summary": "Project requires a new admin authentication system replacing the prior shared-passcode/admin-permission gate: Admin Dashboard access must be controlled exclusively via a separate three-step sequence of 25-character verification codes (stored server-side as hashes, never exposed client-side), with account-specific failed-attempt tracking and irreversible per-account admin lockout after 3 failures. Admins can rotate the three codes only after entering a separate 100-character master override code (also hashed server-side), with secure logging/audit of attempts and changes. Additionally, standard user login (e.g., email/Google/etc.) must be separated and must never grant Admin Dashboard access under any circumstances. After 3 failed admin verification attempts, the user must see a closable popup image and the Admin tab/link must be removed permanently for that locked-out user.",
   "architectural_notes": [
     "Shop supports both Stripe checkout and an alternative request-quote/contact flow on selected products.",
     "Customer login/accounts are needed to track loyalty points and to uniquely identify giveaway entrants by username.",
@@ -17,12 +17,13 @@
   "known_issues": [
     "User requested unlimited-size photo/video portfolio uploads (“no matter the size/length”); this conflicts with practical storage limits and will require defined max file size/duration or alternative hosting/streaming strategy.",
     "Admin button/link is currently not visible to the user; navigation needs to show Admin entry point on both mobile (hamburger) and desktop (top header) while keeping code gate protection.",
-    "Requirements conflict noted during planning: some Phase 1 prompts stated the Admin button must remain visible to all users at all times, while the final spec requires the Admin button permanently disappear for locked-out accounts; must resolve to a single behavior.",
     "\"Permanently locked out\" and \"strict, irreversible, account-specific\" admin removal creates a high-risk support scenario; requires explicit owner recovery policy (or confirm no recovery exists).",
     "Moving away from Internet Identity/admin-permission gating toward code-only admin verification and introducing email/Google logins is a major auth-architecture shift; requires careful migration plan to avoid breaking existing accounts/admin tooling.",
-    "User provided plaintext admin verification codes in the prompt; ensure implementation does not embed/expose these codes in frontend bundles, logs, or client config (must be server-side hashed/validated only)."
+    "User provided plaintext admin verification codes in the prompt; ensure implementation does not embed/expose these codes in frontend bundles, logs, or client config (must be server-side hashed/validated only).",
+    "User provided plaintext 100-character Master Override Code in the prompt; ensure implementation stores/validates it only as a server-side hash and never exposes/logs it client-side or in backend logs.",
+    "User reports a \"Connection closed\" / service connection could not be established error triggered when clicking the website login button; may be browser-specific and requires cross-browser investigation/testing."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-responsive-multi-page-marketing-website-for-the-creator-of-side-quests-with-the-following-routes-pages-and-user-facing-copy-in-english-based-on-the-provided-prompt-home-hero-with-headline-subheadline-ctas-quotes-about-bio-vision-mission-emission-quotes-services-categories-micro-services-starting-at-placeholders-ky-guidance-quotes-shop-portfolio-testimonials-contact-form-with-specified-fields-response-time-guidance-quotes-hours-policies-hours-payments-quotes-scope-licensing-returns-adjustments-local-service-area-anti-discrimination-quote-include-ctas-throughout-linking-to-contact-booking-and-shop-services-as-specified",
@@ -287,6 +288,110 @@
         "REQ-36"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-verification-ui-flow-so-that-when-the-backend-indicates-the-caller-has-reached-3-total-failed-attempts-lockout-the-app-immediately-displays-a-closable-popup-modal-showing-the-provided-lockout-image-and-the-verification-screen-stops-accepting-further-code-submissions-for-that-caller",
+      "title": "Update the admin verification UI flow so that when the backend indicates the caller has reached 3 total failed attempts (lockout), the app immediately displays a closable popup modal showing the provided lockout image, and the verification screen stops accepting further code submissions for that caller.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-conditionally-remove-hide-the-admin-navigation-link-in-the-site-header-desktop-nav-and-mobile-hamburger-menu-for-any-caller-who-is-permanently-locked-out-of-admin-access-based-on-backend-lockout-status-the-admin-link-must-continue-to-appear-for-non-locked-out-users",
+      "title": "Conditionally remove/hide the “Admin” navigation link in the site header (desktop nav and mobile hamburger menu) for any caller who is permanently locked out of admin access, based on backend lockout status; the Admin link must continue to appear for non-locked-out users.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-admin-route-protection-screens-handle-locked-out-callers-attempting-to-visit-any-admin-route-while-locked-out-must-not-reveal-admin-content-and-must-show-the-same-lockout-popup-image-closable-plus-an-english-explanation-that-the-account-s-admin-access-is-permanently-disabled",
+      "title": "Ensure admin route protection screens handle locked-out callers: attempting to visit any /admin route while locked out must not reveal admin content and must show the same lockout popup image (closable) plus an English explanation that the account’s admin access is permanently disabled.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-uploaded-lockout-image-as-a-static-frontend-asset-under-frontend-public-assets-generated-and-use-it-for-the-lockout-popup-ui-do-not-serve-it-from-the-backend",
+      "title": "Add the uploaded lockout image as a static frontend asset under frontend/public/assets/generated and use it for the lockout popup UI (do not serve it from the backend).",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-so-that-once-a-principal-is-permanently-locked-out-the-admin-navigation-entry-disappears-immediately-for-that-account-and-any-attempt-to-access-admin-routes-shows-the-lockout-ui-while-leaving-all-non-admin-site-features-fully-usable",
+      "title": "Update the frontend so that once a principal is permanently locked out, the Admin navigation entry disappears immediately for that account, and any attempt to access /admin routes shows the lockout UI while leaving all non-admin site features fully usable.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-protected-admin-page-titled-verification-code-management-inside-the-admin-dashboard-that-allows-administrators-to-rotate-codes-1-3-but-only-after-successfully-verifying-the-master-override-code",
+      "title": "Create a new protected Admin page titled “Verification Code Management” inside the Admin Dashboard that allows administrators to rotate Codes #1–#3, but only after successfully verifying the Master Override Code.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-frontend-api-hooks-mutations-to-call-the-backend-for-a-verifying-the-master-override-code-and-b-saving-new-codes-1-3-with-clear-success-error-feedback-and-without-logging-secrets",
+      "title": "Implement frontend API hooks/mutations to call the backend for (a) verifying the Master Override Code and (b) saving new Codes #1–#3, with clear success/error feedback and without logging secrets.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-admin-dashboard-navigation-to-include-a-link-to-the-new-verification-code-management-panel",
+      "title": "Update the Admin Dashboard navigation to include a link to the new “Verification Code Management” panel.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-frontend-always-checks-the-backend-s-permanent-lockout-status-before-rendering-any-admin-interface-and-continues-to-prevent-access-and-hides-the-admin-navigation-entry-for-permanently-locked-out-accounts",
+      "title": "Ensure the frontend always checks the backend’s permanent lockout status before rendering any Admin interface, and continues to prevent access (and hides the Admin navigation entry) for permanently locked-out accounts.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-reported-connection-closed-service-connection-could-not-be-established-issue-triggered-by-clicking-the-website-login-button-by-making-the-internet-identity-login-flow-resilient-across-major-browsers-chrome-firefox-safari-opera-opera-gx-and-by-providing-clear-user-facing-error-handling-when-the-auth-popup-cannot-be-opened-or-the-auth-session-fails",
+      "title": "Fix the reported “Connection closed / service connection could not be established” issue triggered by clicking the website Login button by making the Internet Identity login flow resilient across major browsers (Chrome, Firefox, Safari, Opera/Opera GX) and by providing clear user-facing error handling when the auth popup cannot be opened or the auth session fails.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-harden-actor-initialization-so-that-cross-browser-differences-or-url-parameter-session-behaviors-cannot-break-authenticated-or-anonymous-app-usage-including-login-logout-and-ensure-failures-in-access-control-initialization-do-not-crash-the-app",
+      "title": "Harden actor initialization so that cross-browser differences or URL-parameter/session behaviors cannot break authenticated or anonymous app usage (including login/logout), and ensure failures in access-control initialization do not crash the app.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-full-website-ui-is-fully-responsive-and-functional-across-a-comprehensive-set-of-screen-sizes-small-android-phones-iphones-ipads-tablets-and-desktop-sizes-including-header-navigation-mobile-hamburger-menu-behavior-forms-dialogs-modals-and-key-flows-shop-contact-testimonials-admin-entry-guard-screens",
+      "title": "Ensure the full website UI is fully responsive and functional across a comprehensive set of screen sizes (small Android phones, iPhones, iPads/tablets, and desktop sizes), including header navigation, mobile hamburger menu behavior, forms, dialogs/modals, and key flows (Shop, Contact, Testimonials, Admin entry guard screens).",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-lightweight-cross-browser-qa-checklist-and-automated-smoke-coverage-where-feasible-within-the-existing-react-app-tooling-focused-on-the-login-button-auth-flow-and-critical-navigation-to-prevent-regressions-of-the-reported-connection-login-issue",
+      "title": "Add a lightweight cross-browser QA checklist and automated smoke coverage (where feasible within the existing React app tooling) focused on the login button/auth flow and critical navigation, to prevent regressions of the reported connection/login issue.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -436,6 +541,102 @@
       "reqIds": [
         "REQ-32"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "After 3 failed admin verification attempts, show an immediate closable popup image indicating lockout",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "After irreversible admin lockout (3 failures), permanently hide/remove the Admin tab/link from site navigation for that specific locked-out account",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Implement per-principal tracking of failed admin verification attempts across the entire 3-step admin verification flow, and permanently lock out admin verification for that principal after 3 total failures (across any steps). On lockout, the backend must (a) mark the principal as locked out persistently, (b) invalidate/clear any in-progress admin verification session for that principal, and (c) ensure subsequent verification attempts cannot progress even if the correct codes are later provided.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Expose a backend API to allow the frontend to determine whether the current caller is permanently locked out of admin access (and optionally the current failed-attempt count / remaining attempts), so the UI can hide the Admin navigation entry and show lockout messaging appropriately.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Persist permanent admin lockout per Internet Identity principal so that after 3 total failed admin verification attempts (across any step), that principal is irreversibly locked out of all admin access, and the lockout remains enforced across canister upgrades and regardless of future admin code changes.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Ensure failed admin verification attempts are counted consistently across all three verification steps, and that reaching 3 total failures triggers permanent lockout immediately, clears any in-progress verification session state, and prevents further progression even if correct codes are later provided.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Add an in-Admin-Dashboard “Verification Code Management” panel that requires entering the 100-character Master Override Code before allowing admins to edit/save Codes #1–#3 (code rotation UI)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Add backend support for a Master Override Code that must be verified before allowing any rotation/edit of Admin verification Codes #1, #2, and #3.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Persist the admin verification codes (#1–#3) and Master Override Code as server-side secrets suitable for rotation (do not keep them as hard-coded plaintext constants in backend/main.mo).",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Persist each caller’s Admin eligibility status (including permanent lockout after failed verification attempts) in stable backend state so it survives canister upgrades, code rotations, and any other platform updates.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Update backend admin authorization and verification logic so the permanent lockout check is authoritative and always enforced before allowing any admin verification step to progress and before allowing any admin-only backend operation (i.e., all functions that call admin verification must deny permanently locked principals).",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Update backend query APIs used by the frontend (isPermanentlyLocked and getAdminVerificationStatus) so they reflect the persistent/stable lockout status, not only the current in-memory verification session state.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Ensure full cross-browser compatibility (Chrome, Firefox, Safari, Opera/Opera GX, etc.) and full responsiveness across all screen sizes/devices (Android/iPhone/iPad/tablets/desktop) with QA/testing to confirm everything (including login) functions correctly",
+      "reqIds": [],
       "status": "pending"
     }
   ],

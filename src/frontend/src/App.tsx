@@ -23,6 +23,7 @@ import AdminGiveawaysPage from './pages/admin/AdminGiveawaysPage';
 import AdminPoliciesFulfillmentPage from './pages/admin/AdminPoliciesFulfillmentPage';
 import AdminStripeSetupPage from './pages/admin/AdminStripeSetupPage';
 import AdminAccessPage from './pages/admin/AdminAccessPage';
+import AdminVerificationCodeManagementPage from './pages/admin/AdminVerificationCodeManagementPage';
 import SiteLayout from './components/SiteLayout';
 import AdminLayout from './pages/admin/AdminLayout';
 import { Toaster } from './components/ui/sonner';
@@ -176,6 +177,12 @@ const adminAccessRoute = createRoute({
   component: AdminAccessPage,
 });
 
+const adminVerificationCodesRoute = createRoute({
+  getParentRoute: () => adminRootRoute,
+  path: '/verification-codes',
+  component: AdminVerificationCodeManagementPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   aboutRoute,
@@ -201,6 +208,7 @@ const routeTree = rootRoute.addChildren([
     adminPoliciesFulfillmentRoute,
     adminStripeSetupRoute,
     adminAccessRoute,
+    adminVerificationCodesRoute,
   ]),
 ]);
 

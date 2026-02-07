@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
+import { ScrollArea } from '../ui/scroll-area';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -76,71 +77,80 @@ export default function CreateTestimonyDialog() {
           Create Testimony
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Share Your Experience</DialogTitle>
-            <DialogDescription>
-              {!isAuthenticated
-                ? 'Please sign in to share your testimonial.'
-                : 'Tell us about your experience working with us.'}
-            </DialogDescription>
-          </DialogHeader>
+      <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] p-0">
+        <ScrollArea className="max-h-[90vh]">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-lg sm:text-xl">Share Your Experience</DialogTitle>
+              <DialogDescription className="text-sm">
+                {!isAuthenticated
+                  ? 'Please sign in to share your testimonial.'
+                  : 'Tell us about your experience working with us.'}
+              </DialogDescription>
+            </DialogHeader>
 
-          {!isAuthenticated ? (
-            <div className="py-6">
-              <Button type="button" onClick={login} className="w-full">
-                Sign In to Continue
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="rating">Rating *</Label>
-                  <MossyStarRating rating={rating} onRatingChange={setRating} size="lg" />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="author">Your Name *</Label>
-                  <Input
-                    id="author"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
-                    placeholder="Enter your name"
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="content">Your Testimonial *</Label>
-                  <Textarea
-                    id="content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Share your experience..."
-                    rows={5}
-                    required
-                  />
-                </div>
+            {!isAuthenticated ? (
+              <div className="py-6">
+                <Button type="button" onClick={login} className="w-full">
+                  Sign In to Continue
+                </Button>
               </div>
+            ) : (
+              <>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="rating">Rating *</Label>
+                    <MossyStarRating rating={rating} onRatingChange={setRating} size="lg" />
+                  </div>
 
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpen(false)}
-                  disabled={createTestimonial.isPending}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createTestimonial.isPending || !author.trim() || !content.trim()}>
-                  {createTestimonial.isPending ? 'Submitting...' : 'Submit Testimonial'}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </form>
+                  <div className="grid gap-2">
+                    <Label htmlFor="author">Your Name *</Label>
+                    <Input
+                      id="author"
+                      value={author}
+                      onChange={(e) => setAuthor(e.target.value)}
+                      placeholder="Enter your name"
+                      required
+                      className="text-base"
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="content">Your Testimonial *</Label>
+                    <Textarea
+                      id="content"
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="Share your experience..."
+                      rows={5}
+                      required
+                      className="text-base resize-none"
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOpen(false)}
+                    disabled={createTestimonial.isPending}
+                    className="w-full sm:w-auto"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={createTestimonial.isPending || !author.trim() || !content.trim()}
+                    className="w-full sm:w-auto"
+                  >
+                    {createTestimonial.isPending ? 'Submitting...' : 'Submit Testimonial'}
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
+          </form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

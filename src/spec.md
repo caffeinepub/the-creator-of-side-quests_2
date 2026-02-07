@@ -1,12 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the old single shared-code admin gate with a sequential three-step admin verification flow, enforced by both UI and backend authorization.
+**Goal:** Make the Internet Identity login flow reliable across major browsers and ensure the site remains responsive and usable across common device sizes, with clear error handling and lightweight regression coverage.
 
 **Planned changes:**
-- Implement a new step-by-step Admin verification screen to replace the existing single-code gate UI, showing one code input at a time with “Step 1 of 3 / Step 2 of 3 / Step 3 of 3” progress and English-only messaging.
-- Update admin route protection and related frontend hooks/utilities to track multi-step verification state (including partial progress), only authorizing access after all three steps complete, and clearing progress on logout.
-- Update backend admin verification APIs and authorization checks to validate step order server-side, expose endpoints to check verification status and submit the current step code, and retire the old single-code verification/session behavior.
-- Ensure the three codes are treated as secrets: do not embed plaintext codes in the frontend bundle, do not log codes, and return generic English errors that do not leak expected or submitted codes.
+- Improve the Login button’s Internet Identity popup/session handling to work reliably on Chrome, Firefox, Safari, and Opera/Opera GX, including clear user-facing error messages when popup/session establishment fails.
+- Ensure the login UI never stays stuck in a “Logging in...” state by adding recovery/timeout paths that return the UI to an actionable state (e.g., retry).
+- Harden actor/access-control initialization so missing/blocked/cleared URL parameters or session differences do not crash the app; handle failures gracefully and keep public pages usable.
+- Ensure logout reliably clears session state without breaking subsequent usage across target browsers.
+- Audit and adjust responsive UI behavior across key pages and flows (header navigation + mobile hamburger menu, forms, dialogs/modals, Shop/Contact/Testimonials/Admin guard screens) to prevent overflow and improve usability on phones/tablets/desktops.
+- Add an in-repo cross-browser QA checklist (manual steps) for Chrome, Firefox, Safari, and Opera/Opera GX covering login and critical navigation.
+- Add at least one automated smoke check (supported by existing project tooling) to verify basic render/navigation and that invoking Login does not hard-crash the UI.
 
-**User-visible outcome:** Signed-in users who click or navigate to Admin are guided through a 3-step verification flow and only see the Admin Dashboard after completing all steps in order; unauthorized users remain blocked from admin routes and admin-only backend actions.
+**User-visible outcome:** Users can click “Login” and complete Internet Identity authentication across major browsers; if login can’t start or fails, they see a clear English error and can retry. The site remains usable (including on mobile/tablet), navigation and dialogs work without layout breakage, and there’s basic QA/smoke coverage to reduce regressions.

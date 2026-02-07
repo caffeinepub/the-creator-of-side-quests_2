@@ -43,7 +43,7 @@ export function storeSessionParameter(key: string, value: string): void {
     try {
         sessionStorage.setItem(key, value);
     } catch (error) {
-        console.warn(`Failed to store session parameter ${key}:`, error);
+        // Silently handle storage failures - don't break app flow
     }
 }
 
@@ -57,7 +57,7 @@ export function getSessionParameter(key: string): string | null {
     try {
         return sessionStorage.getItem(key);
     } catch (error) {
-        console.warn(`Failed to retrieve session parameter ${key}:`, error);
+        // Silently handle storage failures
         return null;
     }
 }
@@ -94,7 +94,7 @@ export function clearSessionParameter(key: string): void {
     try {
         sessionStorage.removeItem(key);
     } catch (error) {
-        console.warn(`Failed to clear session parameter ${key}:`, error);
+        // Silently handle storage failures
     }
 }
 
@@ -201,8 +201,8 @@ export function getSecretFromHash(paramName: string): string | null {
  * - Automatically cleared from URL after extraction
  *
  * @param paramName - The name of the secret parameter
- * @returns The secret value if found, null otherwise
+ * @returns The secret value if found, empty string if not found (safe default)
  */
-export function getSecretParameter(paramName: string): string | null {
-    return getSecretFromHash(paramName);
+export function getSecretParameter(paramName: string): string {
+    return getSecretFromHash(paramName) || '';
 }

@@ -69,11 +69,11 @@ export default function ContactPage() {
         subtitle="Every project begins as a conversation. Let's turn your idea into something real."
       />
 
-      <section className="py-16">
-        <div className="container">
+      <section className="py-8 sm:py-16">
+        <div className="container px-4">
           <div className="mx-auto max-w-2xl">
             {submitted && (
-              <Alert className="mb-8">
+              <Alert className="mb-6 sm:mb-8">
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertTitle>Request Submitted!</AlertTitle>
                 <AlertDescription>
@@ -82,35 +82,37 @@ export default function ContactPage() {
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
-                <Label htmlFor="name">Name *</Label>
+                <Label htmlFor="name" className="text-sm sm:text-base">Name *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
+                  className="mt-1.5 text-base"
                 />
               </div>
 
               <div>
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email" className="text-sm sm:text-base">Email *</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
+                  className="mt-1.5 text-base"
                 />
               </div>
 
               <div>
-                <Label htmlFor="projectType">Project Type</Label>
+                <Label htmlFor="projectType" className="text-sm sm:text-base">Project Type</Label>
                 <Select
                   value={formData.projectType}
                   onValueChange={(value) => setFormData({ ...formData, projectType: value })}
                 >
-                  <SelectTrigger id="projectType">
+                  <SelectTrigger id="projectType" className="mt-1.5 text-base">
                     <SelectValue placeholder="Select a project type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -124,27 +126,29 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <Label htmlFor="timeline">Timeline</Label>
+                <Label htmlFor="timeline" className="text-sm sm:text-base">Timeline</Label>
                 <Input
                   id="timeline"
                   value={formData.timeline}
                   onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
                   placeholder="e.g., 2 weeks, flexible, ASAP"
+                  className="mt-1.5 text-base"
                 />
               </div>
 
               <div>
-                <Label htmlFor="budget">Budget</Label>
+                <Label htmlFor="budget" className="text-sm sm:text-base">Budget</Label>
                 <Input
                   id="budget"
                   value={formData.budget}
                   onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                   placeholder="e.g., $100-$500, flexible"
+                  className="mt-1.5 text-base"
                 />
               </div>
 
               <div>
-                <Label htmlFor="description">Project Description *</Label>
+                <Label htmlFor="description" className="text-sm sm:text-base">Project Description *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -152,6 +156,7 @@ export default function ContactPage() {
                   rows={6}
                   required
                   placeholder="Tell us about your side quest..."
+                  className="mt-1.5 text-base resize-none"
                 />
               </div>
 
@@ -160,15 +165,15 @@ export default function ContactPage() {
               </Button>
             </form>
 
-            <div className="mt-12 border-t border-border pt-8">
-              <h3 className="mb-4 font-serif text-xl font-semibold">Or reach out directly</h3>
-              <p className="mb-4 text-muted-foreground">
+            <div className="mt-8 sm:mt-12 border-t border-border pt-6 sm:pt-8">
+              <h3 className="mb-3 sm:mb-4 font-serif text-lg sm:text-xl font-semibold">Or reach out directly</h3>
+              <p className="mb-3 sm:mb-4 text-sm sm:text-base text-muted-foreground">
                 You can also message us on social media:
               </p>
               <SocialIconLinks />
             </div>
 
-            <p className="mt-8 text-center text-sm italic text-muted-foreground">
+            <p className="mt-6 sm:mt-8 text-center text-xs sm:text-sm italic text-muted-foreground">
               "Every project begins as a conversation."
             </p>
           </div>

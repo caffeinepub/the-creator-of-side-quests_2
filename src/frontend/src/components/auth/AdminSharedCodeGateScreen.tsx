@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Alert, AlertDescription } from '../ui/alert';
-import { ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import {
   useVerifyAdminCodeStep1,
   useVerifyAdminCodeStep2,
@@ -13,8 +13,11 @@ import {
 import {
   setAdminVerificationProgress,
   getAdminVerificationProgress,
+  clearAdminVerificationProgress,
   type AdminVerificationProgress,
 } from '../../utils/adminSharedCodeSession';
+import { useAdminVerificationStatus } from '../../hooks/admin/useAdminVerificationStatus';
+import AdminLockoutModal from './AdminLockoutModal';
 
 interface AdminSharedCodeGateScreenProps {
   onSuccess: () => void;
@@ -26,16 +29,34 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
   );
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showLockoutModal, setShowLockoutModal] = useState(false);
 
+  const { data: verificationStatus, refetch: refetchStatus } = useAdminVerificationStatus();
   const verifyStep1 = useVerifyAdminCodeStep1();
   const verifyStep2 = useVerifyAdminCodeStep2();
   const verifyStep3 = useVerifyAdminCodeStep3();
 
   const isVerifying = verifyStep1.isPending || verifyStep2.isPending || verifyStep3.isPending;
+  const isLocked = verificationStatus?.permanently_locked ?? false;
+
+  // Show lockout modal immediately when locked status is detected
+  useEffect(() => {
+    if (isLocked) {
+      setShowLockoutModal(true);
+      // Clear any cached verification progress when locked out
+      clearAdminVerificationProgress();
+      setCurrentStep(0);
+    }
+  }, [isLocked]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (isLocked) {
+      setError('Your account is permanently locked out of admin access.');
+      return;
+    }
 
     if (!code.trim()) {
       setError('Please enter the verification code.');
@@ -60,6 +81,8 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
         onSuccess();
       }
     } catch (err: any) {
+      // Refresh lockout status after any failed attempt
+      await refetchStatus();
       setError(err.message || 'Verification failed. Please try again.');
     }
   };
@@ -72,6 +95,9 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
   };
 
   const getStepDescription = () => {
+    if (isLocked) {
+      return 'Your account has been permanently locked out of admin access due to too many failed attempts.';
+    }
     if (currentStep === 0) {
       return 'Being logged in does not grant admin access. Admin access requires completing a separate three-step verification process. Enter the first verification code to begin.';
     }
@@ -84,75 +110,110 @@ export default function AdminSharedCodeGateScreen({ onSuccess }: AdminSharedCode
     return 'All verification steps completed successfully.';
   };
 
+  const remainingAttempts = verificationStatus?.remaining_attempts 
+    ? Number(verificationStatus.remaining_attempts) 
+    : null;
+
   return (
-    <div className="container flex min-h-screen items-center justify-center py-16">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <ShieldCheck className="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle>Admin Access Verification</CardTitle>
-          <CardDescription className="text-base font-medium">{getStepTitle()}</CardDescription>
-          <CardDescription className="mt-2">{getStepDescription()}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6 flex items-center justify-center gap-2">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                currentStep >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {currentStep >= 1 ? <CheckCircle2 className="h-4 w-4" /> : '1'}
+    <>
+      <div className="container flex min-h-screen items-center justify-center py-16">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full ${
+              isLocked ? 'bg-destructive/10' : 'bg-primary/10'
+            }`}>
+              {isLocked ? (
+                <XCircle className="h-6 w-6 text-destructive" />
+              ) : (
+                <ShieldCheck className="h-6 w-6 text-primary" />
+              )}
             </div>
-            <div className={`h-1 w-12 ${currentStep >= 2 ? 'bg-primary' : 'bg-muted'}`} />
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                currentStep >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {currentStep >= 2 ? <CheckCircle2 className="h-4 w-4" /> : '2'}
-            </div>
-            <div className={`h-1 w-12 ${currentStep >= 3 ? 'bg-primary' : 'bg-muted'}`} />
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {currentStep >= 3 ? <CheckCircle2 className="h-4 w-4" /> : '3'}
-            </div>
-          </div>
+            <CardTitle>Admin Access Verification</CardTitle>
+            <CardDescription className="text-base font-medium">{getStepTitle()}</CardDescription>
+            <CardDescription className="mt-2">{getStepDescription()}</CardDescription>
+            {!isLocked && remainingAttempts !== null && (
+              <CardDescription className="mt-2 text-sm font-semibold text-warning">
+                Remaining attempts: {remainingAttempts}
+              </CardDescription>
+            )}
+          </CardHeader>
+          <CardContent>
+            {!isLocked && (
+              <>
+                <div className="mb-6 flex items-center justify-center gap-2">
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                      currentStep >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {currentStep >= 1 ? <CheckCircle2 className="h-4 w-4" /> : '1'}
+                  </div>
+                  <div className={`h-1 w-12 ${currentStep >= 2 ? 'bg-primary' : 'bg-muted'}`} />
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                      currentStep >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {currentStep >= 2 ? <CheckCircle2 className="h-4 w-4" /> : '2'}
+                  </div>
+                  <div className={`h-1 w-12 ${currentStep >= 3 ? 'bg-primary' : 'bg-muted'}`} />
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                      currentStep >= 3 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {currentStep >= 3 ? <CheckCircle2 className="h-4 w-4" /> : '3'}
+                  </div>
+                </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="admin-code">
-                {currentStep === 0 && 'Code #1'}
-                {currentStep === 1 && 'Code #2'}
-                {currentStep === 2 && 'Code #3'}
-              </Label>
-              <Input
-                id="admin-code"
-                type="password"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter verification code"
-                disabled={isVerifying}
-                autoFocus
-              />
-            </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-code">
+                      {currentStep === 0 && 'Code #1'}
+                      {currentStep === 1 && 'Code #2'}
+                      {currentStep === 2 && 'Code #3'}
+                    </Label>
+                    <Input
+                      id="admin-code"
+                      type="password"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      placeholder="Enter verification code"
+                      disabled={isVerifying}
+                      autoFocus
+                    />
+                  </div>
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  <Button type="submit" className="w-full" disabled={isVerifying}>
+                    {isVerifying ? 'Verifying...' : currentStep === 2 ? 'Complete Verification' : 'Continue'}
+                  </Button>
+                </form>
+              </>
             )}
 
-            <Button type="submit" className="w-full" disabled={isVerifying}>
-              {isVerifying ? 'Verifying...' : currentStep === 2 ? 'Complete Verification' : 'Continue'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            {isLocked && (
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Your account is permanently locked out of admin access. You have exceeded the maximum number of failed verification attempts.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <AdminLockoutModal 
+        open={showLockoutModal} 
+        onClose={() => setShowLockoutModal(false)} 
+      />
+    </>
   );
 }

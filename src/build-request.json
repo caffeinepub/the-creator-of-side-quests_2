@@ -1,144 +1,113 @@
 {
   "kind": "build_request",
-  "title": "Replace old admin shared-code gate with sequential three-step admin verification UI + backend validation",
+  "title": "Ensure cross-browser compatibility, responsive layout, and reliable Internet Identity login flow",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-31",
-      "text": "Replace the current single shared-code admin gate with a three-step sequential admin verification flow that requires users to enter three codes in the exact order (Code #1 then Code #2 then Code #3) before any /admin content becomes accessible.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Build a three-step sequential verification interface for the Admin Dashboard. When a user clicks the Admin button, they must enter the following codes in exact order: Code #1: A7kP3x9LmQ2R8tY5Zn6Cw1DgH Code #2: J4sT8bN2Kp5Xq7M9Lr3Wc6V1a Code #3: Z9Hf2Qw8Rk4Tn7Yp6B3C5m1Ls",
-          "Users can only progress to the next code after successfully entering the previous one. Full Admin access is granted only after all three codes are correctly entered.",
-          "This should replace the old outdated admin system with this new verification system I created!"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When navigating to /admin while signed out, the user sees the existing authentication-required guard messaging and cannot access admin pages.",
-        "When navigating to /admin while signed in but not verified, the user is shown Step 1 code entry UI; admin pages are not rendered.",
-        "Entering Code #1 correctly unlocks Step 2 entry UI; entering Code #2 correctly unlocks Step 3 entry UI; entering Code #3 correctly grants access to /admin routes.",
-        "Users cannot skip steps (e.g., cannot submit Code #3 before completing Steps 1 and 2).",
-        "Any incorrect code at a given step keeps the user on the same step and does not grant admin access.",
-        "All admin-only backend methods currently protected by the old shared-code session are protected by the new three-step verification state instead."
-      ]
-    },
-    {
-      "id": "REQ-32",
-      "text": "Update the backend admin verification APIs and authorization checks so that admin access is granted only after successful completion of all three steps, and remove/retire the old single-code (ADMIN_SHARED_CODE) verification/session behavior from backend/main.mo.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "This should replace the old outdated admin system with this new verification system I created!"
-        ]
-      },
-      "acceptanceCriteria": [
-        "backend/main.mo no longer relies on the previous single shared code value \"A7F9K2M8Q4R6T1Z5X3LJH9C8\" for admin authorization.",
-        "The backend exposes a way for the frontend to (a) check whether the caller is fully admin-verified and (b) submit a code for the current step so the backend can validate step order server-side.",
-        "Any backend function that previously called requireAdminSharedCodeSession(caller) is updated to require the new full three-step verification state.",
-        "A caller who has completed only Step 1 or Steps 1–2 is still blocked from admin-only methods.",
-        "Backend error messages returned on failure are in English and do not leak any of the secret codes."
-      ]
-    },
-    {
-      "id": "REQ-33",
-      "text": "Implement a new Admin verification screen/component to replace the existing single-code UI (frontend/src/components/auth/AdminSharedCodeGateScreen.tsx) with a step-by-step interface that clearly indicates Step 1/3, Step 2/3, Step 3/3 and only allows progressing after each successful entry.",
+      "id": "REQ-55",
+      "text": "Fix the reported “Connection closed / service connection could not be established” issue triggered by clicking the website Login button by making the Internet Identity login flow resilient across major browsers (Chrome, Firefox, Safari, Opera/Opera GX) and by providing clear user-facing error handling when the auth popup cannot be opened or the auth session fails.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "Build a three-step sequential verification interface for the Admin Dashboard."
+          "Connection closed\nIt seems like the connection with the service could not be established. Try a different browser; if the issue persists, contact support. When I hit the login button of my website it brings up this make sure my website works with all browsers that includes Chrome Opera Opera GX Safari Firefox any browser you can think of it needs to be able to operate on that browser and fully function!",
+          "Apply it now"
         ]
       },
       "acceptanceCriteria": [
-        "The admin verification UI presents a single code input at a time for the current step and includes visible progress (e.g., “Step 2 of 3”).",
-        "On success for a step, the UI transitions to the next step without requiring a page refresh.",
-        "On success for Step 3, the user is routed to or shown the admin dashboard content.",
-        "On an incorrect code, the UI shows an error state/message in English and remains on the same step.",
-        "The UI does not display, hardcode, or otherwise reveal the codes in any visible text or hints (no placeholders containing the codes)."
+        "Clicking “Login” (frontend/src/components/auth/LoginButton.tsx) initiates Internet Identity login successfully on Chrome, Firefox, Safari, and Opera/Opera GX in a clean session.",
+        "If login fails or the auth flow cannot be established, the UI shows a clear English error message to the user (not a silent failure) and the app remains usable.",
+        "The login button cannot remain indefinitely stuck in a “Logging in...” state; the UI must recover to an actionable state (e.g., allow retry) after an appropriate failure/timeout path.",
+        "No secrets or sensitive tokens are logged to the browser console as part of any new error handling."
       ]
     },
     {
-      "id": "REQ-34",
-      "text": "Update frontend admin route protection (frontend/src/components/auth/AdminRouteGuard.tsx) and the related hooks/utilities (frontend/src/hooks/admin/useAdminSharedCodeGate.ts and frontend/src/utils/adminSharedCodeSession.ts) to track multi-step verification state and to consider the user authorized only when all three steps are completed.",
+      "id": "REQ-56",
+      "text": "Harden actor initialization so that cross-browser differences or URL-parameter/session behaviors cannot break authenticated or anonymous app usage (including login/logout), and ensure failures in access-control initialization do not crash the app.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "Full Admin access is granted only after all three codes are correctly entered."
+          "make sure my website works with all browsers that includes Chrome Opera Opera GX Safari Firefox any browser you can think of it needs to be able to operate on that browser and fully function!",
+          "Apply it now"
         ]
       },
       "acceptanceCriteria": [
-        "AdminRouteGuard only renders children with data-guard-state=\"authorized\" when the caller is fully verified (all three steps complete).",
-        "The session/local state keying previously used for single-code verification is replaced or extended to represent the three-step completion state (including partial progress).",
-        "Logging out clears any stored admin-verification progress so a subsequent login requires re-verification.",
-        "The React Query query key(s) used to cache “admin verification validity” are updated so they correctly reflect the new multi-step state and can be refreshed after each successful step."
+        "The app loads and navigates normally in all target browsers even when URL parameters (e.g., the admin token parameter used by the actor initialization) are absent, blocked, or cleared.",
+        "If the actor access-control initialization fails for any reason, the failure is handled gracefully (no blank screen / unhandled promise rejection), and the user can still use non-admin public pages.",
+        "Logging out clears user session state without leaving the app in a broken state across target browsers."
       ]
     },
     {
-      "id": "REQ-35",
-      "text": "Ensure the three provided codes are treated as secrets: do not embed the plaintext codes anywhere in the frontend bundle, and do not log them to the browser console, backend logs, or error messages.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Code #1: A7kP3x9LmQ2R8tY5Zn6Cw1DgH",
-          "Code #2: J4sT8bN2Kp5Xq7M9Lr3Wc6V1a",
-          "Code #3: Z9Hf2Qw8Rk4Tn7Yp6B3C5m1Ls"
-        ]
-      },
-      "acceptanceCriteria": [
-        "No frontend source files contain the plaintext values of Code #1, Code #2, or Code #3.",
-        "Frontend network requests only send the user-entered code string to the backend for verification; the frontend never compares against hardcoded expected values.",
-        "Backend error messages are generic enough to avoid leaking the expected codes; returned errors do not echo back the submitted code.",
-        "Any telemetry/toast/error handling does not include the code values."
-      ]
-    },
-    {
-      "id": "REQ-36",
-      "text": "Make the new three-step verification flow the only supported path to Admin Dashboard access and remove/disable any remaining UI/logic implying the old single-code gate (e.g., “Enter the first verification code to begin” in the current gate screen should be updated to the new step-based wording).",
+      "id": "REQ-57",
+      "text": "Ensure the full website UI is fully responsive and functional across a comprehensive set of screen sizes (small Android phones, iPhones, iPads/tablets, and desktop sizes), including header navigation, mobile hamburger menu behavior, forms, dialogs/modals, and key flows (Shop, Contact, Testimonials, Admin entry guard screens).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "This should replace the old outdated admin system with this new verification system I created!"
+          "Make sure my website is fully functional on all screen sizes phones Android phones iPhones, iPads tablets computer screens all sizes! Build it!",
+          "Apply it now"
         ]
       },
       "acceptanceCriteria": [
-        "The admin verification messaging is updated to describe a three-step process without referencing an “old shared code” system.",
-        "There is no route or screen in the app that still performs the old single-code verification call path as the primary admin authorization mechanism.",
-        "All user-facing strings related to admin verification are in English."
+        "Header navigation (frontend/src/components/SiteHeader.tsx) remains usable on small screens: mobile menu opens/closes reliably, links are tappable, and content does not overflow horizontally.",
+        "All primary forms (Contact page, testimonial submission dialog, product checkout/quote path) remain readable and usable on mobile and tablet breakpoints without layout breakage.",
+        "All modals/dialogs used by the app remain accessible and scroll correctly on small screens (no content clipped off-screen with no way to reach it).",
+        "No page introduces horizontal scrolling at common viewport widths (e.g., 360px, 390px, 768px, 1024px, 1440px) except where explicitly intended for content."
+      ]
+    },
+    {
+      "id": "REQ-58",
+      "text": "Add a lightweight cross-browser QA checklist and automated smoke coverage (where feasible within the existing React app tooling) focused on the login button/auth flow and critical navigation, to prevent regressions of the reported connection/login issue.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6",
+          "msg-7"
+        ],
+        "quotes": [
+          "make sure my website works with all browsers ... and fully function!",
+          "Apply it now"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A documented QA checklist exists in-repo (English) specifying the minimum manual verification steps for Chrome, Firefox, Safari, and Opera/Opera GX, including the Login flow and basic navigation.",
+        "At least one repeatable smoke test (or equivalent automated check supported by the current project setup) covers that the app renders, navigation works, and the login button does not hard-crash the UI when invoked."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
-    "Do not edit any frontend files under frontend/src/components/ui or any paths listed in frontend.immutablePaths.",
-    "Use English for all user-facing text.",
-    "Do not embed the three admin verification codes in frontend code, frontend config, or frontend assets.",
-    "Preserve the always-visible “Admin” link behavior in the site header (desktop header nav and mobile hamburger menu) while keeping admin route protection enforced (as currently structured)."
+    "Do not edit files under frontend/immutablePaths (including frontend/src/hooks/useInternetIdentity.ts and frontend/src/hooks/useActor.ts if they are marked immutable in the system context; if not immutable, still avoid changing authentication semantics beyond stability/error handling).",
+    "Keep all user-facing text in English.",
+    "Do not add any third-party authentication beyond Internet Identity.",
+    "Do not expose or log any admin verification codes, master override codes, or other secrets while implementing error handling and QA."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding new admin features beyond the verification flow replacement.",
-    "Changing public site pages, shop flows, or marketing copy unrelated to admin verification."
+    "Implementing new authentication providers (Google/Facebook/Auth0, etc.).",
+    "Guaranteeing compatibility with every browser ever made; the explicit target set is Chrome, Firefox, Safari, Opera/Opera GX, plus maintaining generally standards-based behavior elsewhere.",
+    "Adding new app features unrelated to cross-browser stability, login reliability, or responsive layout."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

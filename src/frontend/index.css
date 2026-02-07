@@ -87,11 +87,23 @@
     body {
         @apply bg-background text-foreground;
         font-family: 'Lora', serif;
+        overflow-x: hidden;
     }
 
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Cinzel', serif;
         font-weight: 600;
+    }
+
+    /* Prevent horizontal overflow globally */
+    html {
+        overflow-x: hidden;
+    }
+
+    /* Improve word wrapping for long words */
+    p, li, td, th, div {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     @media (prefers-reduced-motion: reduce) {

@@ -188,6 +188,11 @@ export interface backendInterface {
     createGiveaway(giveaway: Giveaway): Promise<void>;
     createLoyaltyReward(reward: LoyaltyReward): Promise<void>;
     getActiveGiveaways(): Promise<Array<Giveaway>>;
+    getAdminVerificationStatus(): Promise<{
+        failed_attempts: bigint;
+        remaining_attempts?: bigint;
+        permanently_locked: boolean;
+    }>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getContactRequests(): Promise<Array<ContactRequest>>;
@@ -210,6 +215,7 @@ export interface backendInterface {
     grantUserAccess(user: Principal): Promise<void>;
     hasValidAdminSession(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
+    isPermanentlyLocked(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
     listAdminUsers(): Promise<Array<Principal>>;
     recordPurchase(amount: bigint): Promise<void>;
@@ -222,6 +228,8 @@ export interface backendInterface {
     submitContactRequest(request: ContactRequest): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
     updateContactRequestStatus(id: string, status: string): Promise<void>;
+    updateMasterOverride(currentMasterOverride: string, newMasterOverride: string): Promise<void>;
+    updateWithMasterOverride(masterOverride: string, newCode1: string, newCode2: string, newCode3: string): Promise<void>;
     validateCoupon(code: string): Promise<Coupon | null>;
     verifyAdminCodeStep1(code: string): Promise<boolean>;
     verifyAdminCodeStep2(code: string): Promise<boolean>;

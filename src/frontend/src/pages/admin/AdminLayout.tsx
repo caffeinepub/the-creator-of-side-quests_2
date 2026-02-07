@@ -12,7 +12,8 @@ import {
   Gift, 
   Settings,
   CreditCard,
-  Users
+  Users,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function AdminLayout() {
@@ -29,6 +30,7 @@ export default function AdminLayout() {
     { to: '/admin/policies-fulfillment', label: 'Policies & Fulfillment', icon: Settings },
     { to: '/admin/stripe-setup', label: 'Stripe Setup', icon: CreditCard },
     { to: '/admin/access', label: 'Access', icon: Users },
+    { to: '/admin/verification-codes', label: 'Verification Codes', icon: ShieldCheck },
   ];
 
   return (

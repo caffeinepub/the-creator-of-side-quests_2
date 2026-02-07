@@ -30,6 +30,14 @@ export function useVerifyAdminCodeStep1() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
+    },
+    onError: () => {
+      // Invalidate lockout-related queries on error to immediately reflect lockout state
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
+      queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
     },
   });
 }
@@ -49,6 +57,14 @@ export function useVerifyAdminCodeStep2() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
+    },
+    onError: () => {
+      // Invalidate lockout-related queries on error to immediately reflect lockout state
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
+      queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
     },
   });
 }
@@ -67,6 +83,14 @@ export function useVerifyAdminCodeStep3() {
       return result;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
+    },
+    onError: () => {
+      // Invalidate lockout-related queries on error to immediately reflect lockout state
+      queryClient.invalidateQueries({ queryKey: ['adminVerificationStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['isPermanentlyLocked'] });
       queryClient.invalidateQueries({ queryKey: ['adminSessionValid'] });
     },
   });

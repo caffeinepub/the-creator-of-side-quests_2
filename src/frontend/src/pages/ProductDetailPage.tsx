@@ -20,7 +20,7 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="container py-16">
+      <div className="container py-8 px-4 sm:py-16">
         <p>Loading product...</p>
       </div>
     );
@@ -28,7 +28,7 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="container py-16">
+      <div className="container py-8 px-4 sm:py-16">
         <p>Product not found.</p>
         <Link to="/shop">
           <Button className="mt-4">Back to Shop</Button>
@@ -68,16 +68,16 @@ export default function ProductDetailPage() {
 
   return (
     <div>
-      <section className="py-16">
-        <div className="container">
+      <section className="py-8 sm:py-16">
+        <div className="container px-4">
           <Link to="/shop">
-            <Button variant="ghost" size="sm" className="mb-6">
+            <Button variant="ghost" size="sm" className="mb-4 sm:mb-6">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Shop
             </Button>
           </Link>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-6 sm:gap-8 md:grid-cols-2">
             <div className="aspect-square overflow-hidden rounded-lg bg-muted">
               <img
                 src={product.image.getDirectURL()}
@@ -86,18 +86,18 @@ export default function ProductDetailPage() {
               />
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h1 className="mb-2 font-serif text-4xl font-bold">{product.name}</h1>
-                <div className="flex gap-2">
+                <h1 className="mb-2 font-serif text-2xl sm:text-3xl md:text-4xl font-bold break-words">{product.name}</h1>
+                <div className="flex flex-wrap gap-2">
                   {!product.inStock && <Badge variant="destructive">Out of Stock</Badge>}
                   {product.requiresQuote && <Badge variant="secondary">Quote Required</Badge>}
                 </div>
               </div>
 
-              <p className="text-lg leading-relaxed">{product.description}</p>
+              <p className="text-base sm:text-lg leading-relaxed">{product.description}</p>
 
-              <div className="text-3xl font-bold">
+              <div className="text-2xl sm:text-3xl font-bold">
                 ${(Number(product.price) / 100).toFixed(2)}
               </div>
 

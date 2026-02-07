@@ -1,6 +1,7 @@
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
+import { clearAdminCodeVerified } from '../../utils/adminSharedCodeSession';
 
 export default function LoginButton() {
   const { login, clear, loginStatus, identity } = useInternetIdentity();
@@ -14,6 +15,7 @@ export default function LoginButton() {
     if (isAuthenticated) {
       await clear();
       queryClient.clear();
+      clearAdminCodeVerified();
     } else {
       try {
         await login();

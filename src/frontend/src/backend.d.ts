@@ -214,10 +214,15 @@ export interface backendInterface {
     getTestimonial(id: string): Promise<Testimonial | null>;
     getTestimonials(): Promise<Array<Testimonial>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    grantAdminAccess(user: Principal): Promise<void>;
+    hasValidAdminSharedCode(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
+    listAdminUsers(): Promise<Array<Principal>>;
     recordPurchase(amount: bigint): Promise<void>;
     redeemLoyaltyReward(rewardId: string): Promise<boolean>;
+    retryVerifyAdminSharedCode(code: string): Promise<boolean>;
+    revokeAdminAccess(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     selectGiveawayWinner(giveawayId: string, winnerIndex: bigint): Promise<GiveawayWinner | null>;
     setFulfillmentOptions(options: FulfillmentOptions): Promise<void>;
@@ -234,4 +239,5 @@ export interface backendInterface {
     updateSocialMediaLink(platform: string, url: string): Promise<void>;
     updateTestimonial(testimonial: Testimonial): Promise<void>;
     validateCoupon(code: string): Promise<Coupon | null>;
+    verifyAdminSharedCode(code: string): Promise<boolean>;
 }

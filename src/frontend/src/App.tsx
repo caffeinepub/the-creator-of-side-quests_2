@@ -22,6 +22,7 @@ import AdminLoyaltyRewardsPage from './pages/admin/AdminLoyaltyRewardsPage';
 import AdminGiveawaysPage from './pages/admin/AdminGiveawaysPage';
 import AdminPoliciesFulfillmentPage from './pages/admin/AdminPoliciesFulfillmentPage';
 import AdminStripeSetupPage from './pages/admin/AdminStripeSetupPage';
+import AdminAccessPage from './pages/admin/AdminAccessPage';
 import SiteLayout from './components/SiteLayout';
 import AdminLayout from './pages/admin/AdminLayout';
 import { Toaster } from './components/ui/sonner';
@@ -169,6 +170,12 @@ const adminStripeSetupRoute = createRoute({
   component: AdminStripeSetupPage,
 });
 
+const adminAccessRoute = createRoute({
+  getParentRoute: () => adminRootRoute,
+  path: '/access',
+  component: AdminAccessPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   aboutRoute,
@@ -193,6 +200,7 @@ const routeTree = rootRoute.addChildren([
     adminGiveawaysRoute,
     adminPoliciesFulfillmentRoute,
     adminStripeSetupRoute,
+    adminAccessRoute,
   ]),
 ]);
 

@@ -1,11 +1,10 @@
 import Map "mo:core/Map";
+import Array "mo:core/Array";
 import List "mo:core/List";
 import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Iter "mo:core/Iter";
-import Runtime "mo:core/Runtime";
-import Array "mo:core/Array";
 import Order "mo:core/Order";
 import OutCall "http-outcalls/outcall";
 import Storage "blob-storage/Storage";
@@ -13,6 +12,7 @@ import MixinStorage "blob-storage/Mixin";
 import Stripe "stripe/stripe";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Runtime "mo:core/Runtime";
 
 actor {
   include MixinStorage();
@@ -20,6 +20,164 @@ actor {
   // Add authentication
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
+
+  // Admin shared code system
+  let ADMIN_SHARED_CODE = "A7F9K2M8Q4R6T1Z5X3LJH9C8";
+  let MAX_ATTEMPTS = 3;
+  let LOCKOUT_DURATION_NS : Int = 300_000_000_000; // 5 minutes in nanoseconds
+  let SHARED_CODE_SESSION_DURATION_NS : Int = 900_000_000_000; // 15 minutes in nanoseconds
+
+  public type AdminCodeAttempt = {
+    attemptCount : Nat;
+    lastAttempt : Time.Time;
+    lockedUntil : ?Time.Time;
+    sharedCodeSession : ?Time.Time;
+  };
+
+  let adminCodeAttempts = Map.empty<Principal, AdminCodeAttempt>();
+
+  // Helper function to check if caller has valid admin shared code session
+  func requireAdminSharedCodeSession(caller : Principal) {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Admin permission required");
+    };
+
+    switch (adminCodeAttempts.get(caller)) {
+      case (?attempt) {
+        switch (attempt.sharedCodeSession) {
+          case (?expiry) {
+            if (Time.now() > expiry) {
+              Runtime.trap("Unauthorized: Admin shared code session expired. Please re-enter the shared code.");
+            };
+          };
+          case (null) {
+            Runtime.trap("Unauthorized: Admin shared code verification required. Please enter the shared code.");
+          };
+        };
+      };
+      case (null) {
+        Runtime.trap("Unauthorized: Admin shared code verification required. Please enter the shared code.");
+      };
+    };
+  };
+
+  public shared ({ caller }) func verifyAdminSharedCode(code : Text) : async Bool {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Admin permission required");
+    };
+
+    if (code != ADMIN_SHARED_CODE) {
+      Runtime.trap("Incorrect admin shared code");
+    };
+
+    let now = Time.now();
+    let sessionExpiry = now + SHARED_CODE_SESSION_DURATION_NS;
+
+    let attempt : AdminCodeAttempt = {
+      attemptCount = 0;
+      lastAttempt = now;
+      lockedUntil = null;
+      sharedCodeSession = ?sessionExpiry;
+    };
+
+    adminCodeAttempts.add(caller, attempt);
+    true;
+  };
+
+  public shared ({ caller }) func retryVerifyAdminSharedCode(code : Text) : async Bool {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Admin permission required");
+    };
+
+    switch (adminCodeAttempts.get(caller)) {
+      case (?attempt) {
+        let now = Time.now();
+        let attempts = attempt.attemptCount;
+        let lockedUntil = attempt.lockedUntil;
+
+        switch (lockedUntil) {
+          case (?lockTime) {
+            if (now < lockTime) {
+              Runtime.trap("This account is currently locked out due to too many unsuccessful attempts. Please try again later.");
+            };
+          };
+          case (null) {};
+        };
+
+        if (attempts >= MAX_ATTEMPTS) {
+          let newAttempt = {
+            attempt with
+            attemptCount = attempts + 1;
+            lastAttempt = now;
+            lockedUntil = ?(now + LOCKOUT_DURATION_NS);
+          };
+          adminCodeAttempts.add(caller, newAttempt);
+          Runtime.trap("Too many attempts. This account is temporarily locked out for 5 minutes.");
+        };
+
+        if (code != ADMIN_SHARED_CODE) {
+          let newAttempt = {
+            attempt with
+            attemptCount = attempts + 1;
+            lastAttempt = now;
+          };
+          adminCodeAttempts.add(caller, newAttempt);
+          Runtime.trap("Incorrect admin shared code. Attempt " # Nat.toText(attempts + 1) # "/" # Nat.toText(MAX_ATTEMPTS));
+        };
+
+        let sessionExpiry = now + SHARED_CODE_SESSION_DURATION_NS;
+        let successAttempt = {
+          attempt with
+          attemptCount = 0;
+          lastAttempt = now;
+          sharedCodeSession = ?sessionExpiry;
+        };
+        adminCodeAttempts.add(caller, successAttempt);
+        true;
+      };
+      case (null) {
+        if (code != ADMIN_SHARED_CODE) {
+          let firstAttempt : AdminCodeAttempt = {
+            attemptCount = 1;
+            lastAttempt = Time.now();
+            lockedUntil = null;
+            sharedCodeSession = null;
+          };
+          adminCodeAttempts.add(caller, firstAttempt);
+          Runtime.trap("Incorrect admin shared code. Attempt 1/" # Nat.toText(MAX_ATTEMPTS));
+        } else {
+          let now = Time.now();
+          let sessionExpiry = now + SHARED_CODE_SESSION_DURATION_NS;
+          let successAttempt : AdminCodeAttempt = {
+            attemptCount = 0;
+            lastAttempt = now;
+            lockedUntil = null;
+            sharedCodeSession = ?sessionExpiry;
+          };
+          adminCodeAttempts.add(caller, successAttempt);
+          true;
+        };
+      };
+    };
+  };
+
+  public query ({ caller }) func hasValidAdminSharedCode() : async Bool {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      return false;
+    };
+
+    switch (adminCodeAttempts.get(caller)) {
+      case (?attempt) {
+        switch (attempt.sharedCodeSession) {
+          case (?expiry) {
+            Time.now() <= expiry;
+          };
+          case (null) { false };
+        };
+      };
+      case (null) { false };
+    };
+  };
 
   // User Profile (required by instructions)
   public type UserProfile = {
@@ -51,6 +209,22 @@ actor {
     userProfiles.add(caller, profile);
   };
 
+  // Admin Access Management
+  public shared ({ caller }) func grantAdminAccess(user : Principal) : async () {
+    requireAdminSharedCodeSession(caller);
+    AccessControl.assignRole(accessControlState, caller, user, #admin);
+  };
+
+  public shared ({ caller }) func revokeAdminAccess(user : Principal) : async () {
+    requireAdminSharedCodeSession(caller);
+    AccessControl.assignRole(accessControlState, caller, user, #user);
+  };
+
+  public query ({ caller }) func listAdminUsers() : async [Principal] {
+    requireAdminSharedCodeSession(caller);
+    [];
+  };
+
   // Social media links
   public type SocialMediaLink = {
     platform : Text;
@@ -60,9 +234,7 @@ actor {
   let socialMediaLinks = Map.empty<Text, SocialMediaLink>();
 
   public shared ({ caller }) func addSocialMediaLink(platform : Text, url : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can add social media links");
-    };
+    requireAdminSharedCodeSession(caller);
     socialMediaLinks.add(platform, {
       platform;
       url;
@@ -70,9 +242,7 @@ actor {
   };
 
   public shared ({ caller }) func updateSocialMediaLink(platform : Text, url : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update social media links");
-    };
+    requireAdminSharedCodeSession(caller);
     socialMediaLinks.add(platform, {
       platform;
       url;
@@ -80,9 +250,7 @@ actor {
   };
 
   public shared ({ caller }) func deleteSocialMediaLink(platform : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can delete social media links");
-    };
+    requireAdminSharedCodeSession(caller);
     socialMediaLinks.remove(platform);
   };
 
@@ -102,23 +270,17 @@ actor {
   let portfolioItems = Map.empty<Text, PortfolioItem>();
 
   public shared ({ caller }) func addPortfolioItem(item : PortfolioItem) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can add portfolio items");
-    };
+    requireAdminSharedCodeSession(caller);
     portfolioItems.add(item.id, item);
   };
 
   public shared ({ caller }) func updatePortfolioItem(item : PortfolioItem) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update portfolio items");
-    };
+    requireAdminSharedCodeSession(caller);
     portfolioItems.add(item.id, item);
   };
 
   public shared ({ caller }) func deletePortfolioItem(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can delete portfolio items");
-    };
+    requireAdminSharedCodeSession(caller);
     portfolioItems.remove(id);
   };
 
@@ -142,23 +304,17 @@ actor {
   let testimonials = Map.empty<Text, Testimonial>();
 
   public shared ({ caller }) func addTestimonial(testimonial : Testimonial) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can add testimonials");
-    };
+    requireAdminSharedCodeSession(caller);
     testimonials.add(testimonial.id, testimonial);
   };
 
   public shared ({ caller }) func updateTestimonial(testimonial : Testimonial) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update testimonials");
-    };
+    requireAdminSharedCodeSession(caller);
     testimonials.add(testimonial.id, testimonial);
   };
 
   public shared ({ caller }) func deleteTestimonial(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can delete testimonials");
-    };
+    requireAdminSharedCodeSession(caller);
     testimonials.remove(id);
   };
 
@@ -186,9 +342,7 @@ actor {
   };
 
   public shared ({ caller }) func setFulfillmentOptions(options : FulfillmentOptions) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can set fulfillment options");
-    };
+    requireAdminSharedCodeSession(caller);
     fulfillmentOptions := options;
   };
 
@@ -210,9 +364,7 @@ actor {
   };
 
   public shared ({ caller }) func setPolicies(newPolicies : Policies) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can set policies");
-    };
+    requireAdminSharedCodeSession(caller);
     policies := newPolicies;
   };
 
@@ -235,23 +387,17 @@ actor {
   let products = Map.empty<Text, Product>();
 
   public shared ({ caller }) func addProduct(product : Product) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can add products");
-    };
+    requireAdminSharedCodeSession(caller);
     products.add(product.id, product);
   };
 
   public shared ({ caller }) func updateProduct(product : Product) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update products");
-    };
+    requireAdminSharedCodeSession(caller);
     products.add(product.id, product);
   };
 
   public shared ({ caller }) func deleteProduct(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can delete products");
-    };
+    requireAdminSharedCodeSession(caller);
     products.remove(id);
   };
 
@@ -293,9 +439,7 @@ actor {
   };
 
   public query ({ caller }) func getContactRequests() : async [ContactRequest] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can view contact requests");
-    };
+    requireAdminSharedCodeSession(caller);
     contactRequests.values().toArray();
   };
 
@@ -309,9 +453,7 @@ actor {
   };
 
   public shared ({ caller }) func updateContactRequestStatus(id : Text, status : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update contact request status");
-    };
+    requireAdminSharedCodeSession(caller);
     switch (contactRequests.get(id)) {
       case (null) { Runtime.trap("Contact request not found") };
       case (?request) {
@@ -339,30 +481,22 @@ actor {
   let coupons = Map.empty<Text, Coupon>();
 
   public shared ({ caller }) func createCoupon(coupon : Coupon) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can create coupons");
-    };
+    requireAdminSharedCodeSession(caller);
     coupons.add(coupon.code, coupon);
   };
 
   public shared ({ caller }) func updateCoupon(coupon : Coupon) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update coupons");
-    };
+    requireAdminSharedCodeSession(caller);
     coupons.add(coupon.code, coupon);
   };
 
   public shared ({ caller }) func deleteCoupon(code : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can delete coupons");
-    };
+    requireAdminSharedCodeSession(caller);
     coupons.remove(code);
   };
 
   public query ({ caller }) func getCoupons() : async [Coupon] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can view all coupons");
-    };
+    requireAdminSharedCodeSession(caller);
     coupons.values().toArray();
   };
 
@@ -443,7 +577,7 @@ actor {
       Runtime.trap("Unauthorized: Only authenticated users can earn loyalty points");
     };
     let pointsToAdd = switch (action) {
-      case (#purchase(amount)) { amount / 100 }; // 1 point per dollar
+      case (#purchase(amount)) { amount / 100 };
       case (#signup) { 100 };
       case (#visit) { 10 };
       case (#share) { 50 };
@@ -477,23 +611,17 @@ actor {
   };
 
   public shared ({ caller }) func createLoyaltyReward(reward : LoyaltyReward) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can create loyalty rewards");
-    };
+    requireAdminSharedCodeSession(caller);
     loyaltyRewards.add(reward.id, reward);
   };
 
   public shared ({ caller }) func updateLoyaltyReward(reward : LoyaltyReward) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update loyalty rewards");
-    };
+    requireAdminSharedCodeSession(caller);
     loyaltyRewards.add(reward.id, reward);
   };
 
   public shared ({ caller }) func deleteLoyaltyReward(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can delete loyalty rewards");
-    };
+    requireAdminSharedCodeSession(caller);
     loyaltyRewards.remove(id);
   };
 
@@ -558,9 +686,7 @@ actor {
   let giveaways = Map.empty<Text, Giveaway>();
 
   public shared ({ caller }) func createGiveaway(giveaway : Giveaway) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can create giveaways");
-    };
+    requireAdminSharedCodeSession(caller);
     giveaways.add(giveaway.id, giveaway);
   };
 
@@ -584,9 +710,7 @@ actor {
   };
 
   public shared ({ caller }) func addGiveawayEntrantByAdmin(giveawayId : Text, userPrincipal : Principal, displayName : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can add entrants");
-    };
+    requireAdminSharedCodeSession(caller);
     switch (giveaways.get(giveawayId)) {
       case (null) { Runtime.trap("Giveaway not found") };
       case (?giveaway) {
@@ -602,9 +726,7 @@ actor {
   };
 
   public shared ({ caller }) func selectGiveawayWinner(giveawayId : Text, winnerIndex : Nat) : async ?GiveawayWinner {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can select winners");
-    };
+    requireAdminSharedCodeSession(caller);
     switch (giveaways.get(giveawayId)) {
       case (null) { null };
       case (?giveaway) {
@@ -622,9 +744,7 @@ actor {
   };
 
   public query ({ caller }) func getGiveaway(id : Text) : async ?Giveaway {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can view giveaway details");
-    };
+    requireAdminSharedCodeSession(caller);
     giveaways.get(id);
   };
 
@@ -633,16 +753,12 @@ actor {
   };
 
   public shared ({ caller }) func updateGiveaway(giveaway : Giveaway) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can update giveaways");
-    };
+    requireAdminSharedCodeSession(caller);
     giveaways.add(giveaway.id, giveaway);
   };
 
   public shared ({ caller }) func deleteGiveaway(id : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can delete giveaways");
-    };
+    requireAdminSharedCodeSession(caller);
     giveaways.remove(id);
   };
 
@@ -654,9 +770,7 @@ actor {
   };
 
   public shared ({ caller }) func setStripeConfiguration(config : Stripe.StripeConfiguration) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admin can set Stripe configuration");
-    };
+    requireAdminSharedCodeSession(caller);
     stripeConfig := ?config;
   };
 

@@ -1,126 +1,110 @@
 {
   "kind": "build_request",
-  "title": "Implement Admin UIs: product management, testimonial creation with mossy-green glowing stars, giveaway wheel, and portfolio uploader",
+  "title": "Implement shared-code gated admin access + admin permission management",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-16",
-      "text": "Replace the placeholder Admin Products page with a full product management UI that lets the admin list, create, edit, and delete products, including image upload, price, description, category, in-stock toggle, and requires-quote toggle, using the existing backend product APIs and existing admin route protection.",
-      "target": "frontend",
+      "id": "REQ-21",
+      "text": "Add a shared-code gate to all Admin routes so that a signed-in user must enter the shared code \"A7F9K2M8Q4R6T1Z5X3LJH9C8\" to access any /admin page, even if the user already has admin permissions.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-12"
         ],
         "quotes": [
-          "“Build the product management UI.”"
+          "Please create a fully functional admin page that just needs a shared code to get into A7F9K2M8Q4R6T1Z5X3LJH9C8 this is the shared code also when I put the code in it will let me into the admin panel"
         ]
       },
       "acceptanceCriteria": [
-        "Visiting /admin/products as a non-admin shows the existing AdminRouteGuard access denied UI; visiting as admin shows the product management UI (no 'coming soon' placeholder).",
-        "Admin can view a table/grid of existing products loaded from the backend (name, price, in-stock, requires quote, category, thumbnail).",
-        "Admin can create a new product with fields: name, description, price, category (optional), inStock, requiresQuote, and an uploaded image; saving persists to the backend and the list updates without a page refresh.",
-        "Admin can edit an existing product (including replacing the image) and changes persist to the backend and refresh in the UI.",
-        "Admin can delete a product with a confirmation step; deleted products no longer appear in product list after success.",
-        "All create/edit/delete actions show loading and error states (toast/alert) and do not leave the UI in a broken state on failure."
+        "When a signed-in admin visits /admin (or any /admin/* route) without having entered the shared code in the current session, they are blocked and shown a code-entry screen instead of the admin layout.",
+        "After entering the correct shared code once, the user can navigate across all /admin pages during that browser session without being prompted again.",
+        "If the code is incorrect, the user remains blocked and receives a clear error message in English.",
+        "If the user signs out, any stored admin-code verification state is cleared and the user must re-enter the shared code after signing back in."
       ]
     },
     {
-      "id": "REQ-17",
-      "text": "Implement a user-facing testimonial creation flow on the public Testimonials page that allows a signed-in user to click a “Create Testimony” button and submit a 1–5 star review using mossy-green glowing stars (not gold), and ensure testimonials display uses the same mossy-green star styling.",
-      "target": "frontend",
+      "id": "REQ-22",
+      "text": "Enforce the shared-code gate on the backend (not only in the UI) by adding backend APIs to: (1) verify the shared code for the caller and create a short-lived admin session marker, and (2) require that marker for all admin-only backend operations (in addition to existing admin permission checks). Include basic brute-force protection (per-caller attempt counting + temporary lockout).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-12"
         ],
         "quotes": [
-          "“Build the testimonials creation UI with mossy green glowing stars.”"
+          "they are also going to need to type in this shared code which I will provide them at the time that I promote certain accounts to admit"
         ]
       },
       "acceptanceCriteria": [
-        "The public Testimonials page includes a clearly visible “Create Testimony” action.",
-        "If the user is not signed in, attempting to create a testimony prompts the user to sign in (using the existing auth flow) and does not submit data.",
-        "The creation UI allows selecting a rating from 1 to 5 using star icons styled as mossy-green and visibly “glowy” (e.g., glow/shadow effect); stars are not gold.",
-        "The creation UI includes inputs for author name (or display name) and the testimonial content, with basic validation (required fields, rating required).",
-        "On successful submission, the new testimonial appears in the testimonials list after query invalidation/refetch.",
-        "Displayed testimonial star ratings on the Testimonials page render as mossy-green glowing stars (not gold)."
+        "Backend exposes an API that allows a signed-in user to submit the shared code and receive a success/fail response.",
+        "On success, the backend records an expiring admin-session marker for that caller (session expires automatically after a defined short duration, e.g. hours).",
+        "All admin-only backend methods are updated so they require BOTH: (a) the caller is an admin according to existing admin permission logic, and (b) the caller currently has a valid shared-code session marker.",
+        "After too many failed attempts (e.g., 5), the caller is locked out for a cooldown period (e.g., 5 minutes) and verification attempts return a clear failure state rather than trapping.",
+        "The shared code is not returned by any backend query and is not logged or exposed via any public API."
       ]
     },
     {
-      "id": "REQ-18",
-      "text": "Replace the placeholder Admin Testimonials page with an admin testimonials management UI that lets the admin view, create, edit, and delete testimonials (including rating), using existing backend testimonial APIs and maintaining consistent mossy-green glowing star styling for rating controls.",
-      "target": "frontend",
+      "id": "REQ-23",
+      "text": "Create an Admin \"Access\" management page within the admin panel that allows a verified admin (admin permission + shared-code session) to grant and revoke admin access for other accounts.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-12"
         ],
         "quotes": [
-          "“Build the testimonials creation UI with mossy green glowing stars.”"
+          "I can give people admin access from there"
         ]
       },
       "acceptanceCriteria": [
-        "Visiting /admin/testimonials as admin shows a working testimonials management UI (no 'coming soon' placeholder).",
-        "Admin can see a list of testimonials with author, rating, created date, and a content preview.",
-        "Admin can create a testimonial from the admin UI (author, content, rating) and it persists to the backend and appears in the list.",
-        "Admin can edit an existing testimonial (including rating) and changes persist to the backend and refresh in the UI.",
-        "Admin can delete a testimonial with confirmation; it is removed from the backend and no longer appears in the list.",
-        "Rating inputs in admin use the same mossy-green glowing star UI (not gold) and are accessible (keyboard focusable / labeled)."
+        "A new Admin section/page exists in the /admin area for managing admin access (grant/revoke).",
+        "The page provides a way to add an admin by entering a Principal text value (and optionally selecting from a list of known users if available), and to revoke admin from an existing admin.",
+        "All grant/revoke actions call backend admin-only APIs and show success/error feedback in English.",
+        "Only a caller that is an admin AND has a valid shared-code session can access and use this page; otherwise they are blocked by the same shared-code gate/admin guard behavior as other admin pages."
       ]
     },
     {
-      "id": "REQ-19",
-      "text": "Replace the placeholder Admin Giveaways page with a giveaway wheel UI for admins that allows selecting an active giveaway, viewing entrants, adding entrants as admin, triggering a random wheel spin animation, selecting a winner, and displaying winner history using the existing backend giveaway APIs.",
+      "id": "REQ-24",
+      "text": "Update the existing Admin route protection flow to incorporate the shared-code step while preserving the current Internet Identity login requirement and existing admin-permission checks.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-1"
+          "msg-12"
         ],
         "quotes": [
-          "“Build the giveaway wheel UI.”"
+          "implement this full admin page and admin system into my website! Make sure the full admin page and admin panel is complete and ready to use!"
         ]
       },
       "acceptanceCriteria": [
-        "Visiting /admin/giveaways as admin shows a working giveaway management UI (no 'coming soon' placeholder).",
-        "Admin can select an active giveaway and see its name/description, entrants list, and winners list/history.",
-        "Admin can add an entrant as admin by providing a principal (text input) and display name; the entrant appears in the list after success.",
-        "Admin can trigger a 'Spin' action that animates a wheel/selector UI over the current entrants and ends on a single selected entrant.",
-        "After the spin completes, the UI calls the backend to record/confirm the selected winner and the winner appears in the winners history with timestamp.",
-        "The UI handles edge cases gracefully: no active giveaways, no entrants (spin disabled with explanatory text), backend errors shown to the admin."
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "text": "Replace the placeholder Admin Portfolio page with a portfolio uploader/manager UI for admins that supports uploading portfolio media, setting title/description/category, listing existing portfolio items, and editing/deleting items using the existing backend portfolio and blob-storage APIs; include a category workflow that supports a dedicated “What I have created for the community” grouping.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-1"
-        ],
-        "quotes": [
-          "“Build the portfolio uploader.”"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Visiting /admin/portfolio as admin shows a working portfolio management UI (no 'coming soon' placeholder).",
-        "Admin can upload a new portfolio item with title, description, optional category, and a selected media file; on success it persists and appears in the portfolio list.",
-        "The UI provides a category option/value that can be used to represent “What I have created for the community” so items can be grouped/filtered accordingly on the public portfolio experience.",
-        "Admin can edit an existing portfolio item’s metadata (title/description/category) and save changes to the backend.",
-        "Admin can delete a portfolio item with confirmation; it is removed from the backend and no longer appears in the list.",
-        "The uploader shows clear file upload progress/loading and displays an explicit error message when the backend rejects a file due to size/type limits (no silent failure)."
+        "If the user is not signed in, admin routes still show the existing \"Authentication Required\" state.",
+        "If the user is signed in but is not an admin, admin routes still show the existing \"Access Denied\" state.",
+        "If the user is signed in and is an admin, but has not completed shared-code verification (or it expired), the UI prompts for the shared code and does not render the AdminLayout/sidebar content until verification succeeds.",
+        "After successful shared-code verification, the AdminLayout renders normally and existing admin pages remain functional."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (shadcn components must be composed, not modified).",
-    "Do not modify immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Keep backend as a single Motoko actor in backend/main.mo; only add backend changes if required by missing APIs (prefer using existing APIs)."
+    "Frontend immutable paths must not be edited: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo only if required to preserve/upgrade existing stable state.",
+    "Use English for all user-facing text.",
+    "Preserve the shared code exactly as provided: A7F9K2M8Q4R6T1Z5X3LJH9C8."
   ],
   "nonGoals": [
-    "Implement newsletters, birthday profile fields, or automated birthday coupons/cards (not requested in this build request).",
-    "Change the overall site theme/palette beyond implementing mossy-green glowing star styling for rating controls.",
-    "Add unlimited/no-limit media uploads; the UI should reflect backend limits and handle errors gracefully rather than claiming unlimited support."
+    "Do not remove Internet Identity authentication; users must still sign in before any admin access is possible.",
+    "Do not implement third-party authentication providers.",
+    "Do not implement real-time features (WebSockets) or external databases.",
+    "Do not expand unrelated placeholder admin sections (e.g., Stripe Setup, Social Links, etc.) unless necessary to support shared-code gating and admin access management."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

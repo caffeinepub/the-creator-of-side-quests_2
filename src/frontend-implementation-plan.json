@@ -1,180 +1,96 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin management UIs (Products, Testimonials, Giveaways, Portfolio) + Public testimonial creation with mossy-green glowing stars",
+  "title": "Shared-code gated admin access + admin permission management (frontend)",
   "requirements": [
     {
-      "id": "REQ-16",
-      "summary": "Implement full Admin Products management UI (list/create/edit/delete) with image upload and robust loading/error states, using existing backend product APIs and existing AdminRouteGuard protection.",
+      "id": "REQ-21",
+      "summary": "Add a shared-code gate for all /admin routes, persisting verification only for the browser session and clearing on sign out.",
       "acceptanceCriteria": [
-        "Visiting /admin/products as a non-admin shows the existing AdminRouteGuard access denied UI; visiting as admin shows the product management UI (no 'coming soon' placeholder).",
-        "Admin can view a table/grid of existing products loaded from the backend (name, price, in-stock, requires quote, category, thumbnail).",
-        "Admin can create a new product with fields: name, description, price, category (optional), inStock, requiresQuote, and an uploaded image; saving persists to the backend and the list updates without a page refresh.",
-        "Admin can edit an existing product (including replacing the image) and changes persist to the backend and refresh in the UI.",
-        "Admin can delete a product with a confirmation step; deleted products no longer appear in product list after success.",
-        "All create/edit/delete actions show loading and error states (toast/alert) and do not leave the UI in a broken state on failure."
+        "When a signed-in admin visits /admin (or any /admin/* route) without having entered the shared code in the current session, they are blocked and shown a code-entry screen instead of the admin layout.",
+        "After entering the correct shared code once, the user can navigate across all /admin pages during that browser session without being prompted again.",
+        "If the code is incorrect, the user remains blocked and receives a clear error message in English.",
+        "If the user signs out, any stored admin-code verification state is cleared and the user must re-enter the shared code after signing back in."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/admin/useAdminProducts.ts",
+          "path": "frontend/src/utils/adminSharedCodeSession.ts",
           "operation": "create",
-          "description": "Create React Query hooks for admin product CRUD using the existing actor capabilities (getProducts/addProduct/updateProduct/deleteProduct) and query invalidation for ['products']. Use sonner toasts and surface backend errors clearly. For image upload, use the blob-storage ExternalBlob client class with upload progress. Verify the component's usage instructions before implementing."
+          "description": "Add a small sessionStorage-backed utility for reading/writing/clearing the admin shared-code verification flag for the current browser session (do not store the shared code itself)."
         },
         {
-          "path": "frontend/src/components/products/AdminProductFormDialog.tsx",
+          "path": "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
           "operation": "create",
-          "description": "Create a reusable create/edit product dialog form composed from existing shadcn/ui components (do not modify frontend/src/components/ui). Include fields: name, description, price (dollars -> cents BigInt), optional category, inStock toggle, requiresQuote toggle, and image file input with preview + upload progress and validation feedback. Use blob-storage ExternalBlob.fromBytes(...).withUploadProgress(...) for uploads. Verify the component's usage instructions before implementing."
+          "description": "Create React Query hooks that call backend capabilities to (a) check whether the current caller has a valid shared-code marker and (b) submit a code for verification using existing actor methods (hasValidAdminSharedCode, verifyAdminSharedCode / retryVerifyAdminSharedCode). Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/products/AdminProductsTable.tsx",
+          "path": "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
           "operation": "create",
-          "description": "Create an admin products table/grid component that renders name, price, in-stock, requires quote, category, and thumbnail using product.image.getDirectURL(). Provide edit and delete actions with confirmation and disabled states while mutations are pending."
+          "description": "Implement a code-entry screen shown to admins when shared-code verification is missing/expired; on success, persist a session-only verified flag and allow admin rendering; on failure, show a clear English error message. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/admin/AdminProductsPage.tsx",
+          "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
           "operation": "modify",
-          "description": "Replace the placeholder UI with the composed management experience: fetch products, show empty/loading states, render AdminProductsTable, and provide a 'New Product' action that opens AdminProductFormDialog. Ensure mutations invalidate/refetch products without full page refresh and errors show via toast/alert."
+          "description": "Extend the existing admin route guard to include the shared-code gate after authentication + admin permission checks: if signed in and admin but no valid shared-code marker for the current session, render AdminSharedCodeGateScreen and do not render children (AdminLayout/sidebar) until verification succeeds."
+        },
+        {
+          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "operation": "modify",
+          "description": "On logout, clear React Query cache (already done) and also clear any session-only shared-code verification state so the user must re-enter the shared code after signing back in. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-17",
-      "summary": "Add public testimonial creation flow on Testimonials page for signed-in users, using mossy-green glowing stars for both input and display ratings, and prompting sign-in via existing auth flow when needed.",
+      "id": "REQ-23",
+      "summary": "Add an Admin \"Access\" management page in /admin to grant/revoke admin access for other accounts (behind admin + shared-code gate).",
       "acceptanceCriteria": [
-        "The public Testimonials page includes a clearly visible “Create Testimony” action.",
-        "If the user is not signed in, attempting to create a testimony prompts the user to sign in (using the existing auth flow) and does not submit data.",
-        "The creation UI allows selecting a rating from 1 to 5 using star icons styled as mossy-green and visibly “glowy” (e.g., glow/shadow effect); stars are not gold.",
-        "The creation UI includes inputs for author name (or display name) and the testimonial content, with basic validation (required fields, rating required).",
-        "On successful submission, the new testimonial appears in the testimonials list after query invalidation/refetch.",
-        "Displayed testimonial star ratings on the Testimonials page render as mossy-green glowing stars (not gold)."
+        "A new Admin section/page exists in the /admin area for managing admin access (grant/revoke).",
+        "The page provides a way to add an admin by entering a Principal text value (and optionally selecting from a list of known users if available), and to revoke admin from an existing admin.",
+        "All grant/revoke actions call backend admin-only APIs and show success/error feedback in English.",
+        "Only a caller that is an admin AND has a valid shared-code session can access and use this page; otherwise they are blocked by the same shared-code gate/admin guard behavior as other admin pages."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/testimonials/MossyStarRating.tsx",
+          "path": "frontend/src/hooks/admin/useAdminAccess.ts",
           "operation": "create",
-          "description": "Create a reusable, accessible star rating component (1–5) supporting both read-only display and interactive input. Implement keyboard focus/selection and apply mossy-green + glow styling via shared CSS classes (not gold)."
+          "description": "Add React Query hooks to list current admin principals and to grant/revoke admin access via existing actor methods (listAdminUsers, grantAdminAccess, revokeAdminAccess), with cache invalidation and English success/error feedback. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/index.css",
-          "operation": "modify",
-          "description": "Add global CSS utility classes for mossy-green glowing star styling used by both testimonial display and rating controls (e.g., fill/stroke color + drop-shadow glow + focus ring), without changing the overall theme palette beyond this requirement."
-        },
-        {
-          "path": "frontend/src/hooks/content/useTestimonials.ts",
-          "operation": "modify",
-          "description": "Extend testimonial hooks to include a create testimonial mutation using existing actor.addTestimonial and invalidate/refetch ['testimonials'] on success. Ensure errors are surfaced cleanly to the caller for toast/alert handling."
-        },
-        {
-          "path": "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
+          "path": "frontend/src/pages/admin/AdminAccessPage.tsx",
           "operation": "create",
-          "description": "Create a public 'Create Testimony' dialog composed from existing shadcn/ui components (do not modify frontend/src/components/ui). Use useInternetIdentity to gate submission: if not authenticated, prompt user to sign in using the existing auth flow (call login / or show LoginButton). Include validation for required author/content and rating; submit via mutation and show loading/error toasts."
+          "description": "Create the /admin access management UI: show current admins, provide a Principal text input to grant admin, and revoke controls per admin; display English feedback for success/failure. This page relies on AdminRouteGuard for auth/admin/shared-code gating."
         },
         {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "path": "frontend/src/pages/admin/AdminLayout.tsx",
           "operation": "modify",
-          "description": "Wire the Create Testimony action into the public Testimonials page and replace the current rating star rendering with the shared MossyStarRating display to ensure mossy-green glowing stars are used consistently."
+          "description": "Add an \"Access\" navigation item in the admin sidebar pointing to /admin/access (keep existing sections intact)."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the new /admin/access route under the existing /admin route tree so it is reachable via navigation and direct URL."
         }
       ]
     },
     {
-      "id": "REQ-18",
-      "summary": "Implement Admin Testimonials management UI (list/create/edit/delete) using existing backend testimonial APIs, reusing mossy-green glowing star controls with accessibility.",
+      "id": "REQ-24",
+      "summary": "Update admin route protection to preserve Internet Identity login and admin permission checks while adding the shared-code verification step before rendering AdminLayout.",
       "acceptanceCriteria": [
-        "Visiting /admin/testimonials as admin shows a working testimonials management UI (no 'coming soon' placeholder).",
-        "Admin can see a list of testimonials with author, rating, created date, and a content preview.",
-        "Admin can create a testimonial from the admin UI (author, content, rating) and it persists to the backend and appears in the list.",
-        "Admin can edit an existing testimonial (including rating) and changes persist to the backend and refresh in the UI.",
-        "Admin can delete a testimonial with confirmation; it is removed from the backend and no longer appears in the list.",
-        "Rating inputs in admin use the same mossy-green glowing star UI (not gold) and are accessible (keyboard focusable / labeled)."
+        "If the user is not signed in, admin routes still show the existing \"Authentication Required\" state.",
+        "If the user is signed in but is not an admin, admin routes still show the existing \"Access Denied\" state.",
+        "If the user is signed in and is an admin, but has not completed shared-code verification (or it expired), the UI prompts for the shared code and does not render the AdminLayout/sidebar content until verification succeeds.",
+        "After successful shared-code verification, the AdminLayout renders normally and existing admin pages remain functional."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/admin/useAdminTestimonials.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for admin testimonial CRUD using existing actor capabilities (getTestimonials/addTestimonial/updateTestimonial/deleteTestimonial) and invalidate/refetch ['testimonials'] after writes. Use sonner toasts in calling UI and propagate backend errors."
-        },
-        {
-          "path": "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
-          "operation": "create",
-          "description": "Create an admin create/edit testimonial dialog composed from existing shadcn/ui components (do not modify frontend/src/components/ui), reusing MossyStarRating for rating input with proper labels and keyboard interaction."
-        },
-        {
-          "path": "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-          "operation": "create",
-          "description": "Create an admin testimonials list/table showing author, mossy-star rating display, created date, and a content preview. Provide edit and delete actions with confirmation and loading/disabled states."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminTestimonialsPage.tsx",
+          "path": "frontend/src/components/auth/AdminRouteGuard.tsx",
           "operation": "modify",
-          "description": "Replace placeholder content with the management UI using the new hooks/components. Ensure create/edit/delete show clear loading + error states and the list refreshes via query invalidation without a page reload."
-        }
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "summary": "Implement Admin Giveaways wheel UI: select active giveaway, view/add entrants, animate spin to pick a winner, and show winner history using existing backend giveaway APIs with graceful edge-case handling.",
-      "acceptanceCriteria": [
-        "Visiting /admin/giveaways as admin shows a working giveaway management UI (no 'coming soon' placeholder).",
-        "Admin can select an active giveaway and see its name/description, entrants list, and winners list/history.",
-        "Admin can add an entrant as admin by providing a principal (text input) and display name; the entrant appears in the list after success.",
-        "Admin can trigger a 'Spin' action that animates a wheel/selector UI over the current entrants and ends on a single selected entrant.",
-        "After the spin completes, the UI calls the backend to record/confirm the selected winner and the winner appears in the winners history with timestamp.",
-        "The UI handles edge cases gracefully: no active giveaways, no entrants (spin disabled with explanatory text), backend errors shown to the admin."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/admin/useAdminGiveaways.ts",
-          "operation": "create",
-          "description": "Create admin giveaway hooks for loading active giveaways and performing admin actions (addGiveawayEntrantByAdmin, selectGiveawayWinner) with React Query invalidation for ['activeGiveaways'] and per-giveaway refresh patterns. Surface errors for toast/alert handling."
+          "description": "Refactor the guard flow to explicitly sequence: (1) Internet Identity authenticated check, (2) admin permission check, (3) shared-code session marker check/prompt, ensuring the existing \"Authentication Required\" and \"Access Denied\" screens remain unchanged and all admin pages continue to render once verified."
         },
         {
-          "path": "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
-          "operation": "create",
-          "description": "Create a wheel/selector component that can animate a spin over the current entrants list and produce a deterministic selected index at the end of the animation (client-side). Provide reduced-motion handling and a clear selected winner display once the spin completes."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
+          "path": "frontend/src/pages/admin/AdminLayout.tsx",
           "operation": "modify",
-          "description": "Replace placeholder with admin giveaway UI: select giveaway (or show 'no active giveaways'), display entrants and winners history, allow adding entrants by admin (principal text -> Principal parsing), disable spin when entrants are empty, run spin animation via AdminGiveawayWheel, then call backend to record/confirm winner and update winner history with timestamp. Show loading/error states via toasts/alerts."
-        }
-      ]
-    },
-    {
-      "id": "REQ-20",
-      "summary": "Implement Admin Portfolio uploader/manager UI with media upload progress, metadata editing, delete confirmation, and a category option for “What I have created for the community”, using existing backend portfolio + blob-storage APIs.",
-      "acceptanceCriteria": [
-        "Visiting /admin/portfolio as admin shows a working portfolio management UI (no 'coming soon' placeholder).",
-        "Admin can upload a new portfolio item with title, description, optional category, and a selected media file; on success it persists and appears in the portfolio list.",
-        "The UI provides a category option/value that can be used to represent “What I have created for the community” so items can be grouped/filtered accordingly on the public portfolio experience.",
-        "Admin can edit an existing portfolio item’s metadata (title/description/category) and save changes to the backend.",
-        "Admin can delete a portfolio item with confirmation; it is removed from the backend and no longer appears in the list.",
-        "The uploader shows clear file upload progress/loading and displays an explicit error message when the backend rejects a file due to size/type limits (no silent failure)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/admin/useAdminPortfolio.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for admin portfolio CRUD using existing actor capabilities (getPortfolioItems/addPortfolioItem/updatePortfolioItem/deletePortfolioItem) with query invalidation for ['portfolioItems']. For uploads, use blob-storage ExternalBlob client with upload progress and propagate backend rejections for explicit UI errors. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
-          "operation": "create",
-          "description": "Create an admin portfolio uploader component composed from existing shadcn/ui components (do not modify frontend/src/components/ui): title/description/category (including a dedicated option value for “What I have created for the community”) + media file picker. Upload via ExternalBlob.fromBytes(...).withUploadProgress(...) and show progress/loading + explicit error messages for size/type rejections. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-          "operation": "create",
-          "description": "Create an admin portfolio list/table/grid showing existing items (thumbnail via item.image.getDirectURL(), title, category, short description) with edit metadata and delete (confirmation) actions, including loading/disabled states."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminPortfolioPage.tsx",
-          "operation": "modify",
-          "description": "Replace placeholder with the full portfolio management UI: uploader + list, and edit/delete workflows. Ensure mutations invalidate/refetch ['portfolioItems'] so updates appear without page refresh and errors are clearly shown."
-        },
-        {
-          "path": "frontend/src/components/portfolio/PortfolioGrid.tsx",
-          "operation": "modify",
-          "description": "Ensure the public portfolio filtering/grouping UX can recognize and present the dedicated “What I have created for the community” category value consistently (e.g., friendly label), without adding new routes/pages."
+          "description": "Ensure AdminLayout remains wrapped by AdminRouteGuard so the sidebar/layout never renders until shared-code verification has succeeded (no additional public routes added)."
         }
       ]
     }

@@ -2,13 +2,14 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-the-placeholder-admin-products-page-with-a-full-product-management-ui-that-lets-the-admin-list-create-edit-and-delete-products-including-image-upload-price-description-category-in-stock-toggle-and-requires-quote-toggle-using-the-existing-backend-product-apis-and-existing-admin-route-protection",
-      "featureTitle": "Replace the placeholder Admin Products page with a full product management UI that lets the admin list, create, edit, and delete products, including image upload, price, description, category, in-stock toggle, and requires-quote toggle, using the existing backend product APIs and existing admin route protection.",
+      "featureId": "feature-add-a-shared-code-gate-to-all-admin-routes-so-that-a-signed-in-user-must-enter-the-shared-code-a7f9k2m8q4r6t1z5x3ljh9c8-to-access-any-admin-page-even-if-the-user-already-has-admin-permissions",
+      "featureTitle": "Add a shared-code gate to all Admin routes so that a signed-in user must enter the shared code \"A7F9K2M8Q4R6T1Z5X3LJH9C8\" to access any /admin page, even if the user already has admin permissions.",
       "files": [
-        "frontend/src/components/products/AdminProductFormDialog.tsx",
-        "frontend/src/components/products/AdminProductsTable.tsx",
-        "frontend/src/hooks/admin/useAdminProducts.ts",
-        "frontend/src/pages/admin/AdminProductsPage.tsx"
+        "frontend/src/components/auth/AdminRouteGuard.tsx",
+        "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+        "frontend/src/components/auth/LoginButton.tsx",
+        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+        "frontend/src/utils/adminSharedCodeSession.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,19 +23,18 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-16"
+        "REQ-21"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-a-user-facing-testimonial-creation-flow-on-the-public-testimonials-page-that-allows-a-signed-in-user-to-click-a-create-testimony-button-and-submit-a-1-5-star-review-using-mossy-green-glowing-stars-not-gold-and-ensure-testimonials-display-uses-the-same-mossy-green-star-styling",
-      "featureTitle": "Implement a user-facing testimonial creation flow on the public Testimonials page that allows a signed-in user to click a “Create Testimony” button and submit a 1–5 star review using mossy-green glowing stars (not gold), and ensure testimonials display uses the same mossy-green star styling.",
+      "featureId": "feature-create-an-admin-access-management-page-within-the-admin-panel-that-allows-a-verified-admin-admin-permission-shared-code-session-to-grant-and-revoke-admin-access-for-other-accounts",
+      "featureTitle": "Create an Admin \"Access\" management page within the admin panel that allows a verified admin (admin permission + shared-code session) to grant and revoke admin access for other accounts.",
       "files": [
-        "frontend/index.css",
-        "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-        "frontend/src/components/testimonials/MossyStarRating.tsx",
-        "frontend/src/hooks/content/useTestimonials.ts",
-        "frontend/src/pages/TestimonialsPage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/hooks/admin/useAdminAccess.ts",
+        "frontend/src/pages/admin/AdminAccessPage.tsx",
+        "frontend/src/pages/admin/AdminLayout.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -48,18 +48,16 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-17"
+        "REQ-23"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-replace-the-placeholder-admin-testimonials-page-with-an-admin-testimonials-management-ui-that-lets-the-admin-view-create-edit-and-delete-testimonials-including-rating-using-existing-backend-testimonial-apis-and-maintaining-consistent-mossy-green-glowing-star-styling-for-rating-controls",
-      "featureTitle": "Replace the placeholder Admin Testimonials page with an admin testimonials management UI that lets the admin view, create, edit, and delete testimonials (including rating), using existing backend testimonial APIs and maintaining consistent mossy-green glowing star styling for rating controls.",
+      "featureId": "feature-update-the-existing-admin-route-protection-flow-to-incorporate-the-shared-code-step-while-preserving-the-current-internet-identity-login-requirement-and-existing-admin-permission-checks",
+      "featureTitle": "Update the existing Admin route protection flow to incorporate the shared-code step while preserving the current Internet Identity login requirement and existing admin-permission checks.",
       "files": [
-        "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
-        "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-        "frontend/src/hooks/admin/useAdminTestimonials.ts",
-        "frontend/src/pages/admin/AdminTestimonialsPage.tsx"
+        "frontend/src/components/auth/AdminRouteGuard.tsx",
+        "frontend/src/pages/admin/AdminLayout.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -73,57 +71,7 @@
         "http-outcalls@3.0.0"
       ],
       "testIds": [
-        "REQ-18"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-replace-the-placeholder-admin-giveaways-page-with-a-giveaway-wheel-ui-for-admins-that-allows-selecting-an-active-giveaway-viewing-entrants-adding-entrants-as-admin-triggering-a-random-wheel-spin-animation-selecting-a-winner-and-displaying-winner-history-using-the-existing-backend-giveaway-apis",
-      "featureTitle": "Replace the placeholder Admin Giveaways page with a giveaway wheel UI for admins that allows selecting an active giveaway, viewing entrants, adding entrants as admin, triggering a random wheel spin animation, selecting a winner, and displaying winner history using the existing backend giveaway APIs.",
-      "files": [
-        "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
-        "frontend/src/hooks/admin/useAdminGiveaways.ts",
-        "frontend/src/pages/admin/AdminGiveawaysPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-19"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-replace-the-placeholder-admin-portfolio-page-with-a-portfolio-uploader-manager-ui-for-admins-that-supports-uploading-portfolio-media-setting-title-description-category-listing-existing-portfolio-items-and-editing-deleting-items-using-the-existing-backend-portfolio-and-blob-storage-apis-include-a-category-workflow-that-supports-a-dedicated-what-i-have-created-for-the-community-grouping",
-      "featureTitle": "Replace the placeholder Admin Portfolio page with a portfolio uploader/manager UI for admins that supports uploading portfolio media, setting title/description/category, listing existing portfolio items, and editing/deleting items using the existing backend portfolio and blob-storage APIs; include a category workflow that supports a dedicated “What I have created for the community” grouping.",
-      "files": [
-        "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-        "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
-        "frontend/src/components/portfolio/PortfolioGrid.tsx",
-        "frontend/src/hooks/admin/useAdminPortfolio.ts",
-        "frontend/src/pages/admin/AdminPortfolioPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "stripe@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "http-outcalls@3.0.0"
-      ],
-      "testIds": [
-        "REQ-20"
+        "REQ-24"
       ],
       "confidence": "high"
     }

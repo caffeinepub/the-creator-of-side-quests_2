@@ -307,10 +307,15 @@ export interface backendInterface {
     getTestimonial(id: string): Promise<Testimonial | null>;
     getTestimonials(): Promise<Array<Testimonial>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    grantAdminAccess(user: Principal): Promise<void>;
+    hasValidAdminSharedCode(): Promise<boolean>;
     isCallerAdmin(): Promise<boolean>;
     isStripeConfigured(): Promise<boolean>;
+    listAdminUsers(): Promise<Array<Principal>>;
     recordPurchase(amount: bigint): Promise<void>;
     redeemLoyaltyReward(rewardId: string): Promise<boolean>;
+    retryVerifyAdminSharedCode(code: string): Promise<boolean>;
+    revokeAdminAccess(user: Principal): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     selectGiveawayWinner(giveawayId: string, winnerIndex: bigint): Promise<GiveawayWinner | null>;
     setFulfillmentOptions(options: FulfillmentOptions): Promise<void>;
@@ -327,6 +332,7 @@ export interface backendInterface {
     updateSocialMediaLink(platform: string, url: string): Promise<void>;
     updateTestimonial(testimonial: Testimonial): Promise<void>;
     validateCoupon(code: string): Promise<Coupon | null>;
+    verifyAdminSharedCode(code: string): Promise<boolean>;
 }
 import type { ContactRequest as _ContactRequest, Coupon as _Coupon, CouponType as _CouponType, ExternalBlob as _ExternalBlob, Giveaway as _Giveaway, GiveawayWinner as _GiveawayWinner, LoyaltyAction as _LoyaltyAction, PortfolioItem as _PortfolioItem, Product as _Product, StripeSessionStatus as _StripeSessionStatus, Testimonial as _Testimonial, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -989,6 +995,34 @@ export class Backend implements backendInterface {
             return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
         }
     }
+    async grantAdminAccess(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.grantAdminAccess(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.grantAdminAccess(arg0);
+            return result;
+        }
+    }
+    async hasValidAdminSharedCode(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.hasValidAdminSharedCode();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.hasValidAdminSharedCode();
+            return result;
+        }
+    }
     async isCallerAdmin(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -1017,6 +1051,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async listAdminUsers(): Promise<Array<Principal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.listAdminUsers();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.listAdminUsers();
+            return result;
+        }
+    }
     async recordPurchase(arg0: bigint): Promise<void> {
         if (this.processError) {
             try {
@@ -1042,6 +1090,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.redeemLoyaltyReward(arg0);
+            return result;
+        }
+    }
+    async retryVerifyAdminSharedCode(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.retryVerifyAdminSharedCode(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.retryVerifyAdminSharedCode(arg0);
+            return result;
+        }
+    }
+    async revokeAdminAccess(arg0: Principal): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.revokeAdminAccess(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.revokeAdminAccess(arg0);
             return result;
         }
     }
@@ -1267,6 +1343,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.validateCoupon(arg0);
             return from_candid_opt_n54(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async verifyAdminSharedCode(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.verifyAdminSharedCode(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.verifyAdminSharedCode(arg0);
+            return result;
         }
     }
 }

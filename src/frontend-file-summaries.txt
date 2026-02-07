@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Main application component with TanStack Router setup, defining all public and admin routes with proper nesting and layout components.",
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup including new /admin/access route.",
   "frontend/src/index.css": "Forwards the root index.css to satisfy the immutable main.tsx import requirement.",
   "frontend/index.css": "Complete design system with medieval-fantasy theme, mossy-green glowing star styling for testimonial ratings, and OKLCH color tokens.",
   "frontend/tailwind.config.js": "Extended Tailwind configuration with custom fonts, medieval-themed colors, shadows, and animations aligned with the fantasy aesthetic.",
@@ -14,9 +14,9 @@
   "frontend/src/hooks/usePageMeta.ts": "Custom hook to set document title and meta description per route for SEO.",
   "frontend/src/hooks/useSocialMediaLinks.ts": "React Query hook to fetch social media links from backend.",
   "frontend/src/hooks/useCurrentUser.ts": "Hooks for fetching caller user profile, admin status, and user role with proper loading states to prevent modal flash.",
-  "frontend/src/components/auth/LoginButton.tsx": "Login/logout button using Internet Identity with query cache clearing on logout.",
+  "frontend/src/components/auth/LoginButton.tsx": "Login/logout button that clears React Query cache and admin shared code session state on logout.",
   "frontend/src/components/auth/ProfileSetupModal.tsx": "Modal dialog for first-time profile setup (name/email) after login, preventing flash with proper loading checks.",
-  "frontend/src/components/auth/AdminRouteGuard.tsx": "Route guard component that blocks non-admin users from accessing admin panel with access denied screen.",
+  "frontend/src/components/auth/AdminRouteGuard.tsx": "Enhanced route guard that sequences authentication, admin permission, and shared-code verification checks before rendering admin content.",
   "frontend/src/components/loyalty/LoyaltyBadge.tsx": "Displays user's loyalty points balance in header for authenticated users.",
   "frontend/src/components/loyalty/ShareButton.tsx": "Share button that triggers native share API or clipboard copy and awards loyalty points.",
   "frontend/src/pages/HomePage.tsx": "Homepage with hero section, flippable service cards, quotes, share/giveaway CTAs, and textured backgrounds with properly escaped apostrophes in meta description.",
@@ -30,7 +30,7 @@
   "frontend/src/pages/HoursPoliciesPage.tsx": "Hours & Policies page with all required sections in card layout including anti-discrimination policy with fixed string formatting.",
   "frontend/src/pages/PaymentSuccessPage.tsx": "Payment success page with confirmation message, loyalty points recording, and navigation options.",
   "frontend/src/pages/PaymentFailurePage.tsx": "Payment failure/cancellation page with recovery guidance and navigation options.",
-  "frontend/src/pages/admin/AdminLayout.tsx": "Admin panel layout with sidebar navigation to all admin sections, wrapped in AdminRouteGuard.",
+  "frontend/src/pages/admin/AdminLayout.tsx": "Admin panel layout with sidebar navigation including new Access management section.",
   "frontend/src/pages/admin/AdminHomePage.tsx": "Admin dashboard landing page with overview cards for main admin functions.",
   "frontend/src/pages/admin/AdminProductsPage.tsx": "Admin products management page with table, create/edit dialog, and loading states.",
   "frontend/src/pages/admin/AdminPortfolioPage.tsx": "Admin portfolio management page with uploader and table for managing portfolio items.",
@@ -72,5 +72,10 @@
   "frontend/src/components/products/AdminProductsTable.tsx": "Admin products table displaying product details with thumbnails, status badges, and edit/delete actions with confirmation.",
   "frontend/src/components/portfolio/AdminPortfolioUploader.tsx": "Admin portfolio uploader form with media file upload, progress tracking, category selection including \"What I have created for the community\", and ExternalBlob integration.",
   "frontend/src/components/portfolio/AdminPortfolioTable.tsx": "Admin portfolio table with thumbnail display, inline metadata editing dialog, and delete confirmation.",
-  "frontend/src/components/giveaway/AdminGiveawayWheel.tsx": "Animated giveaway wheel component that spins through entrants with progressive slowdown and displays the selected winner."
+  "frontend/src/components/giveaway/AdminGiveawayWheel.tsx": "Animated giveaway wheel component that spins through entrants with progressive slowdown and displays the selected winner.",
+  "frontend/src/utils/adminSharedCodeSession.ts": "Session storage utility for managing admin shared code verification state during the current browser session.",
+  "frontend/src/hooks/admin/useAdminSharedCodeGate.ts": "React Query hooks for checking and verifying admin shared code with backend, including retry logic and error handling.",
+  "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx": "Full-screen code entry form that blocks admin access until the correct shared code is entered, with error feedback.",
+  "frontend/src/hooks/admin/useAdminAccess.ts": "React Query hooks for listing admin users and granting/revoking admin access with toast notifications.",
+  "frontend/src/pages/admin/AdminAccessPage.tsx": "Admin page for managing admin access with Principal ID input for granting access and table for revoking access."
 }

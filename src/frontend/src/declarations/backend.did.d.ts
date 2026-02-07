@@ -214,10 +214,15 @@ export interface _SERVICE {
   'getTestimonial' : ActorMethod<[string], [] | [Testimonial]>,
   'getTestimonials' : ActorMethod<[], Array<Testimonial>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'grantAdminAccess' : ActorMethod<[Principal], undefined>,
+  'hasValidAdminSharedCode' : ActorMethod<[], boolean>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isStripeConfigured' : ActorMethod<[], boolean>,
+  'listAdminUsers' : ActorMethod<[], Array<Principal>>,
   'recordPurchase' : ActorMethod<[bigint], undefined>,
   'redeemLoyaltyReward' : ActorMethod<[string], boolean>,
+  'retryVerifyAdminSharedCode' : ActorMethod<[string], boolean>,
+  'revokeAdminAccess' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'selectGiveawayWinner' : ActorMethod<[string, bigint], [] | [GiveawayWinner]>,
   'setFulfillmentOptions' : ActorMethod<[FulfillmentOptions], undefined>,
@@ -234,6 +239,7 @@ export interface _SERVICE {
   'updateSocialMediaLink' : ActorMethod<[string, string], undefined>,
   'updateTestimonial' : ActorMethod<[Testimonial], undefined>,
   'validateCoupon' : ActorMethod<[string], [] | [Coupon]>,
+  'verifyAdminSharedCode' : ActorMethod<[string], boolean>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

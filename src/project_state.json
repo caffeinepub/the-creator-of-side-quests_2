@@ -1,21 +1,22 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "Build a full multi-page website for “The Creator of Side Quests” with a medieval-fantasy premium brand style, responsive/SEO-friendly UI, interactive elements, social link integration, and a full admin-managed platform including e-commerce (Stripe checkout + request-quote flow), portfolio/testimonials management (including user-submitted star reviews), coupons, loyalty points/rewards, a livestream-driven giveaway wheel system, and admin-driven newsletters including birthday-triggered coupons/cards.",
+  "projectStateVersion": 7,
+  "summary": "Build a full multi-page website for “The Creator of Side Quests” with a medieval-fantasy premium brand style, responsive/SEO-friendly UI, interactive elements, social link integration, and a full admin-managed platform including e-commerce (Stripe checkout + request-quote flow), portfolio/testimonials management (including user-submitted star reviews), coupons, loyalty points/rewards, a livestream-driven giveaway wheel system, and admin-driven newsletters including birthday-triggered coupons/cards. Admin access is requested to be controlled via a shared passcode gate plus in-app admin permission granting, rather than requiring an Internet Identity principal allowlist.",
   "architectural_notes": [
-    "Admin panel is restricted to a single admin account (site owner).",
     "Shop supports both Stripe checkout and an alternative request-quote/contact flow on selected products.",
     "Customer login/accounts are needed to track loyalty points and to uniquely identify giveaway entrants by username.",
     "Giveaway winner selection is performed via an admin-controlled random wheel populated from logged-in users.",
     "Fulfillment/shipping options are configurable in admin; current operating mode is local coordination (no shipping) centered on Ashland/Westwood, KY.",
     "Testimonials should support a user-submitted review flow (1–5 stars) in addition to admin management; star styling must match the mossy-green glow theme.",
-    "Admin area should provide a single consolidated “Admin tab” that links to all admin tools (Shop, Portfolio, Testimonials, Coupons, Giveaways, Newsletters) and remains restricted to the single allowlisted admin account.",
-    "Portfolio management must support both photo and video uploads and a curated “What I have created for the community” subsection."
+    "Portfolio management must support both photo and video uploads and a curated “What I have created for the community” subsection.",
+    "Admin access requested to use a shared passcode (second factor) to enter the Admin panel, instead of relying on an Internet Identity principal allowlist for initial access.",
+    "Admin panel should support granting/revoking admin permissions for other accounts, and must enforce server-side route protection (not just hiding the Admin tab) so direct URL access is blocked without both permission + passcode."
   ],
   "known_issues": [
-    "User requested unlimited-size photo/video portfolio uploads (“no matter the size/length”); this conflicts with practical storage limits and will require defined max file size/duration or alternative hosting/streaming strategy."
+    "User requested unlimited-size photo/video portfolio uploads (“no matter the size/length”); this conflicts with practical storage limits and will require defined max file size/duration or alternative hosting/streaming strategy.",
+    "Shared passcode–based Admin access is weaker security than principal allowlisting; requires secure storage (not hard-coded), rate limiting/lockouts, and a recovery/rotation process to mitigate passcode leakage."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-responsive-multi-page-marketing-website-for-the-creator-of-side-quests-with-the-following-routes-pages-and-user-facing-copy-in-english-based-on-the-provided-prompt-home-hero-with-headline-subheadline-ctas-quotes-about-bio-vision-mission-emission-quotes-services-categories-micro-services-starting-at-placeholders-ky-guidance-quotes-shop-portfolio-testimonials-contact-form-with-specified-fields-response-time-guidance-quotes-hours-policies-hours-payments-quotes-scope-licensing-returns-adjustments-local-service-area-anti-discrimination-quote-include-ctas-throughout-linking-to-contact-booking-and-shop-services-as-specified",
@@ -176,6 +177,30 @@
         "REQ-20"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-a-shared-code-gate-to-all-admin-routes-so-that-a-signed-in-user-must-enter-the-shared-code-a7f9k2m8q4r6t1z5x3ljh9c8-to-access-any-admin-page-even-if-the-user-already-has-admin-permissions",
+      "title": "Add a shared-code gate to all Admin routes so that a signed-in user must enter the shared code \"A7F9K2M8Q4R6T1Z5X3LJH9C8\" to access any /admin page, even if the user already has admin permissions.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-access-management-page-within-the-admin-panel-that-allows-a-verified-admin-admin-permission-shared-code-session-to-grant-and-revoke-admin-access-for-other-accounts",
+      "title": "Create an Admin \"Access\" management page within the admin panel that allows a verified admin (admin permission + shared-code session) to grant and revoke admin access for other accounts.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-existing-admin-route-protection-flow-to-incorporate-the-shared-code-step-while-preserving-the-current-internet-identity-login-requirement-and-existing-admin-permission-checks",
+      "title": "Update the existing Admin route protection flow to incorporate the shared-code step while preserving the current Internet Identity login requirement and existing admin-permission checks.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -291,6 +316,20 @@
       "id": "AR-19",
       "summary": "User profile field for birthday and automated birthday experience: site recognizes birthdays and delivers a custom birthday message/card + an admin-configurable coupon (e.g., 50% off next purchase)",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Implement shared-passcode–gated Admin access: users must enter shared code to access Admin; within Admin, authorized users can grant/revoke admin permission for other accounts; Admin tab hidden unless user has admin permission; protect Admin routes from direct URL access",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Enforce the shared-code gate on the backend (not only in the UI) by adding backend APIs to: (1) verify the shared code for the caller and create a short-lived admin session marker, and (2) require that marker for all admin-only backend operations (in addition to existing admin permission checks). Include basic brute-force protection (per-caller attempt counting + temporary lockout).",
+      "reqIds": [
+        "REQ-22"
+      ],
       "status": "pending"
     }
   ],

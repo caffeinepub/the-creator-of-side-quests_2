@@ -1,132 +1,92 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T23:28:48.701Z",
+  "generatedAt": "2026-02-07T00:32:15.790Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 4,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-16",
-        "summary": "Replace the placeholder Admin Products page with a full product management UI that lets the admin list, create, edit, and delete products, including image upload, price, description, category, in-stock toggle, and requires-quote toggle, using the existing backend product APIs and existing admin route protection.",
+        "id": "REQ-21",
+        "summary": "Add a shared-code gate to all Admin routes so that a signed-in user must enter the shared code \"A7F9K2M8Q4R6T1Z5X3LJH9C8\" to access any /admin page, even if the user already has admin permissions.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/admin/useAdminProducts.ts",
-          "frontend/src/components/products/AdminProductFormDialog.tsx",
-          "frontend/src/components/products/AdminProductsTable.tsx",
-          "frontend/src/pages/admin/AdminProductsPage.tsx"
+          "frontend/src/utils/adminSharedCodeSession.ts",
+          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+          "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "frontend/src/components/auth/LoginButton.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/admin/useAdminProducts.ts",
-          "frontend/src/components/products/AdminProductFormDialog.tsx",
-          "frontend/src/components/products/AdminProductsTable.tsx",
-          "frontend/src/pages/admin/AdminProductsPage.tsx"
+          "frontend/src/utils/adminSharedCodeSession.ts",
+          "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+          "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+          "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "frontend/src/components/auth/LoginButton.tsx"
         ]
       },
       {
-        "id": "REQ-17",
-        "summary": "Implement a user-facing testimonial creation flow on the public Testimonials page that allows a signed-in user to click a “Create Testimony” button and submit a 1–5 star review using mossy-green glowing stars (not gold), and ensure testimonials display uses the same mossy-green star styling.",
+        "id": "REQ-22",
+        "summary": "Enforce the shared-code gate on the backend (not only in the UI) by adding backend APIs to: (1) verify the shared code for the caller and create a short-lived admin session marker, and (2) require that marker for all admin-only backend operations (in addition to existing admin permission checks). Include basic brute-force protection (per-caller attempt counting + temporary lockout).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-23",
+        "summary": "Create an Admin \"Access\" management page within the admin panel that allows a verified admin (admin permission + shared-code session) to grant and revoke admin access for other accounts.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/testimonials/MossyStarRating.tsx",
-          "frontend/index.css",
-          "frontend/src/hooks/content/useTestimonials.ts",
-          "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-          "frontend/src/pages/TestimonialsPage.tsx"
+          "frontend/src/hooks/admin/useAdminAccess.ts",
+          "frontend/src/pages/admin/AdminAccessPage.tsx",
+          "frontend/src/pages/admin/AdminLayout.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/testimonials/MossyStarRating.tsx",
-          "frontend/index.css",
-          "frontend/src/hooks/content/useTestimonials.ts",
-          "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-          "frontend/src/pages/TestimonialsPage.tsx"
+          "frontend/src/hooks/admin/useAdminAccess.ts",
+          "frontend/src/pages/admin/AdminAccessPage.tsx",
+          "frontend/src/pages/admin/AdminLayout.tsx",
+          "frontend/src/App.tsx"
         ]
       },
       {
-        "id": "REQ-18",
-        "summary": "Replace the placeholder Admin Testimonials page with an admin testimonials management UI that lets the admin view, create, edit, and delete testimonials (including rating), using existing backend testimonial APIs and maintaining consistent mossy-green glowing star styling for rating controls.",
+        "id": "REQ-24",
+        "summary": "Update the existing Admin route protection flow to incorporate the shared-code step while preserving the current Internet Identity login requirement and existing admin-permission checks.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/admin/useAdminTestimonials.ts",
-          "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
-          "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-          "frontend/src/pages/admin/AdminTestimonialsPage.tsx"
+          "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "frontend/src/pages/admin/AdminLayout.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/admin/useAdminTestimonials.ts",
-          "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
-          "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-          "frontend/src/pages/admin/AdminTestimonialsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-19",
-        "summary": "Replace the placeholder Admin Giveaways page with a giveaway wheel UI for admins that allows selecting an active giveaway, viewing entrants, adding entrants as admin, triggering a random wheel spin animation, selecting a winner, and displaying winner history using the existing backend giveaway APIs.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/admin/useAdminGiveaways.ts",
-          "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
-          "frontend/src/pages/admin/AdminGiveawaysPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/admin/useAdminGiveaways.ts",
-          "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
-          "frontend/src/pages/admin/AdminGiveawaysPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-20",
-        "summary": "Replace the placeholder Admin Portfolio page with a portfolio uploader/manager UI for admins that supports uploading portfolio media, setting title/description/category, listing existing portfolio items, and editing/deleting items using the existing backend portfolio and blob-storage APIs; include a category workflow that supports a dedicated “What I have created for the community” grouping.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/admin/useAdminPortfolio.ts",
-          "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
-          "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-          "frontend/src/pages/admin/AdminPortfolioPage.tsx",
-          "frontend/src/components/portfolio/PortfolioGrid.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/admin/useAdminPortfolio.ts",
-          "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
-          "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-          "frontend/src/pages/admin/AdminPortfolioPage.tsx",
-          "frontend/src/components/portfolio/PortfolioGrid.tsx"
+          "frontend/src/components/auth/AdminRouteGuard.tsx",
+          "frontend/src/pages/admin/AdminLayout.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.css",
-    "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
-    "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-    "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
-    "frontend/src/components/portfolio/PortfolioGrid.tsx",
-    "frontend/src/components/products/AdminProductFormDialog.tsx",
-    "frontend/src/components/products/AdminProductsTable.tsx",
-    "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
-    "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-    "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-    "frontend/src/components/testimonials/MossyStarRating.tsx",
-    "frontend/src/hooks/admin/useAdminGiveaways.ts",
-    "frontend/src/hooks/admin/useAdminPortfolio.ts",
-    "frontend/src/hooks/admin/useAdminProducts.ts",
-    "frontend/src/hooks/admin/useAdminTestimonials.ts",
-    "frontend/src/hooks/content/useTestimonials.ts",
-    "frontend/src/pages/TestimonialsPage.tsx",
-    "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-    "frontend/src/pages/admin/AdminPortfolioPage.tsx",
-    "frontend/src/pages/admin/AdminProductsPage.tsx",
-    "frontend/src/pages/admin/AdminTestimonialsPage.tsx",
-    "frontend/src/utils/images.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/auth/AdminRouteGuard.tsx",
+    "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+    "frontend/src/components/auth/LoginButton.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/admin/useAdminAccess.ts",
+    "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+    "frontend/src/pages/admin/AdminAccessPage.tsx",
+    "frontend/src/pages/admin/AdminLayout.tsx",
+    "frontend/src/utils/adminSharedCodeSession.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

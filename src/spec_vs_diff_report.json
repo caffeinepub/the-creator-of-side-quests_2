@@ -1,52 +1,68 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T23:28:48.697Z",
-  "summary": "Diff implements the requested admin UIs (products, testimonials, giveaways, portfolio) plus public testimonial creation with mossy-green glowing star rating. It also includes broader site-wide theme/system styling changes that were not part of this specific BuildRequest (beyond the star styling requirement).",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-07T00:32:15.786Z",
+  "summary": "Implemented a frontend shared-code gate screen and updated the Admin route guard/layout to require shared-code verification (with sessionStorage) before rendering admin UI. Added frontend hooks and an Admin Access page plus navigation entry. Backend was modified to include shared-code verification and attempt tracking, but the diff is truncated and shows trap-based failures, a 3-attempt limit, and no clear evidence that all admin-only methods and required query APIs were fully updated.",
+  "missing_requirements": [
     {
-      "description": "Broader site theme/palette and design-system overhaul beyond adding mossy-green glowing star styling for rating controls (e.g., new OKLCH tokens, extended Tailwind theme, medieval-fantasy styling).",
-      "reason": "BuildRequest explicitly says not to change the overall site theme/palette beyond implementing mossy-green glowing star styling for rating controls.",
+      "id": "REQ-22",
+      "requirement": "Backend must enforce shared-code session marker for all admin-only backend operations (in addition to existing admin permission checks).",
+      "reason": "The diff shows a helper `requireAdminSharedCodeSession` but does not show it being applied across all admin-only methods; the backend diff is truncated before any such updates are visible.",
       "evidence": [
-        "frontend/index.css",
-        "frontend/tailwind.config.js (mentioned in frontend-file-summaries.txt)",
-        "frontend-file-summaries.txt"
+        "backend/main.mo (truncated)"
       ]
     },
     {
-      "description": "Admin/newsletter/birthday-driven functionality mentioned in project state summary.",
-      "reason": "BuildRequest non-goals explicitly exclude newsletters and birthday-triggered features; while not necessarily implemented in code here, it is presented as part of the build summary/state and risks implying added scope beyond requested items.",
+      "id": "REQ-22",
+      "requirement": "Backend should provide clear success/fail responses for verification and lockout rather than trapping, including lockout after too many attempts (e.g., 5) with cooldown responses.",
+      "reason": "Backend verification methods shown use `Runtime.trap(...)` for incorrect code and lockout conditions, which contradicts the AC stating attempts should \"return a clear failure state rather than trapping.\" Also `MAX_ATTEMPTS = 3`, not the suggested 5 attempts in the requirement/AC example.",
       "evidence": [
-        "project_state.json"
+        "backend/main.mo (truncated): `let MAX_ATTEMPTS = 3;`",
+        "backend/main.mo (truncated): `Runtime.trap(\"Incorrect admin shared code\")`",
+        "backend/main.mo (truncated): `Runtime.trap(\"This account is currently locked out...\")`"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "requirement": "Backend should expose an API to check whether the caller currently has a valid shared-code session marker (used by the frontend to avoid prompting when still valid).",
+      "reason": "Frontend calls `actor.hasValidAdminSharedCode()`, but no corresponding backend method is shown in the truncated backend diff.",
+      "evidence": [
+        "frontend/src/hooks/admin/useAdminSharedCodeGate.ts: `return actor.hasValidAdminSharedCode();`",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "requirement": "Backend must provide admin-only APIs to list/grant/revoke admin access (and these must be protected by BOTH admin permission and shared-code session marker).",
+      "reason": "Frontend calls `actor.listAdminUsers()`, `actor.grantAdminAccess(...)`, and `actor.revokeAdminAccess(...)`, but the backend diff shown does not include these methods or evidence they are protected by the shared-code session requirement (backend diff is truncated).",
+      "evidence": [
+        "frontend/src/hooks/admin/useAdminAccess.ts: `actor.listAdminUsers()` / `actor.grantAdminAccess(...)` / `actor.revokeAdminAccess(...)`",
+        "backend/main.mo (truncated)"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Large-scale frontend theming/SEO/site feature changes (e.g., medieval-fantasy design system, SEO meta hooks, homepage/about/services/shop content updates, various UI components) unrelated to shared-code gated admin access and admin permission management.",
+      "reason": "The BuildRequest scope is specifically shared-code gating + admin permission management; it explicitly cautions against expanding unrelated sections. The diff summary indicates many broad UI/content/theme changes not required to satisfy REQ-21..24.",
+      "evidence": [
+        "frontend-file-summaries.txt (truncated): entries for `frontend/index.css`, `frontend/tailwind.config.js`, `frontend/src/hooks/usePageMeta.ts`, `frontend/src/pages/HomePage.tsx`, `frontend/src/pages/AboutPage.tsx`, `frontend/src/pages/ServicesPage.tsx`, etc."
       ]
     }
   ],
   "confidence": 0.66,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.css",
-    "frontend/src/components/giveaway/AdminGiveawayWheel.tsx",
-    "frontend/src/components/portfolio/AdminPortfolioTable.tsx",
-    "frontend/src/components/portfolio/AdminPortfolioUploader.tsx",
-    "frontend/src/components/portfolio/PortfolioGrid.tsx",
-    "frontend/src/components/products/AdminProductFormDialog.tsx",
-    "frontend/src/components/products/AdminProductsTable.tsx",
-    "frontend/src/components/testimonials/AdminTestimonialFormDialog.tsx",
-    "frontend/src/components/testimonials/AdminTestimonialsTable.tsx",
-    "frontend/src/components/testimonials/CreateTestimonyDialog.tsx",
-    "frontend/src/components/testimonials/MossyStarRating.tsx",
-    "frontend/src/hooks/admin/useAdminGiveaways.ts",
-    "frontend/src/hooks/admin/useAdminPortfolio.ts",
-    "frontend/src/hooks/admin/useAdminProducts.ts",
-    "frontend/src/hooks/admin/useAdminTestimonials.ts",
-    "frontend/src/hooks/content/useTestimonials.ts",
-    "frontend/src/pages/TestimonialsPage.tsx",
-    "frontend/src/pages/admin/AdminGiveawaysPage.tsx",
-    "frontend/src/pages/admin/AdminPortfolioPage.tsx",
-    "frontend/src/pages/admin/AdminProductsPage.tsx",
-    "frontend/src/pages/admin/AdminTestimonialsPage.tsx",
-    "frontend/src/utils/images.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/auth/AdminRouteGuard.tsx",
+    "frontend/src/components/auth/AdminSharedCodeGateScreen.tsx",
+    "frontend/src/components/auth/LoginButton.tsx",
+    "frontend/src/hooks/admin/useAdminAccess.ts",
+    "frontend/src/hooks/admin/useAdminSharedCodeGate.ts",
+    "frontend/src/pages/admin/AdminAccessPage.tsx",
+    "frontend/src/pages/admin/AdminLayout.tsx",
+    "frontend/src/utils/adminSharedCodeSession.ts",
     "project_state.json"
   ]
 }

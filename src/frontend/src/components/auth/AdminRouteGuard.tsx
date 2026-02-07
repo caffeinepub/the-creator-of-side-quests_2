@@ -1,10 +1,13 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { useIsAdmin } from '../../hooks/useCurrentUser';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { useHasValidAdminSharedCode } from '../../hooks/admin/useAdminSharedCodeGate';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ShieldAlert } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Link } from '@tanstack/react-router';
+import AdminSharedCodeGateScreen from './AdminSharedCodeGateScreen';
+import { isAdminCodeVerified } from '../../utils/adminSharedCodeSession';
 
 interface AdminRouteGuardProps {
   children: ReactNode;
@@ -12,8 +15,23 @@ interface AdminRouteGuardProps {
 
 export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
   const { identity } = useInternetIdentity();
-  const { data: isAdmin, isLoading } = useIsAdmin();
+  const { data: isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  const { data: hasValidCode, isLoading: isCodeLoading, refetch: refetchCodeStatus } = useHasValidAdminSharedCode();
+  const [showCodeGate, setShowCodeGate] = useState(false);
 
+  // Check session storage on mount and when admin status changes
+  useEffect(() => {
+    if (isAdmin && !isAdminLoading) {
+      const sessionVerified = isAdminCodeVerified();
+      if (!sessionVerified && !hasValidCode) {
+        setShowCodeGate(true);
+      } else {
+        setShowCodeGate(false);
+      }
+    }
+  }, [isAdmin, isAdminLoading, hasValidCode]);
+
+  // Step 1: Check authentication
   if (!identity) {
     return (
       <div className="container py-16">
@@ -33,7 +51,8 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
     );
   }
 
-  if (isLoading) {
+  // Step 2: Check admin permission
+  if (isAdminLoading) {
     return (
       <div className="container py-16">
         <p>Verifying permissions...</p>
@@ -60,5 +79,27 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
     );
   }
 
+  // Step 3: Check shared code verification
+  if (isCodeLoading) {
+    return (
+      <div className="container py-16">
+        <p>Verifying admin access...</p>
+      </div>
+    );
+  }
+
+  const sessionVerified = isAdminCodeVerified();
+  if (!sessionVerified && !hasValidCode) {
+    return (
+      <AdminSharedCodeGateScreen
+        onSuccess={() => {
+          setShowCodeGate(false);
+          refetchCodeStatus();
+        }}
+      />
+    );
+  }
+
+  // All checks passed, render admin content
   return <>{children}</>;
 }

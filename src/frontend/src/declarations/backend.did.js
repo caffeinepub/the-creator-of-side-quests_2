@@ -249,10 +249,15 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'grantAdminAccess' : IDL.Func([IDL.Principal], [], []),
+  'hasValidAdminSharedCode' : IDL.Func([], [IDL.Bool], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
+  'listAdminUsers' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
   'recordPurchase' : IDL.Func([IDL.Nat], [], []),
   'redeemLoyaltyReward' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'retryVerifyAdminSharedCode' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'revokeAdminAccess' : IDL.Func([IDL.Principal], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'selectGiveawayWinner' : IDL.Func(
       [IDL.Text, IDL.Nat],
@@ -277,6 +282,7 @@ export const idlService = IDL.Service({
   'updateSocialMediaLink' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'updateTestimonial' : IDL.Func([Testimonial], [], []),
   'validateCoupon' : IDL.Func([IDL.Text], [IDL.Opt(Coupon)], []),
+  'verifyAdminSharedCode' : IDL.Func([IDL.Text], [IDL.Bool], []),
 });
 
 export const idlInitArgs = [];
@@ -517,10 +523,15 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'grantAdminAccess' : IDL.Func([IDL.Principal], [], []),
+    'hasValidAdminSharedCode' : IDL.Func([], [IDL.Bool], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isStripeConfigured' : IDL.Func([], [IDL.Bool], ['query']),
+    'listAdminUsers' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'recordPurchase' : IDL.Func([IDL.Nat], [], []),
     'redeemLoyaltyReward' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'retryVerifyAdminSharedCode' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'revokeAdminAccess' : IDL.Func([IDL.Principal], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'selectGiveawayWinner' : IDL.Func(
         [IDL.Text, IDL.Nat],
@@ -545,6 +556,7 @@ export const idlFactory = ({ IDL }) => {
     'updateSocialMediaLink' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'updateTestimonial' : IDL.Func([Testimonial], [], []),
     'validateCoupon' : IDL.Func([IDL.Text], [IDL.Opt(Coupon)], []),
+    'verifyAdminSharedCode' : IDL.Func([IDL.Text], [IDL.Bool], []),
   });
 };
 
